@@ -76,7 +76,6 @@ acad.err
 *.TMP
 
 # Obsidian vault (workspace state only, keep vault content)
-D:\Obsidian\Claude-AutoCAD unifilar\.obsidian\workspace*.json
 .obsidian/workspace*.json
 
 # Local environment

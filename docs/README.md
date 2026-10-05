@@ -9,20 +9,18 @@ docs/
 ├── README.md                    (this file)
 ├── decisions/                   (Architecture Decision Records)
 │   └── ADR-0001-claude-autocad-integration.md
+├── research/                    (Condensed research summaries; full notes in the vault)
+│   └── phase-1-summary.md
 └── [other docs as needed]
 ```
 
 ## Knowledge Base: Obsidian Vault
 
-**The primary knowledge base and research documentation lives in the Obsidian vault**, not in this directory:
-
-```
-D:\Obsidian\Claude-AutoCAD unifilar
-```
+**The primary knowledge base and research documentation lives in the author's local Obsidian research vault (not part of this repository).** A condensed, public summary is in [`research/phase-1-summary.md`](research/phase-1-summary.md).
 
 The vault contains:
 - **Research sources** — Autodesk API docs, MCP specs, GitHub surveys
-- **Regulatory research** — Mexican electrical standards (NOM-001-SEDE, CRE, CFE, UVIE)
+- **Regulatory research** — Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE)
 - **Best practices** — PV single-line diagram conventions and symbology
 - **Domain knowledge** — AutoCAD, MCP, electrical engineering concepts
 - **Comparisons** — Integration approach evaluation matrices
@@ -44,11 +42,13 @@ The vault contains:
 
 ## Architecture Decision Records (ADRs)
 
-ADRs are stored in `docs/decisions/` and mirrored in the vault at `wiki/decisions/`.
+The working original of each ADR lives in the vault at `wiki/decisions/`. `docs/decisions/` holds the published mirror; if the two differ, the vault wins and the mirror is regenerated.
 
 ### ADR-0001: Claude ↔ AutoCAD Integration Approach
 
-**Location:** `docs/decisions/ADR-0001-claude-autocad-integration.md` (and vault mirror)
+**Location:** `docs/decisions/ADR-0001-claude-autocad-integration.md` (vault original: `wiki/decisions/ADR-0001 Integration Approach.md`)
+
+**Status:** Accepted 2026-10-05. The decision is a layered hybrid: an ezdxf DXF backend first, then an AutoCAD 2027 .NET 10 plug-in backend over a current-user named pipe.
 
 Synthesized during Phase 1, Stage 1.4. Documents the recommended integration pattern for connecting Claude (via MCP) to AutoCAD, considering:
 - Autodesk's official APIs (.NET SDK, COM, RealDWG, AutoLISP)
@@ -65,7 +65,7 @@ Synthesized during Phase 1, Stage 1.4. Documents the recommended integration pat
 - **Regulatory vault** — Mexican electrical standards and compliance requirements
 - **Architecture decision** — ADR-0001 recommending the optimal integration approach
 - **Parametric model** — JSON/YAML schema for PV system input parameters and diagram generation data
-- **v0.1.0-docs release** — Git tag on main branch with vault snapshot and ADR
+- **v0.1.0-docs release** — Git tag on main branch with the ADR mirror and the Phase 1 research summary (the vault itself is not published)
 
 ---
 
@@ -82,6 +82,6 @@ See `CONTRIBUTING.md` for detailed workflow.
 
 ---
 
-**Last updated:** 2026-10-04  
-**Vault path:** `D:\Obsidian\Claude-AutoCAD unifilar`  
+**Last updated:** 2026-10-05  
+**Vault:** author's local Obsidian vault (not published)  
 **Maintainer:** edu3250 (edu3250@gmail.com)

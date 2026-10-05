@@ -1,0 +1,9 @@
+# Normalize text files to LF in the repository (contributors on Windows and Linux)
+* text=auto eol=lf
+
+# CAD outputs: never touch line endings (golden-file tests compare bytes)
+*.dxf -text
+*.dwg binary
+*.dwt binary
+*.pdf binary
+*.png binary
