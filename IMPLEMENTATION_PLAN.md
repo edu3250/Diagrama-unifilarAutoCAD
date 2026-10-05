@@ -2,7 +2,7 @@
 
 All work is tracked in phases and stages. Each stage has specific deliverables, success criteria, verification tests, and a status tracker.
 
-Update status after each merge. Delete this file after all stages for the current phase are verified and the phase is released.
+Update status after each merge. Completed phases are condensed into `CHANGELOG.md`; delete this file only when no planned phases remain in it.
 
 ---
 
@@ -19,7 +19,7 @@ Update status after each merge. Delete this file after all stages for the curren
 **Goal:** Establish the Obsidian vault structure, templates, and frontmatter conventions to standardize all research documentation.
 
 **Success Criteria:**
-- Vault directory tree created at `D:\Obsidian\Claude-AutoCAD unifilar`
+- Vault directory tree created in the author's local Obsidian vault
 - All template files in `_templates/` ready for researchers
 - Five research domains initialized with stub pages
 - Frontmatter conventions documented in vault `CLAUDE.md`
@@ -32,7 +32,7 @@ Update status after each merge. Delete this file after all stages for the curren
 - `_templates/*.md` contain valid YAML frontmatter
 - `.manifest.json` in `.raw/` is valid JSON
 
-**Status:** In Progress
+**Status:** Complete
 
 ---
 
@@ -54,7 +54,7 @@ Update status after each merge. Delete this file after all stages for the curren
 - Concept pages for MCP, Claude tools, API patterns
 - Coverage checklist: AutoCAD API documentation thoroughly ingested
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
@@ -78,7 +78,7 @@ Update status after each merge. Delete this file after all stages for the curren
 - Source citations include GitHub URLs and commit hashes (reproducible)
 - Coverage checklist: at least 15–20 relevant projects surveyed
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
@@ -96,15 +96,17 @@ Update status after each merge. Delete this file after all stages for the curren
   - Pure DXF/DWG file generation (ezdxf, libredwg, etc.)
 - Decision rationale: cost, latency, complexity, compliance, maintainability
 - Accepted approach clearly stated with trade-offs documented
-- ADR mirrors key findings into vault as `wiki/decisions/ADR-0001`
+- ADR written in the vault as `wiki/decisions/ADR-0001 Integration Approach` (original) and mirrored to `docs/decisions/`
 
 **Tests:**
 - ADR document is well-formed markdown
-- All options have cost/complexity/risk scoring
+- All options compared with pros, cons and an explicit verdict
 - Decision is defensible from user's architectural constraints
 - References to Stage 1.2 and 1.3 research intact
 
-**Status:** Not Started
+> ADR-0001 accepted 2026-10-05: layered hybrid, ezdxf DXF backend first, AutoCAD 2027 .NET 10 plug-in backend second; see `docs/decisions/ADR-0001-claude-autocad-integration.md`.
+
+**Status:** Complete
 
 ---
 
@@ -117,7 +119,7 @@ Update status after each merge. Delete this file after all stages for the curren
   - Single-line diagram requirements
   - Labeling and symbology standards
   - Protection device specifications
-- CRE (Comisión Reguladora de Energía) interconnection rules researched
+- CRE (Comisión Reguladora de Energía, replaced by the CNE in 2025) interconnection rules researched
 - CNE (Comisión Nacional de Energía) and CFE (Comisión Federal de Electricidad) guidelines documented
 - UVIE (Unidad de Verificación de Instalaciones Eléctricas) inspection checklist understood
 - Local utility requirements (e.g., CFE plant interconnection rules)
@@ -129,7 +131,7 @@ Update status after each merge. Delete this file after all stages for the curren
 - Concept pages for "distributed generation", "interconnection", "protection zones"
 - Coverage checklist: all major Mexican regulations and their diagram implications documented
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
@@ -157,7 +159,7 @@ Update status after each merge. Delete this file after all stages for the curren
 - Parametric model documented in machine-readable format (JSON/YAML schema stub)
 - Coverage checklist: main PV topologies (radial, series-parallel, multi-inverter) covered
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
@@ -180,33 +182,128 @@ Update status after each merge. Delete this file after all stages for the curren
 - Git release:
   - `release/v0.1.0-docs` branch created from develop
   - `CHANGELOG.md` updated with stage summaries
-  - `IMPLEMENTATION_PLAN.md` cleanup (note: will be deleted after this stage)
+  - `IMPLEMENTATION_PLAN.md` updated (Phase 1 condensed; Phases 2–5 stay planned here)
   - Merge to main, tag `v0.1.0-docs`
   - Merge back to develop
 
 **Tests:**
 - Vault lint tool (provided by `claude-obsidian:wiki-lint`) passes with zero errors
 - All files UTF-8 encoded, no broken image links
-- GitHub release created for `v0.1.0-docs` with release notes
+- GitHub release created for `v0.1.0-docs` with release notes (once the public repository is published)
 - Tag `v0.1.0-docs` exists on main branch
 
-**Status:** Not Started
+**Status:** In Progress
 
 ---
 
 ## Phase 2: MCP Server Prototype & Connectivity Spike
 
-**Tentative Intent:** Build a minimal MCP server that can connect Claude to AutoCAD, demonstrating bidirectional communication and basic document operations (read/write DWG properties, list blocks, etc.).
+> **Tentative: to be confirmed by the user before Phase 2 starts.** The stages below turn the validation plan of ADR-0001 into trial-and-error spikes. All numeric thresholds are proposed targets from the ADR.
 
-**Status:** To be defined
+**Goal:** Prove ADR-0001 before committing to production code. Four spikes cover the ezdxf rendering path, AutoCAD 2027 connectivity (.NET 10 plug-in vs COM), the MCP round trip from Claude Code, and the Core Console finisher.
 
-**Estimated Stages:** 2.1–2.5
+**Target Release:** `v0.2.0-spike`
+
+> Tentative: stages to be confirmed by the user.
+
+**Status:** Not Started
+
+---
+
+### Stage 2.1: S1, ezdxf Minimal PV SLD
+
+**Goal:** Render the 7.70 kWp residential sample parameter file to a DXF R2018 SLD through a backend-neutral diagram model. The sheet has an A3 layout, title block and string table, and uses a minimal symbol library.
+
+**Success Criteria:**
+- `doc.audit()` reports 0 errors and 0 fixes
+- Output is byte-identical across two runs and across Windows and Linux CI runners (fixed metadata)
+- INSERT count per block equals the model count; 100 % attribute round-trip by `COMP_ID`; 0 dangling ports; 0 entities on layer `0`
+- Build + write ≤ 1 s; PNG preview ≤ 3 s
+- The DXF opens in AutoCAD 2027 and AUDIT reports 0 errors (manual check)
+
+**Tests:**
+- Golden-file test against a committed DXF fixture
+- Semantic ezdxf query tests (blocks, attributes, layers, port connectivity)
+- Rule-subset tests (VOLT-001, STR-001, STR-004, CON-003, PCC-002, MET-001, DIS-003/004) pass on the sample and fail as expected on 3 mutated specs
+
+**Status:** Not Started
+
+---
+
+### Stage 2.2: S2, AutoCAD 2027 Connectivity (.NET 10 Plug-in vs COM)
+
+**Goal:** Prove the AutoCAD backend transport. A `net10.0` plug-in listens on a current-user named pipe (newline-delimited JSON-RPC plus a secret generated at each start). It answers a ping, inserts an attributed block and reads attributes back. A throwaway Python COM spike against `AutoCAD.Application.26` serves as the baseline.
+
+**Success Criteria:**
+- Plug-in ping p95 < 50 ms; a batch of 200 attributed inserts + 200 lines takes < 2 s; the COM/plug-in latency ratio is recorded
+- 100/100 consecutive runs without unhandled errors
+- With a modal dialog or an active command, the plug-in returns an actionable "busy" error within 5 s, and AutoCAD never hangs
+- An injected mid-transaction failure leaves the drawing unchanged
+- A client without the secret is refused; the pipe ACL is current-user only
+
+**Tests:**
+- Scripted benchmark harness, marked `autocad` and run manually on the licensed workstation
+- Protocol tests of the pipe client against a fake server (CI)
+- Benchmark results recorded in the vault
+
+**Status:** Not Started
+
+---
+
+### Stage 2.3: S3, MCP Round Trip from Claude Code
+
+**Goal:** Build a Python MCP server (`mcp` 2.x, stdio) registered through a repo `.mcp.json`. It exposes `validate_pv_design`, `generate_single_line_diagram` (ezdxf backend) and the parameter-schema resource.
+
+**Success Criteria:**
+- The server starts and lists tools in < 5 s (Claude Code's startup timeout is 30 s)
+- Claude completes validate → generate on the sample in ≤ 4 tool calls; the result (drawing_id, DXF path, PNG preview) stays under the 25k-token output cap
+- An invalid spec (12 modules per string) returns a VOLT-001 tool error that Claude then corrects
+
+**Tests:**
+- In-memory MCP client tests in CI
+- MCP Inspector session
+- Optional: the same flow in Claude Desktop within 240 s
+
+**Status:** Not Started
+
+---
+
+### Stage 2.4: S4, Core Console Finisher
+
+**Goal:** Convert the S1 DXF to DWG 2018 and plot a PDF headlessly with `accoreconsole.exe` on the licensed workstation.
+
+**Success Criteria:**
+- The DWG opens in AutoCAD 2027 without the "not saved by Autodesk" notice; a PDF is produced
+- ≤ 15 s per sheet
+- Running outside a licensed session produces a reported error, never a silent success
+
+**Tests:**
+- Scripted finisher run (marked `autocad`) that checks the exit code, the existence of the output files and a timeout
+
+**Status:** Not Started
+
+---
+
+### Stage 2.5: Spike Review, ADR-0001 Confirmation and Release v0.2.0-spike
+
+**Goal:** Review the S1–S4 results against ADR-0001's exit gate and reversal triggers. Either confirm the ADR or record a superseding ADR, then plan Phases 3–5 to match.
+
+**Success Criteria:**
+- S1 and S3 meet their criteria, and S2 shows the plug-in meets its reliability criteria; otherwise a superseding ADR is recorded
+- Spike measurements and decisions are logged in the vault
+- `CHANGELOG.md` is updated and `v0.2.0-spike` is tagged per GitFlow
+
+**Tests:**
+- All CI tests green on Windows and Linux
+- Vault lint passes for the new notes
+
+**Status:** Not Started
 
 ---
 
 ## Phase 3: Parametric PV Sizing Engine
 
-**Tentative Intent:** Implement a Python or Node.js module that accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes optimal string/inverter configuration.
+**Tentative Intent:** Implement a Python module (per ADR-0001) that accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes optimal string/inverter configuration.
 
 **Status:** To be defined
 
@@ -218,6 +315,8 @@ Update status after each merge. Delete this file after all stages for the curren
 
 **Tentative Intent:** Develop the Claude reasoning engine that translates parametric configuration into single-line diagram topology, and render AutoCAD .dwg files with proper symbology and labeling.
 
+**Note (ADR-0001):** Topology and layout are assigned to deterministic code, not to Claude; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf), with DWG coming from the AutoCAD backend or a finisher. Revise this description when Phase 4 is planned.
+
 **Status:** To be defined
 
 **Estimated Stages:** 4.1–4.5
@@ -226,7 +325,7 @@ Update status after each merge. Delete this file after all stages for the curren
 
 ## Phase 5: Validation & Production Release
 
-**Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE, CFE), create integration test suite, package as standalone tool, and release `v1.0.0`.
+**Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE), create integration test suite, package as standalone tool, and release `v1.0.0`.
 
 **Status:** To be defined
 
@@ -234,5 +333,5 @@ Update status after each merge. Delete this file after all stages for the curren
 
 ---
 
-**Last updated:** 2026-10-04  
+**Last updated:** 2026-10-05  
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD
