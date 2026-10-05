@@ -12,7 +12,7 @@
 1. **Nothing official to plug Claude into.** Autodesk's AutoCAD MCP server serves only Autodesk Assistant and cannot draw. The project needs its own MCP server.
 2. **No community project generates PV single-line diagrams (SLDs) or targets Mexican rules.** The useful community patterns are dual engines (live + headless), attributed symbol blocks with ports, and in-process .NET plug-ins on a local pipe.
 3. **Headless DXF generation with ezdxf works.** It is deterministic, licence-free and fast, so the whole pipeline can be tested in CI without AutoCAD.
-4. **Mexican regulation prescribes SLD *content*, not a format or template.** About 75 checklist items were consolidated, and roughly 85 % can be checked by machine.
+4. **Mexican regulation prescribes SLD *content*, not a format or template.** 77 checklist items were consolidated, and 71 of them (92 %) can be checked by machine.
 5. **Claude's job is to elicit, validate and explain; deterministic code does the engineering and the drawing.** All six research streams agree on this.
 
 ## 1. Autodesk official integration surface (Stage 1.2)
@@ -152,7 +152,7 @@
 ## 6. PV single-line diagram engineering (Stage 1.6)
 
 - **Parameter model v0.1.0.** Typed components connected by circuits (graph edges), plus site, utility, title-block and layout data. All engineering values are *derived* by the engine and never typed by the user. *(PV SLD Parameter Model)*
-- **Validation rules.** About 90 rules in 13 families: GEN, VOLT, STR, CUR/CON, VD, OCP, DIS, PCC, MET, PCE, SPD, GND, TOP/DRW. They are mapped to the MX checklist and planned as a versioned rule pack `mx-gd-2026.10`. *(PV SLD Validation Rules)*
+- **Validation rules.** 98 rules in 13 families: GEN, VOLT, STR, CUR/CON, VD, OCP, DIS, PCC, MET, PCE, SPD, GND, TOP/DRW. They are mapped to the MX checklist and planned as a versioned rule pack `mx-gd-2026.10`. *(PV SLD Validation Rules)*
 - **Symbols.**
   - NMX-J-136-ANCE-2019 (DOF 2020-01-30) is the current Mexican symbol standard and pairs each symbol with IEC 60617.
   - IEEE 315 was inactivated on 2019-11-07.
