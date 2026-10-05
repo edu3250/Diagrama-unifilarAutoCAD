@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-docs] - 2026-10-05
+
+Phase 1 (Documentation & Regulatory Research) complete.
+
 ### Added
 - Initial repository scaffold with GitFlow structure (main, develop, feature/* branches)
 - `README.md` with project vision, current status, and roadmap
@@ -26,14 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - PV single-line-diagram engineering: parameter model v0.1.0 and validation rules.
 - `docs/decisions/ADR-0001-claude-autocad-integration.md`: ADR-0001 accepted (Stage 1.4). It adopts a layered hybrid: a Python stdio MCP server, a deterministic core (parameter model → calculations → `mx-gd-2026.10` rule pack → diagram model), an ezdxf DXF backend first and an AutoCAD 2027 .NET 10 plug-in backend second. Vault original: `wiki/decisions/ADR-0001 Integration Approach.md`
 - `docs/research/phase-1-summary.md`: condensed English summary of the Phase 1 findings, open questions and a map of the vault
+- `.gitattributes`: LF normalization for text; DXF/DWG/PDF/PNG kept byte-exact for golden-file tests
+- Stage 1.7 vault lint (`Lint Report 2026-10-05` in the vault): 0 dead links, 0 orphans, 0 frontmatter failures; 2 errors and 10 warnings fixed (8 uncovered MX checklist items received rules, rule pack now 98 rules; pre-ADR notes aligned with ADR-0001)
 
 ### Changed
-- `IMPLEMENTATION_PLAN.md`: Stages 1.1–1.6 marked Complete and Stage 1.7 In Progress. Phase 2 is refined into tentative stages 2.1–2.5 (spikes S1–S4 from ADR-0001 plus a review), still to be confirmed by the owner
+- `IMPLEMENTATION_PLAN.md`: Stages 1.1–1.7 marked Complete. Phase 2 is refined into tentative stages 2.1–2.5 (spikes S1–S4 from ADR-0001 plus a review), still to be confirmed by the owner
 - `README.md`: status, roadmap and documentation links updated
 - `docs/README.md`: directory tree lists `docs/research/`
-
-### Status
-- Phase 1 (Documentation & Regulatory Research): Stages 1.1–1.6 complete; Stage 1.7 (vault lint, Phase 1 review, release `v0.1.0-docs`) in progress
+- Checklist coverage figures corrected after the vault lint: 77 MX items, 71 machine-checkable (92 %)
 
 ---
 

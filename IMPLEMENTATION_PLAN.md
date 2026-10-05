@@ -180,7 +180,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
   - `wiki/hot.md` summarizes key findings and open questions
   - `wiki/overview.md` readable by newcomers
 - Git release:
-  - `release/v0.1.0-docs` branch created from develop
+  - `release/0.1.0-docs` branch created from develop (git-flow, tag prefix `v`)
   - `CHANGELOG.md` updated with stage summaries
   - `IMPLEMENTATION_PLAN.md` updated (Phase 1 condensed; Phases 2–5 stay planned here)
   - Merge to main, tag `v0.1.0-docs`
@@ -192,7 +192,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - GitHub release created for `v0.1.0-docs` with release notes (once the public repository is published)
 - Tag `v0.1.0-docs` exists on main branch
 
-**Status:** In Progress
+> Closed 2026-10-05: vault lint 0 errors after fixes (`Lint Report 2026-10-05`), tag `v0.1.0-docs` on main. The GitHub release is deferred until the owner publishes the public repository.
+
+**Status:** Complete
 
 ---
 

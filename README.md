@@ -12,7 +12,7 @@ The input is a set of solar installation parameters: capacity, inverters, string
 
 ## Current Status
 
-**Phase 1: Documentation & Research:** Stages 1.1–1.6 are complete. Stage 1.7 (vault lint, Phase 1 review, release `v0.1.0-docs`) is in progress.
+**Phase 1: Documentation & Research:** Complete, released as `v0.1.0-docs` (2026-10-05). Phase 2 (trial-and-error spikes S1–S4 from ADR-0001) is drafted and awaits the owner's confirmation.
 
 Phase 1 researched:
 - Official Autodesk APIs and MCP connectivity patterns
@@ -30,7 +30,7 @@ The full research (252 notes with cited sources) lives in the author's local Obs
 
 | Phase | Name | Status | Target |
 |-------|------|--------|--------|
-| 1 | Documentation & Regulatory Research | In Progress (Stages 1.1–1.6 complete; 1.7 in progress) | v0.1.0-docs |
+| 1 | Documentation & Regulatory Research | Complete | v0.1.0-docs |
 | 2 | MCP Server Prototype & Connectivity Spike | Tentative: spikes S1–S4 from ADR-0001, to be confirmed | v0.2.0-spike |
 | 3 | Parametric PV Sizing Engine | To be defined | — |
 | 4 | Diagram Generation & Symbol Library | To be defined | — |
