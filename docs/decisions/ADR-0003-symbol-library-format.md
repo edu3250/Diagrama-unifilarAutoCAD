@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | **Proposed** (owner approval pending) |
-| Decision date | proposed 2026-10-05 |
+| Status | **Accepted** |
+| Decision date | proposed 2026-10-05, accepted 2026-10-06 |
 | Phase / stage | Phase 2, Stage 2.1 (spike S1) |
-| Deciders | edu3250 (project owner), pending |
+| Deciders | edu3250 (project owner) |
 | Supersedes | none; settles the open question "symbol naming (`PVSLD_` vs `MXPV_`)" of ADR-0001 |
 | Vault original | `wiki/decisions/ADR-0003 Symbol Library Format.md` |
 
@@ -89,4 +89,4 @@ Vault notes: Block-Based Symbol Libraries, PV Electrical Symbology, SLD Drafting
 
 ---
 
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06

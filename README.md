@@ -84,7 +84,8 @@ ruff format --check .    # formatting (run `ruff format .` to fix)
 pytest --cov             # tests with coverage (floor: 60 %)
 
 pvsld --version
-pvsld validate-example examples/residential_7p7kwp.yaml
+pvsld validate examples/residential_7p7kwp.yaml
+pvsld generate examples/residential_7p7kwp.yaml -o out/residential.dxf --png
 ```
 
 **AutoCAD tests.** Tests marked `autocad` drive a licensed local AutoCAD 2027 and only run on Windows. A plain `pytest` (and CI) reports them as *skipped*, with the reason shown. On the licensed workstation, with AutoCAD 2027 installed, run them explicitly and add the optional `autocad` extra (`pywin32`):

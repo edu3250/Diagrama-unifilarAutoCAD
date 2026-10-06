@@ -1,0 +1,23 @@
+<Project>
+  <!-- Shared settings for the AutoCAD 2027 bridge plug-in (spike S2, ADR-0001 backend B2). -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <Version>0.2.0</Version>
+    <Authors>edu3250</Authors>
+    <Company>pvsld</Company>
+    <Product>pvsld AutoCAD bridge</Product>
+    <Copyright>MIT License</Copyright>
+    <!-- AutoCAD's managed API is x64 only; no RuntimeIdentifier (ADN guidance). -->
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Single place to bump the AutoCAD 2027 reference assemblies. -->
+    <AutoCADNetVersion>26.0.0</AutoCADNetVersion>
+  </PropertyGroup>
+</Project>

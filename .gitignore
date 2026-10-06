@@ -72,6 +72,13 @@ plot.log
 acad.err
 *.plt
 
+# .NET plug-in build output (Autodesk assemblies are never committed: AutoCAD supplies them)
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
 # Temporary files
 *.tmp
 *.temp
