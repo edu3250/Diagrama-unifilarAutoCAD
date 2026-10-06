@@ -443,6 +443,26 @@ def test_launch_guards_run_before_anything_starts(monkeypatch: pytest.MonkeyPatc
     assert started == []
 
 
+def test_startup_failure_windows_are_detected_in_any_window_class(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    windows = [
+        com.WindowInfo(1, "AfxMDIFrame140u", "Autodesk AutoCAD 2027", ()),
+        com.WindowInfo(
+            2,
+            "WindowsForms10.Window.8.app.0.1",
+            "AutoCAD",
+            ("Excepción no controlada en un componente de la aplicación", "Bad IL format."),
+        ),
+    ]
+    monkeypatch.setattr(com, "process_windows", lambda pid: windows)
+
+    assert [w.hwnd for w in com.startup_failures(42)] == [2]
+    with pytest.raises(com.StartupBlockedError, match="Bad IL format") as caught:
+        com._raise_if_startup_failed(42)
+    assert caught.value.pid == 42
+
+
 def test_hresult_of_plain_exception_is_none() -> None:
     assert com.hresult_of(ValueError()) is None
     assert time.monotonic() > 0  # keeps the clock import honest for the Clock double

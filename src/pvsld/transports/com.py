@@ -59,6 +59,21 @@ class ComStartupError(ComError):
     """AutoCAD could not be started, or did not become ready in time."""
 
 
+class StartupBlockedError(ComStartupError):
+    """The instance this process launched shows a known start-up failure."""
+
+    def __init__(self, pid: int, message: str) -> None:
+        super().__init__(message)
+        self.pid = pid
+
+
+#: Start-up failures that make a run meaningless. On 2026-10-05 a force-killed AutoCAD left a
+#: truncated AcLivePreviewContext.dll in the user profile; the next start raised "Bad IL format"
+#: from the first Idle event in an unhandled-exception window (a WinForms form, not #32770).
+STARTUP_FAILURE_MARKERS = ("Bad IL format",)
+STARTUP_SETTLE_SECONDS = 5.0
+
+
 def hresult_of(exc: BaseException) -> int | None:
     """The HRESULT carried by a pywin32 ``com_error`` (or its inner SCODE), if any."""
     hresult = getattr(exc, "hresult", None)
@@ -340,6 +355,16 @@ def visible_dialogs(pid: int) -> list[WindowInfo]:
     return [w for w in process_windows(pid) if w.class_name == "#32770"]
 
 
+def startup_failures(pid: int) -> list[WindowInfo]:
+    """Visible windows of ``pid`` (any class) that show a known start-up failure."""
+    markers = [marker.lower() for marker in STARTUP_FAILURE_MARKERS]
+    return [
+        window
+        for window in process_windows(pid)
+        if any(marker in " ".join((window.title, *window.texts)).lower() for marker in markers)
+    ]
+
+
 def describe_dialogs(pid: int) -> str:
     dialogs = visible_dialogs(pid)
     if not dialogs:
@@ -432,13 +457,31 @@ class AutoCADCom:
             pid = worker.call(
                 _wait_until_ready, raw, before, visible, startup, timeout=startup_timeout
             )
-            app, binding = worker.call(_early_bound, raw, retry, timeout=call_timeout)
+        except StartupBlockedError as exc:
+            exited = _quit_instance(worker, raw, exc.pid)
+            worker.close()
+            outcome = (
+                "AutoCAD exited after Quit()."
+                if exited
+                else f"Quit() did not close it; pid {exc.pid} was left running for the owner."
+            )
+            raise ComStartupError(f"{exc} Aborted before any test work. {outcome}") from exc
         except Exception as exc:
             worker.close()
             new = sorted(acad_pids() - before)
             raise ComStartupError(
                 f"AutoCAD did not become ready: {exc}. acad.exe {new} was left running; "
                 "close it from its window when it has finished starting."
+            ) from exc
+        try:
+            # makepy may generate wrappers for AutoCAD's large type library the first time.
+            app, binding = worker.call(_early_bound, raw, retry, timeout=max(call_timeout, 180))
+        except Exception as exc:
+            exited = _quit_instance(worker, raw, pid)  # idle and ours: ask it to quit
+            worker.close()
+            state = "exited after Quit()" if exited else f"pid {pid} was left running"
+            raise ComStartupError(
+                f"COM wrappers could not be prepared: {exc}; AutoCAD {state}."
             ) from exc
         return cls(
             worker,
@@ -646,19 +689,48 @@ def _wait_until_ready(raw: Any, before: set[int], visible: bool, policy: RetryPo
             "drive someone else's session"
         )
     deadline = time.monotonic() + policy.budget
+    _raise_if_startup_failed(pid)
     if visible:
         call_with_retry(lambda: setattr(raw, "Visible", True), policy, retryable=_starting)
     while time.monotonic() < deadline:
+        _raise_if_startup_failed(pid)
         try:
-            if raw.GetAcadState().IsQuiescent:
-                return pid
+            quiescent = raw.GetAcadState().IsQuiescent
         except Exception as exc:
             if not _starting(exc):
                 raise
+            quiescent = False
+        if quiescent:
+            # Some start-up failures surface on the first Idle event, after AutoCAD is idle.
+            settle = time.monotonic() + STARTUP_SETTLE_SECONDS
+            while time.monotonic() < settle:
+                _raise_if_startup_failed(pid)
+                time.sleep(0.5)
+            return pid
         time.sleep(0.5)
     raise ComStartupError(
         f"AutoCAD pid {pid} was not idle after {policy.budget:.0f} s ({describe_dialogs(pid)})"
     )
+
+
+def _raise_if_startup_failed(pid: int) -> None:
+    failures = startup_failures(pid)
+    if failures:
+        shown = "; ".join(f"{w.title!r}: {' | '.join(w.texts)[:200]}" for w in failures)
+        raise StartupBlockedError(pid, f"AutoCAD pid {pid} reported a start-up failure ({shown}).")
+
+
+def _quit_instance(worker: StaWorker, raw: Any, pid: int, timeout: float = 120.0) -> bool:
+    """Ask an instance this process launched to quit; never kill it. True if it exited."""
+    from pvsld.transports.pipe import pid_alive
+
+    policy = RetryPolicy(budget=30.0, max_delay=1.0)
+    with contextlib.suppress(Exception):  # a rejected or disconnected call is judged by the pid
+        worker.call(lambda: call_with_retry(raw.Quit, policy, retryable=_starting), timeout=60)
+    deadline = time.monotonic() + timeout
+    while pid_alive(pid) and time.monotonic() < deadline:
+        time.sleep(0.5)
+    return not pid_alive(pid)
 
 
 def _early_bound(raw: Any, retry: RetryPolicy) -> tuple[RetryingProxy, str]:
