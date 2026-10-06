@@ -3,91 +3,121 @@
 Usage::
 
     pvsld --version
-    pvsld validate-example examples/residential_7p7kwp.yaml
+    pvsld validate examples/residential_7p7kwp.yaml [--json]
+    pvsld generate examples/residential_7p7kwp.yaml -o out/sld.dxf [--png]
 
-``validate-example`` is a deliberately shallow smoke check for the sample parameter file: the YAML
-must load and contain the top-level sections of the PV SLD parameter model. Real schema and
-rule-pack validation arrives with the deterministic core in Stage 2.1.
+``validate`` parses the specification against the parameter model and runs the rule pack
+``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
+again, writes the DXF R2018 sheet (and a PNG preview with ``--png``) and verifies the written file.
+Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
 
 from __future__ import annotations
 
 import argparse
+import contextlib
+import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
-
-import yaml
 
 from pvsld import __version__
-
-# Sections the parameter model (schema_version 0.1.0) requires for a low-voltage residential
-# system. Optional or conditional sections (``monitoring``, and ``transformer`` and
-# ``mt_protection`` for medium voltage) are accepted but not required.
-REQUIRED_TOP_LEVEL_SECTIONS: tuple[str, ...] = (
-    "schema_version",
-    "project",
-    "standards",
-    "utility",
-    "modules",
-    "inverters",
-    "strings",
-    "dc_bos",
-    "ac_bos",
-    "circuits",
-    "grounding",
-    "storage",
-    "title_block",
-    "layout",
+from pvsld.core.rules import Finding
+from pvsld.core.validation import ValidationReport
+from pvsld.service import (
+    GenerationResult,
+    SpecFileError,
+    generate_single_line_diagram,
+    load_spec_file,
+    validate_pv_design,
 )
 
 
-class ExampleError(ValueError):
-    """The parameter file cannot be used; the message says why and is safe to show the user."""
-
-
-def load_example(path: Path) -> dict[str, Any]:
-    """Load ``path`` as YAML and check that it has every required top-level section.
-
-    Raises:
-        ExampleError: the file is missing, is not valid YAML, is not a mapping, or lacks sections.
-    """
-    try:
-        text = path.read_text(encoding="utf-8")
-    except FileNotFoundError:
-        raise ExampleError(f"file not found: {path}") from None
-    except OSError as exc:
-        raise ExampleError(f"cannot read {path}: {exc.strerror or exc}") from exc
-
-    try:
-        document = yaml.safe_load(text)
-    except yaml.YAMLError as exc:
-        raise ExampleError(f"invalid YAML in {path}: {exc}") from exc
-
-    if not isinstance(document, dict):
-        raise ExampleError(
-            f"{path} must contain a YAML mapping at the top level, found {type(document).__name__}"
-        )
-
-    missing = [name for name in REQUIRED_TOP_LEVEL_SECTIONS if name not in document]
-    if missing:
-        raise ExampleError(f"{path} is missing required top-level sections: {', '.join(missing)}")
-    return document
-
-
-def _validate_example(args: argparse.Namespace) -> int:
-    path: Path = args.path
-    try:
-        document = load_example(path)
-    except ExampleError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 1
-    print(
-        f"OK: {path} loads and has all {len(REQUIRED_TOP_LEVEL_SECTIONS)} required top-level "
-        f"sections (schema_version {document['schema_version']})"
+def _finding_line(finding: Finding) -> str:
+    return (
+        f"[{finding.severity.value}] {finding.rule_id} {finding.subject}: {finding.message_es} "
+        f"({', '.join(finding.mx_ids)})"
     )
-    return 0
+
+
+def _print_findings(report: ValidationReport, stream: object) -> None:
+    for finding in report.findings:
+        print(_finding_line(finding), file=stream)  # type: ignore[call-overload]
+
+
+def _summary(report: ValidationReport) -> str:
+    return f"{len(report.errors)} errors, {len(report.warnings)} warnings"
+
+
+def _validate(args: argparse.Namespace) -> int:
+    try:
+        data = load_spec_file(args.path)
+    except SpecFileError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    report = validate_pv_design(data)
+    if args.json:
+        print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
+        return 0 if report.ok else 1
+    if report.ok:
+        derived = report.derived
+        assert derived is not None  # a valid report always carries the derived values
+        print(
+            f"OK: {args.path} passes {report.rulepack} ({_summary(report)}); "
+            f"{derived.kwp_total:.2f} kWp DC, {derived.kwac_total:.2f} kWac"
+        )
+        _print_findings(report, sys.stdout)
+        return 0
+    print(f"FAILED: {args.path} violates {report.rulepack} ({_summary(report)})", file=sys.stderr)
+    _print_findings(report, sys.stderr)
+    return 1
+
+
+def _describe(result: GenerationResult) -> str:
+    assert result.dxf_path is not None
+    assert result.readback is not None
+    readback = result.readback
+    lines = [
+        f"{'OK' if result.ok else 'FAILED'}: wrote {result.dxf_path} "
+        f"({(result.size_bytes or 0) / 1024:.0f} KiB, sha256 {result.sha256})",
+    ]
+    if result.png_path is not None:
+        lines.append(f"preview: {result.png_path}")
+    lines.append(
+        f"read-back: audit {readback.audit_errors} errors / {readback.audit_fixes} fixes; "
+        f"attributes {readback.attributes_matched}/{readback.attributes_checked}; "
+        f"dangling ports {len(readback.dangling_ports)}; "
+        f"entities on layer 0: {readback.layer_zero_entities}"
+    )
+    lines += [f"problem: {problem}" for problem in readback.problems]
+    lines.append(
+        "timings (ms): "
+        + ", ".join(f"{name} {value:g}" for name, value in result.timings_ms.items())
+    )
+    return "\n".join(lines)
+
+
+def _generate(args: argparse.Namespace) -> int:
+    try:
+        data = load_spec_file(args.path)
+    except SpecFileError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    try:
+        result = generate_single_line_diagram(data, args.output, png=args.png)
+    except OSError as error:
+        print(f"error: cannot write {args.output}: {error}", file=sys.stderr)
+        return 1
+    if result.dxf_path is None:
+        print(
+            f"FAILED: {args.path} violates {result.validation.rulepack} "
+            f"({_summary(result.validation)}); nothing was written",
+            file=sys.stderr,
+        )
+        _print_findings(result.validation, sys.stderr)
+        return 1
+    print(_describe(result), file=sys.stdout if result.ok else sys.stderr)
+    return 0 if result.ok else 1
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -99,20 +129,41 @@ def build_parser() -> argparse.ArgumentParser:
     subcommands = parser.add_subparsers(dest="command", required=True)
 
     validate = subcommands.add_parser(
-        "validate-example",
-        help="check that a parameter YAML loads and has the expected top-level sections",
+        "validate",
+        help="validate a parameter file against the schema and the rule pack",
         description=(
-            "Shallow smoke check only: the file must be valid YAML and contain the top-level "
-            "sections of the PV SLD parameter model. Full validation arrives in Stage 2.1."
+            "Parse a PV system specification (YAML or JSON) against the parameter model and run "
+            "the rule pack mx-gd-2026.10. Exit code 1 when an error-severity rule fails."
         ),
     )
-    validate.add_argument("path", type=Path, metavar="PATH", help="parameter YAML file")
-    validate.set_defaults(run=_validate_example)
+    validate.add_argument("path", type=Path, metavar="PATH", help="parameter YAML or JSON file")
+    validate.add_argument("--json", action="store_true", help="print the report as JSON")
+    validate.set_defaults(run=_validate)
+
+    generate = subcommands.add_parser(
+        "generate",
+        help="validate and render the A3 single-line diagram as DXF R2018",
+        description=(
+            "Validate the specification, write the DXF sheet and verify it by reading it back. "
+            "Nothing is written when validation fails."
+        ),
+    )
+    generate.add_argument("path", type=Path, metavar="PATH", help="parameter YAML or JSON file")
+    generate.add_argument(
+        "-o", "--output", type=Path, required=True, metavar="OUT.dxf", help="DXF file to write"
+    )
+    generate.add_argument(
+        "--png", action="store_true", help="also write a PNG preview next to the DXF"
+    )
+    generate.set_defaults(run=_generate)
     return parser
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     """Entry point of the ``pvsld`` console script; returns the process exit code."""
+    for stream in (sys.stdout, sys.stderr):
+        with contextlib.suppress(AttributeError, ValueError):
+            stream.reconfigure(errors="replace")  # type: ignore[union-attr]
     args = build_parser().parse_args(argv)
     return int(args.run(args))
 

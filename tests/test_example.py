@@ -8,7 +8,8 @@ from typing import Any
 import pytest
 import yaml
 
-from pvsld.cli import REQUIRED_TOP_LEVEL_SECTIONS, main
+from pvsld.cli import main
+from pvsld.core.model import PvSystemSpec
 
 EXAMPLE = Path(__file__).resolve().parents[1] / "examples" / "residential_7p7kwp.yaml"
 
@@ -43,8 +44,13 @@ def test_example_has_every_expected_top_level_section(spec: dict[str, Any]) -> N
     assert "monitoring" in spec
 
 
-def test_cli_required_sections_match_the_parameter_model() -> None:
-    assert set(REQUIRED_TOP_LEVEL_SECTIONS) == set(EXPECTED_REQUIRED_SECTIONS)
+def test_model_requires_the_sections_of_the_parameter_model() -> None:
+    required = {
+        (field.alias or name)
+        for name, field in PvSystemSpec.model_fields.items()
+        if field.is_required()
+    }
+    assert required == set(EXPECTED_REQUIRED_SECTIONS)
 
 
 def test_example_declares_schema_and_rulepack_versions(spec: dict[str, Any]) -> None:
@@ -88,5 +94,5 @@ def test_example_header_states_source_and_disclaimer() -> None:
 
 
 def test_cli_accepts_the_example(capsys: pytest.CaptureFixture[str]) -> None:
-    assert main(["validate-example", str(EXAMPLE)]) == 0
+    assert main(["validate", str(EXAMPLE)]) == 0
     assert capsys.readouterr().out.startswith("OK:")
