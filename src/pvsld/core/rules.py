@@ -200,7 +200,17 @@ def _con_003(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
     for values in ctx.derived.circuits:
         if values.ocpd_id is None or values.ocpd_rating_a is None:
             continue
-        ampacity = min(values.ampacity_75_a, values.ampacity_corrected_a or values.ampacity_75_a)
+        corrected = values.ampacity_corrected_a
+        usable = corrected if corrected is not None else values.ampacity_75_a
+        ampacity = min(values.ampacity_75_a, usable)
+        if ampacity <= 0:
+            yield (
+                Severity.ERROR,
+                values.circuit_id,
+                f"El conductor {values.size} del circuito {values.circuit_id} no tiene ampacidad "
+                f"a la temperatura de diseño ({_g(values.t_effective_c or 0)} °C).",
+            )
+            continue
         limit = _max_ocpd_for_ampacity(ampacity, ctx.tables)
         small_limit = ctx.tables.small_conductor_ocpd_limit_a.get(values.size)
         clause = "NOM 240-4(b)"

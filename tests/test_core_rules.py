@@ -286,3 +286,12 @@ def test_report_serialises_to_plain_json_types() -> None:
     assert payload["findings"][0]["rule_id"] == "VOLT-001"
     assert payload["findings"][0]["severity"] == "E"
     assert "derived" in payload
+
+
+def test_a_conductor_with_no_ampacity_at_the_design_temperature_violates_con_003() -> None:
+    def furnace(spec: dict[str, Any]) -> None:
+        circuit = next(c for c in spec["circuits"] if c["id"] == "C-INV")
+        circuit["ambient_c"] = 95  # above the last correction band: no ampacity left
+
+    finding = _only(validate_pv_design(mutated(furnace)), "CON-003")
+    assert "no tiene ampacidad" in finding.message_es
