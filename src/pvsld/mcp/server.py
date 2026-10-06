@@ -1,0 +1,473 @@
+"""The MCP server of ADR-0001 (layer L1): two workflow tools and three resources over stdio.
+
+Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
+tool surface is deliberately small and has no primitive drawing tool and no code execution, so the
+model never produces geometry (ADR-0001, point 4).
+
+Rules the server keeps, because stdio and Windows make them easy to break:
+
+* nothing but protocol frames goes to stdout: logs go to stderr (``main`` configures it) and the
+  SDK moves file descriptor 1 aside while serving;
+* the server writes only inside its output sandbox (``PVSLD_OUTPUT_DIR``, default ``./out``), and
+  a call carries a drawing *name*, never a path;
+* a spec that does not validate is a tool error that carries the findings, so Claude can fix it;
+* the core is not re-entrant (it pins a process-global ezdxf option while a file is built), so
+  generation is serialised with a lock.
+
+This module intentionally does not use ``from __future__ import annotations``: the SDK builds the
+tool schemas from the annotations of functions defined inside :func:`create_server`.
+"""
+
+import argparse
+import base64
+import contextlib
+import json
+import logging
+import sys
+import threading
+import time
+from collections.abc import Sequence
+from typing import Annotated, Any
+
+from mcp.server import MCPServer
+from mcp.server.mcpserver.exceptions import ToolError
+from mcp.types import CallToolResult, ImageContent, TextContent, ToolAnnotations
+from pydantic import Field
+
+from pvsld import __version__, service
+from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, export_json_schema
+from pvsld.core.rules import rulepack_catalogue
+from pvsld.core.validation import ValidationReport
+from pvsld.mcp.models import (
+    GenerateOutput,
+    ValidationOutput,
+    generate_text,
+    validation_output,
+    validation_text,
+)
+from pvsld.mcp.preview import preview_limit_from_environment, shrink_png
+from pvsld.mcp.sandbox import (
+    NAME_RULE,
+    OUTPUT_DIR_ENV,
+    OutputSandbox,
+    SandboxError,
+    sha256_of_file,
+)
+from pvsld.symbols import symbol_catalogue
+
+__all__ = [
+    "RULEPACK_URI",
+    "SCHEMA_URI",
+    "SERVER_NAME",
+    "SYMBOLS_URI",
+    "create_server",
+    "main",
+]
+
+SERVER_NAME = "pvsld"
+SCHEMA_URI = "pvsld://schema/pv-system-spec"
+RULEPACK_URI = f"pvsld://rulepack/{RULEPACK_ID}"
+SYMBOLS_URI = "pvsld://symbols"
+
+# One installation spec is a few KiB; anything far larger is a mistake or an attempt to exhaust
+# the server, so it is refused before validation or rendering touches it.
+MAX_SPEC_BYTES = 256 * 1024
+
+log = logging.getLogger("pvsld.mcp")
+
+
+def _ensure_spec_size(spec: dict[str, Any]) -> None:
+    size = len(json.dumps(spec, ensure_ascii=False, default=str).encode("utf-8"))
+    if size > MAX_SPEC_BYTES:
+        raise ToolError(
+            f"spec too large: {size} bytes (limit {MAX_SPEC_BYTES}); send one installation per call"
+        )
+
+
+INSTRUCTIONS = f"""\
+Generates Mexican photovoltaic single-line diagrams (CFE distributed generation, \
+NOM-001-SEDE-2012) as DXF R2018 from a parameter spec.
+Workflow:
+1. Collect the spec from the user and from datasheets. Never invent equipment data or \
+identifiers (Voc, Isc, ratings, RPU, cedula profesional): ask. The JSON Schema is the resource \
+{SCHEMA_URI}, the rules are in {RULEPACK_URI}, the drawing symbols in {SYMBOLS_URI}.
+2. Call validate_pv_design with the whole spec. Fix every error finding and validate again.
+3. Call generate_single_line_diagram with the same spec, only when validation has no errors. It \
+re-validates, writes the DXF into the server's output folder, verifies the file by reading it \
+back and returns a PNG preview: look at it.
+There are no tools to draw lines or run code; the server computes the geometry. Explain findings \
+to the user in Spanish. Drawings are drafts: a responsible engineer must review and sign them \
+before they are submitted.
+"""
+
+
+def _spec_description() -> str:
+    properties = list(export_json_schema()["properties"])
+    return (
+        f"The complete PV system specification as one JSON object (schema_version "
+        f"{SCHEMA_VERSION}). Top-level keys: {', '.join(properties)}. Full JSON Schema: resource "
+        f"{SCHEMA_URI}. Send the whole object on every call; the server keeps no state."
+    )
+
+
+VALIDATE_DESCRIPTION = f"""\
+Check a PV system spec against the parameter schema and the Mexican rule pack {RULEPACK_ID} \
+(NOM-001-SEDE-2012, CFE distributed generation) without drawing anything. Read-only, takes \
+milliseconds. Call it first, and again after every change to the spec.
+
+Returns ok, findings and derived values. Each finding has rule_id, severity (error blocks \
+drawing, warning does not), a Spanish message that says what is wrong and usually the limit to \
+respect, the MX checklist ids and the NOM citations. GEN-001 means the input does not fit the \
+schema (the subject is the path of the bad field). Derived values: kWp, kWac, string Voc at \
+T_min, voltage drop and ampacity per circuit.
+
+Fix every error in the spec and call again until ok is true; then call \
+generate_single_line_diagram. Findings are a normal result of this tool, not a tool error."""
+
+GENERATE_DESCRIPTION = """\
+Draw the A3 single-line diagram of a validated PV spec as DXF R2018 and verify the written file \
+by reading it back. Call validate_pv_design first and call this only when it reports no errors; \
+this tool validates again and, if the spec has errors, writes nothing and returns a tool error \
+that lists the findings (same format as validate_pv_design), so fix the spec and retry.
+
+Files go to the server's output folder; you choose only a name, never a path. The same spec \
+always gives byte-identical output. If a drawing with that name already exists with different \
+content the call fails unless overwrite is true; identical content is reported as unchanged. \
+Takes under a second, or 2 to 4 s with the preview.
+
+Returns drawing_id, dxf_path, sha256, the read-back counts (audit, attribute round trip by \
+COMP_ID, dangling ports) and, when preview is true, a PNG image of the sheet. Look at the image \
+to check the layout. The drawing is a draft until the responsible engineer signs it."""
+
+NAME_DESCRIPTION = (
+    f"Optional file name without extension; {NAME_RULE}. Default: derived from project.id of the "
+    "spec."
+)
+OVERWRITE_DESCRIPTION = (
+    "Replace an existing drawing of the same name that has different content. Leave false unless "
+    "the user asked to replace it."
+)
+PREVIEW_DESCRIPTION = (
+    "Attach a PNG preview of the sheet to the result (adds 1 to 3 s). The full-resolution PNG is "
+    "also saved next to the DXF."
+)
+
+
+def _json(data: Any) -> str:
+    return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
+
+
+def _text(text: str) -> TextContent:
+    return TextContent(type="text", text=text)
+
+
+def _log_call(tool: str, started: float, **fields: object) -> None:
+    """One audit line per call; never the spec itself, which holds personal data."""
+    details = " ".join(f"{key}={value}" for key, value in fields.items())
+    log.info("tool=%s ms=%.0f %s", tool, (time.perf_counter() - started) * 1000, details)
+
+
+def _refusal(report: ValidationReport, timings: dict[str, float]) -> GenerateOutput:
+    findings = validation_output(report, with_derived=False)
+    return GenerateOutput(
+        ok=False,
+        summary=f"REFUSED: nothing was written. {findings.summary}",
+        validation=findings,
+        timings_ms=timings,
+        next_step=(
+            "Fix every error in the spec and call validate_pv_design, then this tool again."
+        ),
+    )
+
+
+def render_drawing(
+    box: OutputSandbox,
+    spec: dict[str, Any],
+    *,
+    name: str | None,
+    overwrite: bool,
+    preview: bool,
+    max_preview_bytes: int,
+) -> tuple[GenerateOutput, ImageContent | None]:
+    """Validate, draw, verify and publish one drawing; the body of the generator tool.
+
+    Returns the structured result and the preview image block (``None`` when there is none). A
+    result with ``ok`` false is a refusal or a failed verification; nothing is published then.
+
+    Raises:
+        ToolError: the name is refused, the target exists and ``overwrite`` is false, or the
+            file system rejects the write.
+    """
+    try:
+        stem = box.drawing_name(name, spec)
+        target = box.dxf_path(stem)
+        with box.staging() as stage:
+            staged = stage / target.name
+            result = service.generate_single_line_diagram(spec, staged, png=preview, overwrite=True)
+            if result.dxf_path is None or result.readback is None or result.sha256 is None:
+                return _refusal(result.validation, result.timings_ms), None
+            if not result.ok:
+                problems = list(result.readback.problems)
+                return (
+                    GenerateOutput(
+                        ok=False,
+                        summary=(
+                            f"FAILED: the DXF did not pass read-back verification with "
+                            f"{len(problems)} problem(s) and was discarded."
+                        ),
+                        readback=result.readback.summary(),
+                        timings_ms=result.timings_ms,
+                        next_step=(
+                            "This is a defect of the generator, not of the spec. Report the "
+                            "problems to the user; do not retry with the same spec."
+                        ),
+                    ),
+                    None,
+                )
+
+            existed = target.exists()
+            unchanged = existed and sha256_of_file(target) == result.sha256
+            if existed and not unchanged and not overwrite:
+                raise ToolError(
+                    f"{target.name} already exists with different content. Call again with "
+                    "overwrite=true to replace it (only if the user asked for that), or choose "
+                    "another name."
+                )
+            box.publish(staged, target)
+
+            png_path = image = None
+            note = "not requested"
+            if preview and result.png_path is not None:
+                full_resolution = result.png_path.read_bytes()
+                shrunk = shrink_png(full_resolution, max_preview_bytes)
+                if shrunk is None:
+                    note = "omitted: it did not fit the result size budget; open png_path"
+                else:
+                    image = ImageContent(
+                        type="image",
+                        data=base64.b64encode(shrunk.data).decode("ascii"),
+                        mime_type="image/png",
+                    )
+                    note = (
+                        f"PNG {shrunk.width}x{shrunk.height} px, {len(shrunk.data) / 1024:.0f} "
+                        "KiB, attached; png_path is the full-resolution file"
+                    )
+                try:
+                    box.publish(result.png_path, target.with_suffix(".png"))
+                    png_path = target.with_suffix(".png")
+                except SandboxError as error:
+                    # The DXF is the deliverable and is already in place: keep going.
+                    note += f"; the full-resolution PNG was not saved ({error})"
+    except SandboxError as error:
+        raise ToolError(str(error)) from error
+    except OSError as error:
+        raise ToolError(f"cannot write the drawing: {error}") from error
+
+    drawing_id = f"{stem}-{result.sha256[:8]}"
+    verb = "unchanged (identical file already existed)" if unchanged else "written"
+    return (
+        GenerateOutput(
+            ok=True,
+            summary=f"OK: {target.name} {verb}, {result.size_bytes or 0} bytes, read-back clean.",
+            drawing_id=drawing_id,
+            dxf_path=str(target),
+            png_path=str(png_path) if png_path else None,
+            sha256=result.sha256,
+            size_bytes=result.size_bytes,
+            unchanged=unchanged,
+            readback=result.readback.summary(),
+            preview=note,
+            timings_ms=result.timings_ms,
+            next_step=(
+                "Check the preview, then tell the user where the files are. "
+                "Remind them that a responsible engineer must review and sign the drawing."
+            ),
+        ),
+        image,
+    )
+
+
+def create_server(
+    sandbox: OutputSandbox | None = None, *, max_preview_bytes: int | None = None
+) -> MCPServer:
+    """Build the server.
+
+    ``sandbox`` defaults to ``$PVSLD_OUTPUT_DIR`` or ``./out``; ``max_preview_bytes`` (the size of
+    the PNG attached to a result) to ``$PVSLD_PREVIEW_MAX_BYTES`` or 62 000.
+    """
+    box = sandbox if sandbox is not None else OutputSandbox.from_environment()
+    preview_limit = (
+        max_preview_bytes if max_preview_bytes is not None else preview_limit_from_environment()
+    )
+    # The drawing add-on logs one INFO line per hidden attribute (hundreds per preview).
+    logging.getLogger("ezdxf").setLevel(logging.WARNING)
+    server = MCPServer(
+        SERVER_NAME,
+        title="PV single-line diagrams (Mexico)",
+        instructions=INSTRUCTIONS,
+        version=__version__,
+    )
+    generation_lock = threading.Lock()
+    spec_field = Field(description=_spec_description())
+
+    @server.tool(
+        title="Validate PV design",
+        description=VALIDATE_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Validate PV design",
+            read_only_hint=True,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def validate_pv_design(
+        spec: Annotated[dict[str, Any], spec_field],
+    ) -> Annotated[CallToolResult, ValidationOutput]:
+        started = time.perf_counter()
+        _ensure_spec_size(spec)
+        output = validation_output(service.validate_pv_design(spec))
+        _log_call(
+            "validate_pv_design",
+            started,
+            ok=output.ok,
+            errors=output.errors,
+            warnings=output.warnings,
+        )
+        return CallToolResult(
+            content=[_text(validation_text(output))],
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        title="Generate single-line diagram",
+        description=GENERATE_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Generate single-line diagram",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def generate_single_line_diagram(
+        spec: Annotated[dict[str, Any], spec_field],
+        name: Annotated[str | None, Field(description=NAME_DESCRIPTION)] = None,
+        overwrite: Annotated[bool, Field(description=OVERWRITE_DESCRIPTION)] = False,
+        preview: Annotated[bool, Field(description=PREVIEW_DESCRIPTION)] = True,
+    ) -> Annotated[CallToolResult, GenerateOutput]:
+        started = time.perf_counter()
+        _ensure_spec_size(spec)
+        with generation_lock:
+            output, image = render_drawing(
+                box,
+                spec,
+                name=name,
+                overwrite=overwrite,
+                preview=preview,
+                max_preview_bytes=preview_limit,
+            )
+        _log_call(
+            "generate_single_line_diagram", started, ok=output.ok, drawing_id=output.drawing_id
+        )
+        content: list[TextContent | ImageContent] = [_text(generate_text(output))]
+        if image is not None:
+            content.append(image)
+        return CallToolResult(
+            content=content,
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+            is_error=not output.ok,
+        )
+
+    @server.resource(
+        SCHEMA_URI,
+        name="pv-system-spec-schema",
+        title="PV system parameter schema",
+        description=(
+            "JSON Schema (draft 2020-12) of the spec accepted by both tools. Read it before "
+            "building a spec from datasheets; field names are English, free text is Spanish."
+        ),
+        mime_type="application/json",
+    )
+    def schema_resource() -> str:
+        return _json(export_json_schema())
+
+    @server.resource(
+        RULEPACK_URI,
+        name="rulepack-catalogue",
+        title=f"Rule pack {RULEPACK_ID}",
+        description=(
+            "The implemented validation rules: id, Spanish title, severity, MX checklist ids "
+            "and NOM citations. Use it to explain a finding."
+        ),
+        mime_type="application/json",
+    )
+    def rulepack_resource() -> str:
+        return _json(
+            {
+                "rulepack": RULEPACK_ID,
+                "schema_version": SCHEMA_VERSION,
+                "rules": rulepack_catalogue(),
+            }
+        )
+
+    @server.resource(
+        SYMBOLS_URI,
+        name="symbol-catalogue",
+        title="Drawing symbol library",
+        description="Blocks of the symbol library with their ports and attribute tags.",
+        mime_type="application/json",
+    )
+    def symbols_resource() -> str:
+        return _json(symbol_catalogue())
+
+    log.info("output directory: %s", box.root)
+    return server
+
+
+def configure_logging(level: str = "INFO") -> None:
+    """Send every log record to stderr, which is the only safe stream on stdio."""
+    logging.basicConfig(
+        stream=sys.stderr,
+        level=level.upper(),
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        force=True,
+    )
+
+
+def _use_utf8() -> None:
+    """Spanish messages carry accents; do not let a legacy Windows code page garble stderr."""
+    for stream in (sys.stdout, sys.stderr):
+        with contextlib.suppress(AttributeError, ValueError):
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="pvsld-mcp",
+        description="MCP server (stdio) that validates and draws Mexican PV single-line diagrams.",
+    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument(
+        "--output-dir",
+        metavar="DIR",
+        help=f"folder the server may write to (default: ${OUTPUT_DIR_ENV} or ./out)",
+    )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=("DEBUG", "INFO", "WARNING", "ERROR"),
+        help="log level; logs go to stderr",
+    )
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    """Entry point of the ``pvsld-mcp`` console script: serve MCP over stdio until EOF."""
+    args = build_parser().parse_args(argv)
+    _use_utf8()
+    configure_logging(args.log_level)
+    sandbox = OutputSandbox.at(args.output_dir) if args.output_dir else None
+    server = create_server(sandbox)
+    log.info("pvsld-mcp %s serving on stdio", __version__)
+    server.run("stdio")
+    return 0

@@ -27,6 +27,7 @@ dependencies = [
     "ezdxf>=1.4.4,<1.5",
     "matplotlib>=3.9,<4",  # PNG preview through the ezdxf drawing add-on
     "mcp>=2.3,<3",
+    "pillow>=10,<13",  # imported directly to shrink the MCP preview PNG (pvsld.mcp.preview)
     "pydantic>=2.7,<3",
     "PyYAML>=6",
 ]
@@ -44,6 +45,7 @@ autocad = [
 
 [project.scripts]
 pvsld = "pvsld.cli:main"
+pvsld-mcp = "pvsld.mcp.server:main"
 
 [project.urls]
 Homepage = "https://github.com/edu3250/Diagrama-unifilarAutoCAD"
