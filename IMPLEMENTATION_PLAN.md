@@ -192,7 +192,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - GitHub release created for `v0.1.0-docs` with release notes (once the public repository is published)
 - Tag `v0.1.0-docs` exists on main branch
 
-> Closed 2026-10-05: vault lint 0 errors after fixes (`Lint Report 2026-10-05`), tag `v0.1.0-docs` on main. The GitHub release is deferred until the owner publishes the public repository.
+> Closed 2026-10-05: vault lint 0 errors after fixes (`Lint Report 2026-10-05`), tag `v0.1.0-docs` on main. Public repository published the same day (https://github.com/edu3250/Diagrama-unifilarAutoCAD) with GitHub release `v0.1.0-docs`.
 
 **Status:** Complete
 
