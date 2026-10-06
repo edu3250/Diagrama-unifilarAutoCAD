@@ -28,6 +28,8 @@ from pvsld.core.validation import validate_pv_design
 from pvsld.symbols import SYMBOLS
 from s1_helpers import load_example, mutated
 
+MIN_GAP_MM = 0.5
+
 
 @pytest.fixture(scope="module")
 def spec() -> PvSystemSpec:
@@ -142,8 +144,8 @@ def test_conductor_schedule_matches_the_vault_worked_example(diagram: Diagram) -
     assert by_id["C-S1"][-1] == "0.92"  # DC drop %
     assert by_id["C-S1"][-2] == "22.7"  # corrected ampacity A
     assert by_id["C-INV"][-1] == "1.91"
-    assert by_id["C-INV"][3] == "2-8 AWG Cu THW-2 + N 8 AWG"
-    assert by_id["C-S2"][6] == "PVC 21 mm"  # raceway shared with C-S1
+    assert by_id["C-INV"][2] == "2-8 AWG Cu THW-2 + N 8 AWG"
+    assert by_id["C-S2"][5] == "PVC 21 mm"  # raceway shared with C-S1
 
 
 def test_protection_schedule_and_legend_and_revisions(diagram: Diagram) -> None:
@@ -302,7 +304,9 @@ def test_everything_lies_inside_the_sheet_border(diagram: Diagram) -> None:
 def test_no_two_items_of_the_schematic_overlap(diagram: Diagram) -> None:
     boxes = _model_boxes(diagram)
     for (name_a, a), (name_b, b) in combinations(boxes, 2):
-        assert not a.intersects(b), f"{name_a} overlaps {name_b}: {a} vs {b}"
+        assert not a.intersects(b, gap=MIN_GAP_MM), (
+            f"{name_a} is closer than 0.5 mm to {name_b}: {a} vs {b}"
+        )
 
 
 def test_paper_furniture_does_not_overlap_the_model_or_itself(diagram: Diagram) -> None:
@@ -449,3 +453,27 @@ def test_notes_and_text_are_spanish() -> None:
     english = re.compile(r"\b(the|and|with|drawing|title|revision block|notes)\b", re.IGNORECASE)
     for text in diagram.texts:
         assert not english.search(text.text), text.text
+
+
+# --- Text metrics ---------------------------------------------------------------------------------
+
+
+def test_arial_table_covers_printable_ascii_with_known_widths() -> None:
+    from pvsld.core.diagram import _ARIAL_WIDTHS
+
+    assert len(_ARIAL_WIDTHS) == 95
+    spot = {" ": 278, "0": 556, "A": 667, "W": 944, "i": 222, "m": 833, "a": 556, "~": 584}
+    assert {char: _ARIAL_WIDTHS[char] for char in spot} == spot
+
+
+def test_text_width_scales_with_cap_height_and_matches_the_rendered_preview() -> None:
+    # "PVSLD_PV_STRING" at 2.5 mm measured about 33 mm in the ezdxf preview (see the S1 notes)
+    assert 32 <= text_width_mm("PVSLD_PV_STRING", 2.5) <= 36
+    assert text_width_mm("abc", 5.0) == pytest.approx(2 * text_width_mm("abc", 2.5))
+    assert text_width_mm("", 2.5) == 0
+
+
+def test_accented_letters_have_the_width_of_their_base_letter() -> None:
+    assert text_width_mm("É", 2.5) == text_width_mm("E", 2.5)
+    assert text_width_mm("ñ", 2.5) == text_width_mm("n", 2.5)
+    assert text_width_mm("Ω", 2.5) > 0  # symbols outside ASCII have a width too

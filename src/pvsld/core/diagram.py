@@ -17,6 +17,7 @@ sheet shows the model, so model and paper coordinates coincide.
 
 from __future__ import annotations
 
+import unicodedata
 from collections import Counter
 from collections.abc import Iterator
 from dataclasses import dataclass
@@ -31,8 +32,43 @@ ConnectionKind = Literal["pv_source", "inverter_output", "ac_network", "groundin
 
 PORT_TOLERANCE_MM = 0.01
 """A wire end must lie within this distance of the port it connects (ADR-0001, S1 criteria)."""
-CHAR_WIDTH_FACTOR = 0.6
-"""Conservative average glyph width of the drawing font, as a fraction of the text height."""
+CAP_HEIGHT_RATIO = 0.716
+"""Arial cap height over its em size. A DXF text ``height`` is the cap height."""
+WIDTH_SAFETY = 1.03
+"""Margin over the nominal advance widths (kerning-free sums, other fonts on other systems)."""
+
+# Arial advance widths in 1/1000 em for printable ASCII (identical to Helvetica's metrics).
+_ARIAL_ASCII = (
+    "278 278 355 556 556 889 667 191 333 333 389 584 278 333 278 278 "  # space to /
+    "556 556 556 556 556 556 556 556 556 556 278 278 584 584 584 556 "  # 0-9 : ; < = > ?
+    "1015 667 667 722 722 667 611 778 722 278 500 667 556 833 722 778 "  # @ A-O
+    "667 778 722 667 611 722 667 944 667 667 611 278 278 278 469 556 "  # P-Z [ \ ] ^ _
+    "333 556 556 500 556 556 278 556 556 222 222 500 222 833 556 556 "  # ` a-o
+    "556 556 333 500 278 556 500 722 500 500 500 334 260 334 584"  # p-z { | } ~
+)
+_ARIAL_WIDTHS = {chr(32 + i): int(w) for i, w in enumerate(_ARIAL_ASCII.split())}
+_SPECIAL_WIDTHS = {
+    "β": 575,
+    "γ": 500,
+    "Δ": 612,
+    "Ω": 807,
+    "×": 584,
+    "≤": 549,
+    "°": 400,
+    "²": 333,
+    "—": 1000,
+    "·": 278,
+}
+_DEFAULT_WIDTH = 600
+
+
+def _glyph_width(char: str) -> int:
+    if char in _ARIAL_WIDTHS:
+        return _ARIAL_WIDTHS[char]
+    if char in _SPECIAL_WIDTHS:
+        return _SPECIAL_WIDTHS[char]
+    base = unicodedata.normalize("NFD", char)[0]  # accented letters have their base width
+    return _ARIAL_WIDTHS.get(base, _DEFAULT_WIDTH)
 
 
 def rnd(value: float) -> float:
@@ -42,8 +78,13 @@ def rnd(value: float) -> float:
 
 
 def text_width_mm(text: str, height: float) -> float:
-    """Estimated rendered width of ``text``; used for fit and overlap checks, not for drawing."""
-    return len(text) * CHAR_WIDTH_FACTOR * height
+    """Estimated width of ``text`` set in Arial at cap height ``height``.
+
+    Used for fit and overlap checks and for sizing table columns, never for drawing. Sums real
+    Arial advance widths, so it tracks what AutoCAD and the ezdxf preview render.
+    """
+    em = height / CAP_HEIGHT_RATIO
+    return sum(_glyph_width(char) for char in text) / 1000 * em * WIDTH_SAFETY
 
 
 @dataclass(frozen=True)

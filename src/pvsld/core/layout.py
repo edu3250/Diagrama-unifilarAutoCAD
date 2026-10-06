@@ -14,7 +14,7 @@ instead of drawing something wrong.
 
 from __future__ import annotations
 
-import textwrap
+import math
 from collections.abc import Sequence
 
 from pvsld.core import calc, layers
@@ -31,6 +31,7 @@ from pvsld.core.diagram import (
     TextItem,
     Viewport,
     rnd,
+    text_width_mm,
 )
 from pvsld.core.model import (
     NOM_EDITION,
@@ -47,7 +48,11 @@ from pvsld.core.model import (
 )
 from pvsld.core.tables import NomTables, get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
-from pvsld.symbols.catalogue import TITLE_BLOCK_HEIGHT_MM
+from pvsld.symbols.catalogue import (
+    TITLE_BLOCK_FIELDS,
+    TITLE_BLOCK_HEIGHT_MM,
+    TITLE_BLOCK_WIDTH_MM,
+)
 
 TEMPLATE = "bt_string_residential_v1"
 GRID_COMP_ID = "GRID-1"
@@ -60,19 +65,19 @@ MEXICAN_GRID_FREQUENCY_HZ = 60
 INVERTER_XY = (115.0, 220.0)
 STRING_X = 20.0
 STRING_DY = 20.0
-ITM1_X = 212.0
-PI_X = 240.0
-PANEL_X = 262.0
-ITMP_X = 318.0
-METER_X = 346.0
-GRID_X = 372.0
+ITM1_X = 216.0
+PI_X = 244.0
+PANEL_X = 266.0
+ITMP_X = 322.0
+METER_X = 350.0
+GRID_X = 374.0
 GROUND_XY = (206.0, 172.0)
 TITLE_BLOCK_XY = (225.0, 10.0)
 REVISION_X = 225.0
-LEGEND_X, LEGEND_Y_TOP = 225.0, 142.0
+LEGEND_X, LEGEND_Y_TOP = 225.0, 140.0
 TABLES_X, TABLES_Y_TOP, TABLES_GAP = 15.0, 140.0, 5.0
 NOTES_X, NOTES_Y_TOP = 290.0, 187.0
-NOTES_WRAP = 66
+NOTES_MAX_WIDTH_MM = 112.0
 MIN_REVISION_ROWS, MAX_REVISION_ROWS = 3, 5
 CALLOUT_LINE_MM = 3.5
 
@@ -289,13 +294,75 @@ def _callout(
         f"+ {egc}",
         f"{_raceway_text(_raceway(spec, circuit))}; {_g(circuit.length_m)} m{drop}",
     ]
-    x = rnd(start.x + 5)
+    x = rnd(start.x + 2)
     return [
         TextItem(
             layers.TAGS, x, rnd(start.y + 2 + (len(lines) - 1 - i) * CALLOUT_LINE_MM), 2.5, text
         )
         for i, text in enumerate(lines)
     ]
+
+
+CELL_PADDING_MM = 1.5
+LEFT_BAND_WIDTH_MM = 205.0
+RIGHT_BAND_WIDTH_MM = 180.0
+
+
+def _fit_widths(
+    title: str,
+    header: Sequence[str],
+    rows: Sequence[Sequence[str]],
+    text_height: float = 2.5,
+    minimum: float = 10.0,
+) -> tuple[float, ...]:
+    """Column widths (0.5 mm steps) that hold the widest cell of each column and the title."""
+    widths = []
+    for column in range(len(header)):
+        cells = [header[column], *(row[column] for row in rows)]
+        widest = max(text_width_mm(cell, text_height) for cell in cells)
+        widths.append(max(minimum, math.ceil((widest + 2 * CELL_PADDING_MM) * 2) / 2))
+    needed = text_width_mm(title, text_height) + 2 * CELL_PADDING_MM
+    if sum(widths) < needed:
+        widths[-1] += math.ceil((needed - sum(widths)) * 2) / 2
+    return tuple(widths)
+
+
+def _check_fit(table: Table, max_width: float) -> Table:
+    """Return ``table`` if its text fits its cells and the band, else raise :class:`LayoutError`."""
+    for width, text in table.cells():
+        if text_width_mm(text, table.text_height) + 2 * CELL_PADDING_MM > width:
+            raise LayoutError(f"{table.id}: {text!r} does not fit its {width:g} mm column")
+    if table.width > max_width:
+        raise LayoutError(
+            f"{table.id}: needs {table.width:g} mm but the band holds {max_width:g} mm; "
+            "shorten the text or use a larger sheet"
+        )
+    return table
+
+
+def _auto(
+    *,
+    id: str,
+    layer: str,
+    x: float,
+    y_top: float,
+    title: str,
+    header: tuple[str, ...],
+    rows: tuple[tuple[str, ...], ...],
+    row_height: float = 5.0,
+) -> Table:
+    """A table whose column widths are fitted to its content."""
+    return Table(
+        id=id,
+        layer=layer,
+        x=x,
+        y_top=y_top,
+        col_widths=_fit_widths(title, header, rows),
+        title=title,
+        header=header,
+        rows=rows,
+        row_height=row_height,
+    )
 
 
 # --- Tables -------------------------------------------------------------------------------------
@@ -332,12 +399,11 @@ def _string_table(spec: PvSystemSpec, derived: Derived) -> Table:
             _n(derived.kwp_total, 2),
         )
     )
-    return Table(
+    return _auto(
         id="TBL-STRINGS",
         layer=layers.TABLES,
         x=TABLES_X,
         y_top=TABLES_Y_TOP,
-        col_widths=(12, 18, 18, 20, 22, 24, 24, 16, 16, 18),
         title=f"TABLA DE RAMAS (Voc máx a T mín = {_g(t_min)} °C)",
         header=(
             "Rama",
@@ -379,12 +445,11 @@ def _equipment_table(spec: PvSystemSpec) -> Table:
                 f"{len(inv.mppt)} MPPT",
             )
         )
-    return Table(
+    return _auto(
         id="TBL-EQUIPMENT",
         layer=layers.TABLES,
         x=TABLES_X,
         y_top=0,
-        col_widths=(20, 52, 133),
         title="DATOS DE EQUIPOS",
         header=("Equipo", "Fabricante y modelo", "Datos principales (STC y nominales)"),
         rows=tuple(rows),
@@ -399,7 +464,6 @@ def _conductor_table(spec: PvSystemSpec, derived: Derived, tables: NomTables) ->
         rows.append(
             (
                 circuit.id,
-                f"{circuit.from_} a {circuit.to}",
                 _n(values.i_max_a) if values.i_max_a is not None else NO_VALUE,
                 _conductor_text(circuit),
                 _g(tables.awg_mm2[circuit.conductors.size]),
@@ -412,16 +476,14 @@ def _conductor_table(spec: PvSystemSpec, derived: Derived, tables: NomTables) ->
                 _n(values.vd_pct, 2) if values.vd_pct is not None else NO_VALUE,
             )
         )
-    return Table(
+    return _auto(
         id="TBL-CONDUCTORS",
         layer=layers.TABLES,
         x=TABLES_X,
         y_top=0,
-        col_widths=(15, 26, 16, 44, 12, 25, 20, 12, 18, 14),
         title="CÉDULA DE CONDUCTORES",
         header=(
             "Circuito",
-            "Trayecto",
             "Imáx (A)",
             "Conductor",
             "mm²",
@@ -508,12 +570,11 @@ def _protection_table(spec: PvSystemSpec) -> Table:
                     s.at,
                 )
             )
-    return Table(
+    return _auto(
         id="TBL-PROTECTIONS",
         layer=layers.TABLES,
         x=TABLES_X,
         y_top=0,
-        col_widths=(18, 62, 14, 30, 22, 16, 32),
         title="CUADRO DE PROTECCIONES",
         header=("Equipo", "Función", "Polos", "Capacidad", "Tensión", "kAIC", "Ubicación"),
         rows=tuple(rows),
@@ -529,16 +590,15 @@ def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
         seen.add(item.symbol)
         symbol = get_symbol(item.symbol)
         rows.append((symbol.name, symbol.description_es, symbol.iec_ref))
-    return Table(
+    return _auto(
         id="TBL-LEGEND",
         layer=layers.NOTES,
         x=LEGEND_X,
         y_top=LEGEND_Y_TOP,
-        col_widths=(32, 100, 48),
         title="CUADRO DE SIMBOLOGÍA (IEC 60617; abreviaturas NMX-J-136-ANCE)",
         header=("Bloque", "Descripción", "Referencia"),
         rows=tuple(rows),
-        row_height=4.5,
+        row_height=4.2,
     )
 
 
@@ -570,6 +630,7 @@ def _stack(tables: Sequence[Table]) -> list[Table]:
     placed: list[Table] = []
     y_top = TABLES_Y_TOP
     for table in tables:
+        _check_fit(table, LEFT_BAND_WIDTH_MM)
         placed.append(
             Table(
                 id=table.id,
@@ -617,57 +678,88 @@ def _notes(spec: PvSystemSpec, derived: Derived) -> list[str]:
     ]
 
 
+def _wrap(text: str, max_width: float, height: float) -> list[str]:
+    """Greedy word wrap on the estimated rendered width."""
+    lines: list[str] = []
+    current = ""
+    for word in text.split():
+        candidate = f"{current} {word}".strip()
+        if current and text_width_mm(candidate, height) > max_width:
+            lines.append(current)
+            current = word
+        else:
+            current = candidate
+    if current:
+        lines.append(current)
+    return lines
+
+
 def _note_items(notes: Sequence[str]) -> list[TextItem]:
     items = [TextItem(layers.NOTES, NOTES_X, NOTES_Y_TOP, 3.5, "NOTAS")]
     y = NOTES_Y_TOP - 5.0
     for note in notes:
-        for number, line in enumerate(textwrap.wrap(note, NOTES_WRAP)):
+        for number, line in enumerate(_wrap(note, NOTES_MAX_WIDTH_MM, 2.5)):
             indent = "" if number == 0 else "   "
             items.append(TextItem(layers.NOTES, NOTES_X, rnd(y), 2.5, indent + line))
-            y -= 3.6
-        y -= 0.8
+            y -= 3.5
+        y -= 0.6
     return items
 
 
 # --- Title block --------------------------------------------------------------------------------
 
 
+def _check_title_block(values: dict[str, str]) -> dict[str, str]:
+    """Raise :class:`LayoutError` if a title block value would overflow its cell."""
+    for tag, _caption, x0, x1, _row, height in TITLE_BLOCK_FIELDS:
+        needed = text_width_mm(values[tag], height) + 2 * CELL_PADDING_MM
+        if needed > x1 - x0:
+            raise LayoutError(
+                f"title block field {tag}: {values[tag]!r} needs {needed:.0f} mm "
+                f"but the cell holds {x1 - x0:g} mm; shorten the text"
+            )
+    return values
+
+
 def _title_block(spec: PvSystemSpec, derived: Derived) -> SymbolInstance:
     tb = spec.title_block
     site = spec.project.site
     address = site.address
+    utility = spec.utility
     return _instance(
         "PVSLD_TTLB",
         TITLE_BLOCK_COMP_ID,
         *TITLE_BLOCK_XY,
-        {
-            "PROYECTO": spec.project.name,
-            "CLIENTE": spec.project.client.name,
-            "UBICACION": f"{address.street} {address.number}, {address.colonia}, "
-            f"{address.municipio}, {address.estado}, C.P. {address.cp}",
-            "RPU": spec.utility.rpu,
-            "NUM_SERVICIO": spec.utility.service_number,
-            "NUM_MEDIDOR": spec.utility.meter_number,
-            "TARIFA": spec.utility.tariff,
-            "TENSION_SUMINISTRO": f"{_g(spec.utility.nominal_voltage_v)} V {spec.utility.system}",
-            "CAPACIDAD": f"{_n(derived.kwp_total, 2)} kWp / {_n(derived.kwac_total, 2)} kWac",
-            "RESPONSABLE": tb.responsible.name,
-            "CEDULA": tb.responsible.cedula_profesional,
-            "UVIE": tb.uvie or "NO APLICA",
-            "FECHA": tb.date.isoformat(),
-            "EMPRESA": tb.responsible.company,
-            "DIBUJO": tb.drawn_by,
-            "REVISO": tb.checked_by,
-            "APROBO": tb.approved_by or NO_VALUE,
-            "NORMA": spec.standards.nom_edition,
-            "TITULO": "Diagrama unifilar fotovoltaico",
-            "PLANO_NO": tb.drawing_no,
-            "HOJA": tb.sheet,
-            "REV": tb.revision,
-            "ESCALA": "SIN ESCALA",
-            "TAG": TITLE_BLOCK_COMP_ID,
-            "DESC": "Cuadro de datos del plano",
-        },
+        _check_title_block(
+            {
+                "PROYECTO": spec.project.name,
+                "CLIENTE": spec.project.client.name,
+                "UBICACION": f"{address.street} {address.number}, {address.colonia}, "
+                f"{address.municipio}, {address.estado}, C.P. {address.cp}",
+                "RPU": utility.rpu,
+                "NUM_SERVICIO": utility.service_number,
+                "NUM_MEDIDOR": utility.meter_number,
+                "TARIFA": utility.tariff,
+                "TENSION_SUMINISTRO": f"{_g(utility.nominal_voltage_v)} V {utility.system}",
+                "CAPACIDAD": f"{_n(derived.kwp_total, 2)} kWp / {_n(derived.kwac_total, 2)} kWac",
+                "RESPONSABLE": tb.responsible.name,
+                "CEDULA": tb.responsible.cedula_profesional,
+                "UVIE": tb.uvie or "NO APLICA",
+                "FECHA": tb.date.isoformat(),
+                "EMPRESA": tb.responsible.company,
+                "DIBUJO": tb.drawn_by,
+                "REVISO": tb.checked_by,
+                "APROBO": tb.approved_by or NO_VALUE,
+                "NORMA": spec.standards.nom_edition,
+                "TITULO": "Diagrama unifilar fotovoltaico",
+                "PLANO_NO": tb.drawing_no,
+                "HOJA": tb.sheet,
+                "REV": tb.revision,
+                "ESCALA": "SIN ESCALA",
+                "TAG": TITLE_BLOCK_COMP_ID,
+                "DESC": "Cuadro de datos del plano",
+            }
+        ),
         space="paper",
     )
 
@@ -786,8 +878,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
             GRID_X,
             INVERTER_XY[1],
             {
-                "TAG": "RED",
-                "DESC": f"Red de distribución {utility.supplier}",
+                "TAG": "RED-1",
+                "DESC": f"Red {utility.supplier}",
                 "SPEC": f"{_g(utility.nominal_voltage_v)} V {utility.system} "
                 f"{MEXICAN_GRID_FREQUENCY_HZ} Hz",
                 "VOLT_V": _g(utility.nominal_voltage_v),
@@ -914,7 +1006,11 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
             _protection_table(spec),
         ]
     )
-    all_tables = [*stacked, _legend_table(instances), _revision_table(spec)]
+    all_tables = [
+        *stacked,
+        _check_fit(_legend_table(instances), RIGHT_BAND_WIDTH_MM),
+        _check_fit(_revision_table(spec), TITLE_BLOCK_WIDTH_MM),
+    ]
 
     # Sheet furniture (paper space).
     instances.append(_title_block(spec, derived))
