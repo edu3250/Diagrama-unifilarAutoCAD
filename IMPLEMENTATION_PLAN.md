@@ -204,7 +204,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Target Release:** `v0.2.0-spike`
 
-**Status:** In Progress
+**Status:** Complete, pending release (`v0.2.0-spike` is tagged after the Stage 2.5 review merges)
 
 ---
 
@@ -296,7 +296,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - MCP Inspector session
 - Optional: the same flow in Claude Desktop within 240 s
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #5): `mcp` 2.3.0 stdio server with `validate_pv_design`, `generate_single_line_diagram` and three resources. It starts and lists tools in 2.0–2.6 s, and a result with the preview is about 20.9k tokens (estimate). In the owner's manual Claude Code run, validate → generate took 2 calls, and Claude corrected the 12-module VOLT-001 spec in 4. Claude also spotted an inverter DC overload that no implemented rule caught (STR-007, Phase 3). MCP Inspector was not run (no Node.js) and Claude Desktop was not tested. See `docs/spikes/s3-mcp-round-trip.md`.
+
+**Status:** Complete
 
 ---
 
@@ -312,7 +314,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 **Tests:**
 - Scripted finisher run (marked `autocad`) that checks the exit code, the existence of the output files and a timeout
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #6): `pvsld finish` gives DWG `AC1032` (TrustedDWG) and a 1-page A3 PDF in 4.2–10.8 s per sheet, and 4/4 failure modes are reported. It also found that AutoCAD AUDIT rejects the S1 overall paper-space viewport off layer 0; PR #7 fixed this, and AUDIT now reports 0/0 (12.2 s cold). See `docs/spikes/s4-core-console.md`.
+
+**Status:** Complete
 
 ---
 
@@ -329,15 +333,23 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - All CI tests green on Windows and Linux
 - Vault lint passes for the new notes
 
-**Status:** Not Started
+> Review 2026-10-06 (`docs/spikes/phase-2-review.md`): the exit gate is passed and ADR-0001 is confirmed, with no superseding ADR. Reversal triggers T1–T9 were not fired. A "Phase 2 validation" section is appended to ADR-0001 (repository mirror and vault original), and the vault note "Phase 2 Spike Review 2026-10" records the review. `CHANGELOG.md` is updated. Remaining: the orchestrator tags `v0.2.0-spike` per GitFlow after this review merges.
+
+**Status:** Complete (except the `v0.2.0-spike` tag, which follows the merge)
 
 ---
 
 ## Phase 3: Parametric PV Sizing Engine
 
-**Tentative Intent:** Implement a Python module (per ADR-0001) that accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes optimal string/inverter configuration.
+**Tentative Intent:** Implement the deterministic sizing engine and complete the rule pack (per ADR-0001 and the Phase 2 review). It accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes the string/inverter configuration. Tentative stages, owner to confirm:
+- 3.1 Parameter model schema v1 (ADR-0002): the fields that 7 catalogue rules still need, equipment catalogue entries from datasheets, versioning
+- 3.2 Complete rule pack `mx-gd-2026.10`: all 98 rules, starting with STR-007 (inverter DC power and DC/AC ratio, the gap found in the owner's Claude test); NOM tables re-read against the published text; coverage tests per MX item
+- 3.3 Sizing engine: string configuration proposals, inverter matching, DC/AC ratio, conductor, OCPD and voltage-drop sizing
+- 3.4 MCP surface: a sizing tool and the full rule-catalogue resource; confirm the preview token budget; close the MCP Inspector check
 
-**Status:** To be defined
+**Target Release:** `v0.3.0-engine`
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 3.1–3.4
 
@@ -349,7 +361,13 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Note (ADR-0001):** Topology and layout are assigned to deterministic code, not to Claude; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf), with DWG coming from the AutoCAD backend or a finisher. Revise this description when Phase 4 is planned.
 
-**Status:** To be defined
+**Proposed scope (Phase 2 review, tentative):**
+- Layout templates beyond `bt_string_residential_v1`: more strings and MPPTs, several inverters, three-phase, microinverters and optimizers
+- The symbol library grown to the NMX-J-136-ANCE figures, with approved Mexican SLDs as references
+- B2 production methods (`render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, `zoom_to`), the B1/B2 parity test, and a signed `.bundle` that loads without the per-session prompt
+- `export_drawing` (Core Console finisher with batching, non-ASCII paths and DWGPROPS "last saved by" privacy) and `get_diagram_summary`
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 4.1–4.5
 
@@ -359,11 +377,17 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE), create integration test suite, package as standalone tool, and release `v1.0.0`.
 
-**Status:** To be defined
+**Proposed scope (Phase 2 review, tentative):**
+- Reviewer acceptance of DXF and PDF output (UVIE and CFE feedback; ADR-0001 trigger T3)
+- A package validator for MX-I01…I07, post-drawing TOP and DRW rules, and end-to-end tests
+- An MCPB bundle and a Claude Desktop run
+- A commercial-seat check of the Education-licence question
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 5.1–5.4
 
 ---
 
-**Last updated:** 2026-10-05 (Phase 2 kickoff)
+**Last updated:** 2026-10-06 (Stage 2.5 spike review)
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD

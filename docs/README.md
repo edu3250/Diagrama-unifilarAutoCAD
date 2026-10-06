@@ -8,9 +8,15 @@ This directory contains technical documentation for the Diagrama-unifilarAutoCAD
 docs/
 ├── README.md                    (this file)
 ├── decisions/                   (Architecture Decision Records)
-│   └── ADR-0001-claude-autocad-integration.md
+│   ├── ADR-0001-claude-autocad-integration.md
+│   └── ADR-0003-symbol-library-format.md
 ├── research/                    (Condensed research summaries; full notes in the vault)
 │   └── phase-1-summary.md
+├── spikes/                      (Phase 2 spike reports and the spike review)
+│   ├── s2-autocad-connectivity.md (+ s2-results/)
+│   ├── s3-mcp-round-trip.md
+│   ├── s4-core-console.md
+│   └── phase-2-review.md
 └── [other docs as needed]
 ```
 
@@ -48,7 +54,7 @@ The working original of each ADR lives in the vault at `wiki/decisions/`. `docs/
 
 **Location:** `docs/decisions/ADR-0001-claude-autocad-integration.md` (vault original: `wiki/decisions/ADR-0001 Integration Approach.md`)
 
-**Status:** Accepted 2026-10-05. The decision is a layered hybrid: an ezdxf DXF backend first, then an AutoCAD 2027 .NET 10 plug-in backend over a current-user named pipe.
+**Status:** Accepted 2026-10-05; confirmed by the Phase 2 spikes S1–S4 on 2026-10-06 ([`spikes/phase-2-review.md`](spikes/phase-2-review.md)). The decision is a layered hybrid: an ezdxf DXF backend first, then an AutoCAD 2027 .NET 10 plug-in backend over a current-user named pipe.
 
 Synthesized during Phase 1, Stage 1.4. Documents the recommended integration pattern for connecting Claude (via MCP) to AutoCAD, considering:
 - Autodesk's official APIs (.NET SDK, COM, RealDWG, AutoLISP)
@@ -56,6 +62,16 @@ Synthesized during Phase 1, Stage 1.4. Documents the recommended integration pat
 - File-based approaches (DXF, DWG generation libraries)
 - Real-time vs. batch processing trade-offs
 - Licensing and maintainability constraints
+
+### ADR-0003: Symbol Library Format and Naming
+
+**Location:** `docs/decisions/ADR-0003-symbol-library-format.md` (vault original: `wiki/decisions/ADR-0003 Symbol Library Format.md`)
+
+**Status:** Accepted 2026-10-06. Blocks are named `PVSLD_<FUNCTION>`, the XDATA application id is `PVSLD`, and ports, identity and connectivity are stored as XDATA.
+
+## Phase 2 Spike Reports
+
+`docs/spikes/` holds one report per AutoCAD-facing spike (S2 plug-in vs COM, S3 MCP round trip, S4 Core Console finisher). S1 is reported in PR #3 and in the vault. [`spikes/phase-2-review.md`](spikes/phase-2-review.md) evaluates all four against ADR-0001's exit gate and reversal triggers.
 
 ---
 
@@ -82,6 +98,6 @@ See `CONTRIBUTING.md` for detailed workflow.
 
 ---
 
-**Last updated:** 2026-10-05  
+**Last updated:** 2026-10-06  
 **Vault:** author's local Obsidian vault (not published)  
 **Maintainer:** edu3250 (edu3250@gmail.com)
