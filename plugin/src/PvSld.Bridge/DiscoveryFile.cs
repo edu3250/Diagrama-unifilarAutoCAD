@@ -48,12 +48,22 @@ public static class DiscoveryFile
         var path = PathFor(directory, info.Pid);
         var temp = path + "." + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(4)) + ".tmp";
         var bytes = Encoding.UTF8.GetBytes(info.ToJson().ToJsonString());
-        using (var stream = CreatePrivateFile(temp))
+        try
         {
-            stream.Write(bytes);
+            using (var stream = CreatePrivateFile(temp))
+            {
+                stream.Write(bytes);
+            }
+
+            File.Move(temp, path, overwrite: true);
+        }
+        catch
+        {
+            // The temp file holds the secret: never leave it behind if the atomic rename fails.
+            Delete(temp);
+            throw;
         }
 
-        File.Move(temp, path, overwrite: true);
         return path;
     }
 
