@@ -598,7 +598,15 @@ class AutoCADCom:
     def read_attributes(self, document: str, handle: str) -> dict[str, str]:
         def read() -> dict[str, str]:
             reference = self._document(document).HandleToObject(handle)
-            return {a.TagString: a.TextString for a in reference.GetAttributes()}
+            try:
+                attributes = reference.GetAttributes()
+            except AttributeError:
+                # makepy may type the result as the base IAcadObject; cast to the real interface.
+                import win32com.client
+
+                cast = win32com.client.CastTo(reference.wrapped, "IAcadBlockReference")
+                attributes = RetryingProxy(cast, self.retry).GetAttributes()
+            return {a.TagString: a.TextString for a in attributes}
 
         return self._run(read)
 

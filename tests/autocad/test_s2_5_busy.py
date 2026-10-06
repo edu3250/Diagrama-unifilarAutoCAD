@@ -144,6 +144,13 @@ def test_busy_while_a_command_waits_for_input(
     started = time.perf_counter()
     record["cancel"] = cancel_attempts
     record["recovered"] = wait_until(lambda: _idle(bridge, plugin_drawing), 15)
+    if not record["recovered"]:
+        # The owner attends the run: ask for Esc rather than leave AutoCAD inside LINE.
+        print(
+            "\n[S2] Please press Esc in the AutoCAD window to cancel the test's LINE.", flush=True
+        )
+        record["recovered"] = wait_until(lambda: _idle(bridge, plugin_drawing), 120)
+        record["cancel"].append({"keys": "Esc by the owner (prompted)", "sent": True})
     record["recovery_s"] = round(time.perf_counter() - started, 2)
     results.section("busy")["command_waiting_for_input"] = record
 
