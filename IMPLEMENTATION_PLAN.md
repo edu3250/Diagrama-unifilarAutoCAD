@@ -214,11 +214,11 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Success Criteria:**
 
-- Project layout: `src/pvsld/` (package), `tests/`, `examples/`, `.github/workflows/`, `pyproject.toml`, `.mcp.json` placeholder
-- `pyproject.toml` with src layout, package name `pvsld`, dependencies (ezdxf, mcp, pydantic, pytest), build backend (hatchling or setuptools), and CLI entry point
+- Project layout: `src/pvsld/` (package), `tests/`, `examples/`, `.github/workflows/`, `pyproject.toml`
+- `pyproject.toml` with src layout, package name `pvsld`, runtime dependencies (ezdxf, mcp, pydantic, PyYAML), a `dev` extra (pytest, pytest-cov, ruff), an `autocad` extra (pywin32, Windows only), build backend (hatchling), and CLI entry point
 - Tooling: ruff (lint + format), pytest (with `autocad` marker excluded by default in CI), coverage ≥60% for changed code
 - CI matrix: `windows-latest` and `ubuntu-latest`, Python 3.11+
-- `.mcp.json` placeholder registered for Claude Code (section values filled by S3)
+- `.mcp.json` is created in Stage 2.3 together with a working server (a placeholder would make Claude Code try to start a non-existent server)
 - Sample input file `examples/residential_7p7kwp.yaml` from the vault's worked example (PV SLD Parameter Model)
 - `venv` instructions in `README.md` and `CONTRIBUTING.md` updated
 
@@ -230,7 +230,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Verify sample parameter file is valid YAML and matches the schema stub
 - GitHub Actions workflow passes on both Windows and Ubuntu for Python 3.11
 
-**Status:** Not Started
+**Status:** In Progress
 
 ---
 
