@@ -7,8 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Phase 2, Stage 2.0 (Foundation): Python project scaffold for the `pvsld` package
+  - `pyproject.toml`: hatchling build, `src/` layout, version `0.2.0.dev0`, Python >= 3.11, MIT; runtime dependencies `ezdxf`, `mcp` 2.x, `pydantic` 2.x and `PyYAML`; extras `dev` (pytest, pytest-cov, ruff) and `autocad` (`pywin32`, Windows only); console script `pvsld`
+  - `src/pvsld/`: `__version__` read from package metadata, `py.typed`, and empty `core/`, `backends/`, `transports/` and `finishers/` subpackages whose docstrings state their role in ADR-0001
+  - `pvsld --version` and `pvsld validate-example PATH`, a smoke check that a parameter YAML loads and has the top-level sections of the parameter model (full validation arrives in Stage 2.1)
+  - `examples/residential_7p7kwp.yaml`: the 7.70 kWp / 6 kW @ 220 V worked example from the vault's PV SLD Parameter Model, marked as an illustrative sample
+  - `tests/`: package, CLI, `pyproject.toml` and example tests, and a `--run-autocad` option that skips `autocad`-marked tests (with a reason) unless it is given on Windows
+  - Ruff lint and format configuration; pytest with strict markers; coverage floor of 60 % on `pvsld`
+  - `.github/workflows/ci.yml`: ruff and pytest on Ubuntu and Windows with Python 3.11 and 3.12 (`contents: read` permissions)
+  - "Development setup" sections in `README.md` and `CONTRIBUTING.md` (virtual environment, ruff, pytest, AutoCAD tests)
+
 ### Changed
 - `IMPLEMENTATION_PLAN.md`: Stage 1.7 records the public GitHub repository and the `v0.1.0-docs` GitHub release
+- `IMPLEMENTATION_PLAN.md`: Stage 2.0 is In Progress; the `.mcp.json` placeholder is replaced by creating `.mcp.json` in Stage 2.3 together with a working server
+- `.gitignore`: ignore `.venv/` and `.ruff_cache/`
+- `CONTRIBUTING.md`: the Python checks are now ruff and pytest (previously black and flake8)
 
 ## [0.1.0-docs] - 2026-10-05
 
