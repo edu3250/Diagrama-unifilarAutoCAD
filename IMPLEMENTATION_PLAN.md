@@ -200,13 +200,35 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ## Phase 2: MCP Server Prototype & Connectivity Spike
 
-> **Tentative: to be confirmed by the user before Phase 2 starts.** The stages below turn the validation plan of ADR-0001 into trial-and-error spikes. All numeric thresholds are proposed targets from the ADR.
-
-**Goal:** Prove ADR-0001 before committing to production code. Four spikes cover the ezdxf rendering path, AutoCAD 2027 connectivity (.NET 10 plug-in vs COM), the MCP round trip from Claude Code, and the Core Console finisher.
+**Goal:** Prove ADR-0001 before committing to production code. Five stages cover the Python project scaffold (2.0), the ezdxf rendering path (2.1), AutoCAD 2027 connectivity (.NET 10 plug-in vs COM, 2.2), the MCP round trip from Claude Code (2.3), the Core Console finisher (2.4), and spike review + ADR confirmation (2.5). All numeric thresholds are proposed targets from the ADR.
 
 **Target Release:** `v0.2.0-spike`
 
-> Tentative: stages to be confirmed by the user.
+**Status:** In Progress
+
+---
+
+### Stage 2.0: Foundation – Python Project Scaffold & CI
+
+**Goal:** Establish the Python project structure, development environment, testing framework and continuous integration pipeline to support Stages 2.1–2.5.
+
+**Success Criteria:**
+
+- Project layout: `src/pvsld/` (package), `tests/`, `examples/`, `.github/workflows/`, `pyproject.toml`, `.mcp.json` placeholder
+- `pyproject.toml` with src layout, package name `pvsld`, dependencies (ezdxf, mcp, pydantic, pytest), build backend (hatchling or setuptools), and CLI entry point
+- Tooling: ruff (lint + format), pytest (with `autocad` marker excluded by default in CI), coverage ≥60% for changed code
+- CI matrix: `windows-latest` and `ubuntu-latest`, Python 3.11+
+- `.mcp.json` placeholder registered for Claude Code (section values filled by S3)
+- Sample input file `examples/residential_7p7kwp.yaml` from the vault's worked example (PV SLD Parameter Model)
+- `venv` instructions in `README.md` and `CONTRIBUTING.md` updated
+
+**Tests:**
+
+- Verify `pyproject.toml` is valid, can be parsed and build succeeds
+- Confirm toolchain (ruff, pytest) runs without errors on a clean checkout
+- Check that AutoCAD-marked tests are skipped in CI (marked tests report "skipped", not failures)
+- Verify sample parameter file is valid YAML and matches the schema stub
+- GitHub Actions workflow passes on both Windows and Ubuntu for Python 3.11
 
 **Status:** Not Started
 
@@ -236,19 +258,23 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Goal:** Prove the AutoCAD backend transport. A `net10.0` plug-in listens on a current-user named pipe (newline-delimited JSON-RPC plus a secret generated at each start). It answers a ping, inserts an attributed block and reads attributes back. A throwaway Python COM spike against `AutoCAD.Application.26` serves as the baseline.
 
+> **BLOCKED:** The .NET 10 plug-in (B2) requires the .NET 10 SDK. `dotnet.exe` exists on the workstation but `dotnet --list-sdks` returns empty. The owner must install the .NET 10 SDK (request approval if needed) before this stage can proceed. The COM baseline (pywin32) does not depend on the SDK and can run in parallel.
+
 **Success Criteria:**
-- Plug-in ping p95 < 50 ms; a batch of 200 attributed inserts + 200 lines takes < 2 s; the COM/plug-in latency ratio is recorded
+- COM baseline: pywin32 spike against `AutoCAD.Application.26` with message-filter retries; operations (ping, insert attributed block, read attributes, batch of 200 inserts + 200 lines); reliability metrics and latency recorded
+- .NET 10 plug-in (when SDK is available): named pipe with newline JSON-RPC and secret; plug-in ping p95 < 50 ms; 200-insert batch < 2 s; COM/plug-in latency ratio recorded
 - 100/100 consecutive runs without unhandled errors
 - With a modal dialog or an active command, the plug-in returns an actionable "busy" error within 5 s, and AutoCAD never hangs
 - An injected mid-transaction failure leaves the drawing unchanged
 - A client without the secret is refused; the pipe ACL is current-user only
 
 **Tests:**
-- Scripted benchmark harness, marked `autocad` and run manually on the licensed workstation
-- Protocol tests of the pipe client against a fake server (CI)
+- COM spike: pywin32 benchmark harness (marked `autocad`, run manually on the licensed workstation)
+- .NET 10 plug-in benchmark (when SDK installed): marked `autocad` and run manually
+- Protocol tests of the pipe client against a fake server (CI, SDK-independent)
 - Benchmark results recorded in the vault
 
-**Status:** Not Started
+**Status:** Not Started (Blocked on .NET 10 SDK installation)
 
 ---
 
@@ -335,5 +361,5 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-**Last updated:** 2026-10-05  
+**Last updated:** 2026-10-05 (Phase 2 kickoff)
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD
