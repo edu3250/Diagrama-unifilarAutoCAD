@@ -54,10 +54,11 @@ BLOCK_FORMAT = "pvsld.block/1"
 INSTANCE_FORMAT = "pvsld.instance/1"
 WIRE_FORMAT = "pvsld.wire/1"
 
-# Metric (ISO-like) patterns, in drawing units (mm): total length, then dash and gap lengths.
+# Metric patterns after ISO 128 (12 mm dash, 3 mm gap), in drawing units (mm): total length, then
+# dash, gap and dot lengths. They are defined here because the drawing is in millimetres.
 LINETYPES: dict[str, tuple[str, list[float]]] = {
-    "DASHED": ("Dashed __ __ __ __ __ __", [18.0, 12.0, -6.0]),
-    "DASHDOT": ("Dash dot __ . __ . __ .", [24.0, 12.0, -6.0, 0.0, -6.0]),
+    "DASHED": ("Dashed __ __ __ __ __ __", [15.0, 12.0, -3.0]),
+    "DASHDOT": ("Dash dot __ . __ . __ .", [18.0, 12.0, -3.0, 0.0, -3.0]),
 }
 
 
