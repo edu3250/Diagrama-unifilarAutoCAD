@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    AutoCAD-free transport layer of the B2 plug-in: newline-delimited JSON-RPC over a current-user
+    named pipe, secret handshake, discovery file and the main-thread job runner. It has no Autodesk
+    references, so its unit tests run on any CI runner.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PvSld.Bridge</RootNamespace>
+    <AssemblyName>PvSld.Bridge</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PvSld.Bridge.Tests" />
+  </ItemGroup>
+</Project>

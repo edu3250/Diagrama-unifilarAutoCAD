@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Desktop host loaded into acad.exe with NETLOAD: owns the named-pipe listener, the main-thread
+    marshalling, busy detection and DocumentLock. Drawing work lives in PvSld.AutoCAD.Render and
+    the transport in PvSld.Bridge; both are copied next to this DLL.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>PvSld.AutoCAD</RootNamespace>
+    <AssemblyName>PvSld.AutoCAD</AssemblyName>
+    <!-- Keep NuGet's copies of Autodesk assemblies out of bin/: AutoCAD supplies its own at run time. -->
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoCAD.NET" Version="$(AutoCADNetVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PvSld.Bridge\PvSld.Bridge.csproj" />
+    <ProjectReference Include="..\PvSld.AutoCAD.Render\PvSld.AutoCAD.Render.csproj" />
+  </ItemGroup>
+</Project>
