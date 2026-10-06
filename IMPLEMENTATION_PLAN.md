@@ -230,7 +230,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Verify sample parameter file is valid YAML and matches the schema stub
 - GitHub Actions workflow passes on both Windows and Ubuntu for Python 3.11
 
-**Status:** In Progress
+> Merged 2026-10-06 (PR #1): CI green on Ubuntu and Windows, Python 3.11 and 3.12.
+
+**Status:** Complete
 
 ---
 
@@ -250,7 +252,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Semantic ezdxf query tests (blocks, attributes, layers, port connectivity)
 - Rule-subset tests (VOLT-001, STR-001, STR-004, CON-003, PCC-002, MET-001, DIS-003/004) pass on the sample and fail as expected on 3 mutated specs
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #3): audit 0/0; byte-identical output across runs, processes and the Windows/Linux CI matrix; 9 blocks / 11 inserts; 147/147 attributes round-trip by `COMP_ID`; 0 dangling ports; 0 entities on layer 0; build + write 97 ms; PNG preview ~1.1 s. The AutoCAD AUDIT check is measured headlessly in Stage 2.4. Symbol naming: ADR-0003 (accepted).
+
+**Status:** Complete
 
 ---
 
@@ -258,11 +262,11 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Goal:** Prove the AutoCAD backend transport. A `net10.0` plug-in listens on a current-user named pipe (newline-delimited JSON-RPC plus a secret generated at each start). It answers a ping, inserts an attributed block and reads attributes back. A throwaway Python COM spike against `AutoCAD.Application.26` serves as the baseline.
 
-> **BLOCKED:** The .NET 10 plug-in (B2) requires the .NET 10 SDK. `dotnet.exe` exists on the workstation but `dotnet --list-sdks` returns empty. The owner must install the .NET 10 SDK (request approval if needed) before this stage can proceed. The COM baseline (pywin32) does not depend on the SDK and can run in parallel.
+> .NET 10 SDK 10.0.401 installed with the owner's approval on 2026-10-05. Attended run on AutoCAD 2027 (2026-10-06): 22/22 tests; ping p95 2.25 ms; 200 + 200 batch 47 ms (71 ms worst); 100/100 runs; busy errors in 0.001–1.89 s; 5/5 injected failures rolled back; unauthenticated client refused. COM was 37–186× slower for drawing work. See `docs/spikes/s2-autocad-connectivity.md` (PR #2).
 
 **Success Criteria:**
 - COM baseline: pywin32 spike against `AutoCAD.Application.26` with message-filter retries; operations (ping, insert attributed block, read attributes, batch of 200 inserts + 200 lines); reliability metrics and latency recorded
-- .NET 10 plug-in (when SDK is available): named pipe with newline JSON-RPC and secret; plug-in ping p95 < 50 ms; 200-insert batch < 2 s; COM/plug-in latency ratio recorded
+- .NET 10 plug-in: named pipe with newline JSON-RPC and secret; plug-in ping p95 < 50 ms; 200-insert batch < 2 s; COM/plug-in latency ratio recorded
 - 100/100 consecutive runs without unhandled errors
 - With a modal dialog or an active command, the plug-in returns an actionable "busy" error within 5 s, and AutoCAD never hangs
 - An injected mid-transaction failure leaves the drawing unchanged
@@ -270,11 +274,11 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Tests:**
 - COM spike: pywin32 benchmark harness (marked `autocad`, run manually on the licensed workstation)
-- .NET 10 plug-in benchmark (when SDK installed): marked `autocad` and run manually
+- .NET 10 plug-in benchmark: marked `autocad` and run manually
 - Protocol tests of the pipe client against a fake server (CI, SDK-independent)
 - Benchmark results recorded in the vault
 
-**Status:** Not Started (Blocked on .NET 10 SDK installation)
+**Status:** Complete
 
 ---
 
