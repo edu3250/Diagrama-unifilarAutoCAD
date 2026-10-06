@@ -46,3 +46,23 @@ jobs:
       # Tests marked "autocad" are skipped here: they need a licensed local AutoCAD 2027.
       - name: Test with coverage
         run: pytest --cov
+
+  plugin:
+    # The B2 plug-in compiles against Autodesk's reference assemblies from NuGet (AutoCAD.NET
+    # 26.0.0, ExcludeAssets=runtime), so no AutoCAD is needed to build it. Only the AutoCAD-free
+    # bridge assembly has unit tests here; the in-AutoCAD behaviour is covered by tests/autocad.
+    name: plug-in (.NET 10 build and bridge tests)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build
+        run: dotnet build plugin/PvSld.AutoCAD.slnx -c Release
+
+      - name: Test the bridge
+        run: dotnet test plugin/PvSld.AutoCAD.slnx -c Release --no-build
