@@ -23,6 +23,7 @@ fake runner (``tests/test_finisher_*.py``).
 
 from __future__ import annotations
 
+import contextlib
 import os
 import subprocess
 import time
@@ -409,7 +410,10 @@ def run_process(
         except subprocess.TimeoutExpired:
             timed_out = True
             process.kill()
-            process.wait(timeout=30)
+            with contextlib.suppress(subprocess.TimeoutExpired):
+                # The kill is already issued and the run is reported as timed out; a slow reap
+                # must not turn that report into an unhandled exception (exit_code stays None).
+                process.wait(timeout=30)
     duration = time.perf_counter() - started
     return ProcessOutcome(
         exit_code=process.returncode,

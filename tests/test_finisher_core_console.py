@@ -8,11 +8,13 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 
 import pytest
 
+from pvsld.finishers import core_console as core_console_module
 from pvsld.finishers.core_console import (
     ENV_ACCORECONSOLE,
     FinisherError,
@@ -384,3 +386,26 @@ def test_run_process_stops_its_own_process_on_timeout(tmp_path: Path) -> None:
     assert outcome.exit_code is not None
     assert outcome.duration_s < 30
     assert outcome.output.strip() == b"start"
+
+
+def test_run_process_reports_a_timeout_even_if_reaping_the_killed_process_stalls(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class StuckProcess:
+        pid = 4242
+        returncode = None
+
+        def __init__(self, *args: object, **kwargs: object) -> None:
+            self.killed = False
+
+        def wait(self, timeout: float | None = None) -> int:
+            raise subprocess.TimeoutExpired("accoreconsole", timeout or 0)
+
+        def kill(self) -> None:
+            self.killed = True
+
+    monkeypatch.setattr(core_console_module.subprocess, "Popen", StuckProcess)
+    outcome = run_process(["accoreconsole"], tmp_path, 0.01, tmp_path / "raw.out")
+    assert outcome.timed_out
+    assert outcome.exit_code is None
+    assert outcome.pid == 4242
