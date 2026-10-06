@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -26,6 +27,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 .tox/
