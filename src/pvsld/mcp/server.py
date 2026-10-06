@@ -69,7 +69,20 @@ SCHEMA_URI = "pvsld://schema/pv-system-spec"
 RULEPACK_URI = f"pvsld://rulepack/{RULEPACK_ID}"
 SYMBOLS_URI = "pvsld://symbols"
 
+# One installation spec is a few KiB; anything far larger is a mistake or an attempt to exhaust
+# the server, so it is refused before validation or rendering touches it.
+MAX_SPEC_BYTES = 256 * 1024
+
 log = logging.getLogger("pvsld.mcp")
+
+
+def _ensure_spec_size(spec: dict[str, Any]) -> None:
+    size = len(json.dumps(spec, ensure_ascii=False, default=str).encode("utf-8"))
+    if size > MAX_SPEC_BYTES:
+        raise ToolError(
+            f"spec too large: {size} bytes (limit {MAX_SPEC_BYTES}); send one installation per call"
+        )
+
 
 INSTRUCTIONS = f"""\
 Generates Mexican photovoltaic single-line diagrams (CFE distributed generation, \
@@ -311,6 +324,7 @@ def create_server(
         spec: Annotated[dict[str, Any], spec_field],
     ) -> Annotated[CallToolResult, ValidationOutput]:
         started = time.perf_counter()
+        _ensure_spec_size(spec)
         output = validation_output(service.validate_pv_design(spec))
         _log_call(
             "validate_pv_design",
@@ -342,6 +356,7 @@ def create_server(
         preview: Annotated[bool, Field(description=PREVIEW_DESCRIPTION)] = True,
     ) -> Annotated[CallToolResult, GenerateOutput]:
         started = time.perf_counter()
+        _ensure_spec_size(spec)
         with generation_lock:
             output, image = render_drawing(
                 box,

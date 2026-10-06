@@ -31,6 +31,7 @@ from pvsld.mcp.sandbox import OutputSandbox
 from pvsld.mcp.server import (
     GENERATE_DESCRIPTION,
     INSTRUCTIONS,
+    MAX_SPEC_BYTES,
     RULEPACK_URI,
     SCHEMA_URI,
     SYMBOLS_URI,
@@ -415,6 +416,18 @@ def test_generate_is_corrected_by_the_same_loop_claude_runs(server: Any) -> None
     assert not accepted.is_error
     assert accepted.structured_content is not None
     assert accepted.structured_content["sha256"] == sha256_hex(GOLDEN.read_bytes())
+
+
+@pytest.mark.parametrize("tool", [VALIDATE, GENERATE])
+def test_an_oversized_spec_is_refused_before_any_work(
+    server: Any, sandbox: OutputSandbox, tool: str
+) -> None:
+    spec = example_spec()
+    spec["padding"] = "x" * (MAX_SPEC_BYTES + 1)
+    result = call(server, tool, {"spec": spec})
+    assert result.is_error
+    assert "spec too large" in text_of(result)
+    assert not sandbox.root.exists()
 
 
 UNSAFE_NAMES = [
