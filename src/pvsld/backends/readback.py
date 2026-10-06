@@ -10,7 +10,9 @@ code that drew it:
 * every conductor LWPOLYLINE ends on the port it names, measured from the port data stored in the
   block XDATA transformed by the INSERT, within 0.01 mm, and every required port is the end of at
   least one conductor (no dangling ports);
-* no entity, in a layout or in a block definition, lies on layer ``0``;
+* no drawing content, in a layout or in a block definition, lies on layer ``0``; the one exception
+  is the overall paper-space viewport (id 1), which AutoCAD requires on layer ``0`` and which the
+  verifier demands there (AUDIT: ``Paperspace vport layer Not "0"``);
 * every used layer belongs to the house layer standard.
 
 The same functions serve the MCP read-back tool of a later stage (``get_diagram_summary``).
@@ -87,10 +89,12 @@ class Inventory:
     layer_counts: Counter[str]
     defined_layers: frozenset[str]
     layout_names: tuple[str, ...]
+    overall_viewport_layers: dict[str, str]  # paper layout name -> layer of its viewport id 1
 
     @property
     def layer_zero_entities(self) -> int:
-        return self.layer_counts.get("0", 0)
+        """Drawing entities on layer 0; the overall viewport is counted apart."""
+        return self.layer_counts.get(layers.OVERALL_VIEWPORT, 0)
 
 
 def load_document(source: bytes | Path) -> Drawing:
@@ -137,6 +141,7 @@ def read_inventory(doc: Drawing) -> Inventory:
     inserts: list[InsertData] = []
     wires: list[WireData] = []
     layer_counts: Counter[str] = Counter()
+    overall_viewport_layers: dict[str, str] = {}
     spaces = [("model", doc.modelspace())]
     spaces += [("paper", layout) for layout in doc.layouts if layout.name != "Model"]
 
@@ -145,8 +150,11 @@ def read_inventory(doc: Drawing) -> Inventory:
 
     for space, layout in spaces:
         for entity in layout:
-            count(entity)
             kind = entity.dxftype()
+            if space == "paper" and kind == "VIEWPORT" and entity.dxf.get("id") == 1:
+                overall_viewport_layers[layout.name] = entity.dxf.layer
+                continue  # window frame of the sheet, not drawing content
+            count(entity)
             if kind == "INSERT":
                 for attrib in entity.attribs:
                     count(attrib)
@@ -188,6 +196,7 @@ def read_inventory(doc: Drawing) -> Inventory:
         layer_counts=layer_counts,
         defined_layers=frozenset(layer.dxf.name for layer in doc.layers),
         layout_names=tuple(layout.name for layout in doc.layouts),
+        overall_viewport_layers=overall_viewport_layers,
     )
 
 
@@ -239,6 +248,16 @@ def verify(diagram: Diagram, source: bytes | Path | Drawing) -> ReadBackReport:
         problems.append(f"audit: {len(auditor.errors)} errors, {len(auditor.fixes)} fixes")
     if LAYOUT_NAME not in inventory.layout_names:
         problems.append(f"layout {LAYOUT_NAME} is missing")
+    else:
+        sheet_viewport = inventory.overall_viewport_layers.get(LAYOUT_NAME)
+        if sheet_viewport is None:
+            problems.append(f"layout {LAYOUT_NAME} has no overall viewport (id 1)")
+    for layout_name, layer in inventory.overall_viewport_layers.items():
+        if layer != layers.OVERALL_VIEWPORT:
+            problems.append(
+                f"overall viewport of layout {layout_name} is on layer {layer}; "
+                "AutoCAD requires layer 0"
+            )
 
     counts = dict(Counter(i.block for i in inventory.inserts))
     expected = diagram.block_counts()

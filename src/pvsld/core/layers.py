@@ -3,7 +3,9 @@
 Format ``D-MMMM-mmmm``: discipline ``E`` (electrical) or ``G`` (general), major group, minor
 group. Regulation prescribes no layer standard (ADR-0001), so this is a project convention that
 doubles as a semantic tag for automated checks (all DC conductors live on ``E-PVDC-COND``).
-Layer ``0`` is never used: ``tests`` assert that no entity lands on it.
+Layer ``0`` is never used for drawing content: ``tests`` assert that no entity lands on it. The one
+exception is the overall paper-space viewport (viewport id 1) of each layout, which AutoCAD requires
+on layer ``0`` (AUDIT: ``Paperspace vport layer Not "0"``, spike S4); see :data:`OVERALL_VIEWPORT`.
 
 Colours are AutoCAD Color Index values; line weights are in hundredths of a millimetre.
 """
@@ -28,6 +30,9 @@ LABELS = "E-ANNO-LABL"
 TITLE_BLOCK = "G-ANNO-TTLB"
 REVISIONS = "G-ANNO-REVS"
 NON_PLOT = "G-ANNO-NPLT"
+
+# The overall paper-space viewport (id 1) is the only entity that lives on layer 0.
+OVERALL_VIEWPORT = "0"
 
 
 @dataclass(frozen=True)

@@ -22277,7 +22277,7 @@ AcDbEntity
  67
 1
   8
-G-ANNO-NPLT
+0
 100
 AcDbViewport
  10
@@ -24673,9 +24673,9 @@ AcDbPlotSettings
   1
 
   2
-DWG to PDF.pc3
+DWG To PDF.pc3
   4
-ISO_A3_(420.00_x_297.00_MM)_(420.00_x_297.00_MM)
+ISO_full_bleed_A3_(420.00_x_297.00_MM)
   6
 
  40

@@ -1,7 +1,8 @@
 """B1: the ezdxf backend. Materializes a :class:`Diagram` as a DXF R2018 (AC1032) file.
 
 The file has an A3 paper-space layout (border, title block with attributes, revision block and a
-1:1 viewport onto the model), the house layer standard, one ``BLOCK`` per used symbol with
+1:1 viewport onto the model, the overall viewport on layer 0 as AutoCAD requires), the house layer
+standard, one ``BLOCK`` per used symbol with
 ``ATTDEF`` s and port data, and one ``INSERT`` with ``ATTRIB`` s per component. Identity and
 connectivity are stored as data, so the file can be read back and checked (see
 :mod:`pvsld.backends.readback`):
@@ -46,6 +47,7 @@ from pvsld.symbols.catalogue import (
 
 DXF_VERSION = "R2018"
 LAYOUT_NAME = "A3"
+PLOT_DEVICE = "DWG To PDF.pc3"
 TEXT_STYLE = "PVSLD_STD"
 FONT = "arial.ttf"
 MILLIMETRES = 4  # $INSUNITS value
@@ -218,14 +220,15 @@ def _build_document(diagram: Diagram) -> Drawing:
         offset=(0, 0),
         rotation=0,
         scale=16,
-        name=f"ISO_{diagram.sheet.name}_({diagram.sheet.width:.2f}_x_{diagram.sheet.height:.2f}_MM)",
-        device="DWG to PDF.pc3",
+        # ezdxf appends "_({w}_x_{h}_MM)", giving "ISO_full_bleed_A3_(420.00_x_297.00_MM)": the
+        # canonical medium of "DWG To PDF.pc3" with zero margins (the margins above).
+        name=f"ISO_full_bleed_{diagram.sheet.name}",
+        device=PLOT_DEVICE,
     )
-    # page_setup() makes ezdxf add the paper-space main viewport on a layer of its own; keep every
-    # entity on the house layers (the viewport frame must not plot).
-    main_viewport = paper.main_viewport()
-    if main_viewport is not None:
-        main_viewport.dxf.layer = diagram.viewport.layer
+    # page_setup() makes ezdxf add the overall paper-space viewport (id 1) on a layer of its own.
+    # AutoCAD requires that viewport on layer 0 (AUDIT: 'Paperspace vport layer Not "0"'); it is
+    # the one entity allowed there. The detail viewport added below stays on the non-plot layer.
+    paper.reset_main_viewport().dxf.layer = layers.OVERALL_VIEWPORT
     spaces: dict[str, BaseLayout] = {"model": model, "paper": paper}
 
     for item in diagram.instances:

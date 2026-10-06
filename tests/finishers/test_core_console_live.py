@@ -40,14 +40,6 @@ def _sheet(folder: Path, source: Path = GOLDEN) -> Path:
     return target
 
 
-def _viewport_layer_zero(source: Path, target: Path) -> None:
-    """The S1 sheet with its overall paper-space viewport on layer 0, as AutoCAD's AUDIT wants."""
-    data = source.read_bytes()
-    old = b"VIEWPORT\n  5\n123\n330\n1B\n100\nAcDbEntity\n 67\n1\n  8\nG-ANNO-NPLT\n"
-    assert data.count(old) == 1
-    target.write_bytes(data.replace(old, old.replace(b"G-ANNO-NPLT", b"0")))
-
-
 def test_golden_dxf_becomes_dwg_2018_and_pdf_within_15_s(live_dir: Path) -> None:
     result = finish(_sheet(live_dir), options=FinishOptions(timeout_s=120))
     assert result.duration_s is not None
@@ -58,25 +50,14 @@ def test_golden_dxf_becomes_dwg_2018_and_pdf_within_15_s(live_dir: Path) -> None
     assert result.pdf is not None
     assert result.pdf.pages == 1
     assert result.log.step("end") is not None
-    # The S1 golden keeps its overall paper-space viewport off layer 0: AutoCAD's AUDIT reports it
-    # twice (pass 1 and pass 2). Only that problem may remain until S1 moves the viewport back.
-    assert result.audit is not None
-    assert result.audit.errors_found in (0, 2)
-    assert [p for p in result.problems if not p.startswith("AUDIT found 2 errors")] == []
-
-
-def test_viewport_on_layer_zero_audits_clean(live_dir: Path) -> None:
-    sheet = live_dir / "sld.dxf"
-    _viewport_layer_zero(GOLDEN, sheet)
-    result = finish(sheet, options=FinishOptions(timeout_s=120))
-    assert result.ok, result.problems
+    # The overall paper-space viewport is on layer 0, so AutoCAD's AUDIT is clean (S1 fix).
     assert result.audit is not None
     assert (result.audit.errors_found, result.audit.errors_fixed) == (0, 0)
+    assert result.ok, result.problems
 
 
 def test_produced_dwg_reopens_and_audits_clean(live_dir: Path) -> None:
-    sheet = live_dir / "sld.dxf"
-    _viewport_layer_zero(GOLDEN, sheet)
+    sheet = _sheet(live_dir)
     assert finish(sheet, options=FinishOptions(pdf=False, timeout_s=120)).ok
     reopen = live_dir / "reopen"
     reopen.mkdir()
