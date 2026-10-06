@@ -281,7 +281,7 @@ POINT_OF_INTERCONNECTION = SymbolDef(
     layer=_EQ_UT,
     geometry=(Circle(5, 0, 5, _EQ_UT), Circle(5, 0, 1.5, _EQ_UT)),
     attdefs=(
-        *_common(tag_xy=(0, 7.5), desc_xy=(-10, -10.5)),
+        *_common(tag_xy=(0, 7.5), desc_xy=(-12, -10.5)),
         *_hidden(
             ("PI_TYPE", "Tipo de conexión"),
             ("PANEL", "Tablero de conexión"),
@@ -331,7 +331,7 @@ METER = SymbolDef(
     layer=_EQ_UT,
     geometry=(Circle(7.5, 0, 7.5, _EQ_UT), Label(4.5, -1.3, TEXT_HEIGHT_MM, "kWh")),
     attdefs=(
-        *_common(tag_xy=(0, 10.5), desc_xy=(-8, -12.5)),
+        *_common(tag_xy=(0, 10.5), desc_xy=(-8, -14.5)),
         *_hidden(
             ("METER_TYPE", "Tipo (MF, MCE)"),
             ("BIDIRECTIONAL", "Bidireccional"),
@@ -350,11 +350,11 @@ GRID = SymbolDef(
     layer=_EQ_UT,
     geometry=(
         Polyline(((0, -10), (25, -10), (25, 10), (0, 10)), _EQ_UT, closed=True),
-        Label(3.5, -1.5, TAG_HEIGHT_MM, "RED CFE"),
+        Label(3.5, -1.5, TAG_HEIGHT_MM, "RED"),
     ),
     attdefs=(
-        *_common(tag_xy=(0, 12.5), desc_xy=(0, -14.5)),
-        AttDef("SPEC", "Tensión y sistema", 0, -18.5),
+        *_common(tag_xy=(0, 12.5), desc_xy=(0, -18.5)),
+        AttDef("SPEC", "Tensión y sistema", 0, -22.5),
         *_hidden(
             ("VOLT_V", "Tensión nominal (V)"),
             ("SYSTEM", "Sistema"),
@@ -379,8 +379,8 @@ GROUND = SymbolDef(
         Line(-2, -10, 2, -10, layers.GROUNDING),
     ),
     attdefs=(
-        *_common(tag_xy=(9, -3), desc_xy=(9, -7.5)),
-        AttDef("SPEC", "Electrodo y resistencia", 9, -11.5),
+        *_common(tag_xy=(9, -6), desc_xy=(9, -10.5)),
+        AttDef("SPEC", "Electrodo y resistencia", 9, -14.5),
         *_hidden(
             ("ELECTRODE", "Tipo de electrodo"),
             ("R_OHM", "Resistencia de diseño (Ω)"),

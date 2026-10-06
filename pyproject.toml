@@ -80,8 +80,8 @@ select = [
     "N",    # pep8-naming
     "RUF",  # ruff-specific rules
 ]
-# Spanish drawing text uses the multiplication sign (1.25 × Isc, 2 × 7 módulos).
-allowed-confusables = ["×"]
+# Spanish drawing text uses the multiplication sign and Greek symbols (1.25 × Isc, γ Pmax).
+allowed-confusables = ["×", "γ"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pvsld"]
