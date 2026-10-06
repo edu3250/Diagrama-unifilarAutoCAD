@@ -104,6 +104,14 @@ def test_timeout_stops_the_process_and_is_reported(live_dir: Path) -> None:
 
 
 def test_missing_plotter_is_reported(live_dir: Path) -> None:
-    result = finish(_sheet(live_dir), options=FinishOptions(plotter="NoSuch.pc3", timeout_s=120))
+    # The rejected device name puts the script out of step; Core Console then waits for input
+    # for ever, so only the timeout ends the run.
+    options = FinishOptions(plotter="NoSuch.pc3", timeout_s=20)
+    result = finish(_sheet(live_dir), options=options)
     assert not result.ok
+    assert result.process is not None
+    assert result.process.timed_out
+    assert "console: <NoSuch.pc3> no encontrado." in result.problems or any(
+        "NoSuch.pc3> not found" in p for p in result.problems
+    )
     assert f"not produced: {result.paths.pdf}" in result.problems
