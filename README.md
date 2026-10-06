@@ -40,16 +40,16 @@ The full research (252 notes with cited sources) lives in the author's local Obs
 
 ### Prerequisites
 
-Planned, per ADR-0001; no code has been released yet.
+The project is in its Phase 2 prototype: a Python package scaffold exists (`pvsld`), but no release has been published yet.
 
-- Python 3.10+ (for the MCP server and the deterministic core)
+- Python 3.11+ (for the MCP server and the deterministic core)
 - Optional: AutoCAD 2027 on Windows, needed only for native DWG output, AutoCAD PDF plotting and live editing
 - Git (GitFlow compatible)
 
-### Development
+### Development setup
 
 ```bash
-# Clone and set up
+# Clone and start from the integration branch
 git clone https://github.com/edu3250/Diagrama-unifilarAutoCAD.git
 cd Diagrama-unifilarAutoCAD
 git checkout develop
@@ -57,6 +57,41 @@ git checkout develop
 # Create a feature branch for your work
 git flow feature start <name>
 # or manually: git checkout -b feature/<name>
+```
+
+Create a virtual environment in the repository and activate it:
+
+```bash
+python -m venv .venv
+```
+
+| Shell | Activate |
+|-------|----------|
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+| Windows cmd | `.venv\Scripts\activate.bat` |
+| Git Bash on Windows | `source .venv/Scripts/activate` |
+| Linux / macOS | `source .venv/bin/activate` |
+
+> If PowerShell refuses to run `Activate.ps1`, allow scripts for the current session only: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`.
+
+Install the package in editable mode with the development tools, then run the checks that CI runs:
+
+```bash
+pip install -e ".[dev]"
+
+ruff check .             # lint
+ruff format --check .    # formatting (run `ruff format .` to fix)
+pytest --cov             # tests with coverage (floor: 60 %)
+
+pvsld --version
+pvsld validate-example examples/residential_7p7kwp.yaml
+```
+
+**AutoCAD tests.** Tests marked `autocad` drive a licensed local AutoCAD 2027 and only run on Windows. A plain `pytest` (and CI) reports them as *skipped*, with the reason shown. On the licensed workstation, with AutoCAD 2027 installed, run them explicitly and add the optional `autocad` extra (`pywin32`):
+
+```bash
+pip install -e ".[dev,autocad]"
+pytest --run-autocad -m autocad
 ```
 
 See `CONTRIBUTING.md` for detailed GitFlow instructions and `IMPLEMENTATION_PLAN.md` for current stage details.

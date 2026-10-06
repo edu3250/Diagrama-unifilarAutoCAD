@@ -135,15 +135,59 @@ Now we validate and return a meaningful error.
 - **Documentation** — Update relevant `.md` files and docstrings
 - **No `console.log` / `print` in production code** — Use proper logging
 
+## Development Setup
+
+The Python package `pvsld` lives in `src/pvsld/` and its tests in `tests/`. Python 3.11 or newer is required.
+
+1. Create and activate a virtual environment in the repository root (`.venv/` is git-ignored):
+
+   ```bash
+   python -m venv .venv
+   ```
+
+   | Shell | Activate |
+   |-------|----------|
+   | Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+   | Windows cmd | `.venv\Scripts\activate.bat` |
+   | Git Bash on Windows | `source .venv/Scripts/activate` |
+   | Linux / macOS | `source .venv/bin/activate` |
+
+   If PowerShell refuses to run `Activate.ps1`, allow scripts for the current session only: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`.
+
+2. Install the package in editable mode together with the development tools (pytest, pytest-cov, ruff):
+
+   ```bash
+   pip install -e ".[dev]"
+   ```
+
+3. Run the same checks as CI (`.github/workflows/ci.yml`: Ubuntu and Windows, Python 3.11 and 3.12):
+
+   ```bash
+   ruff check .             # lint
+   ruff format --check .    # formatting; run `ruff format .` to fix
+   pytest --cov             # tests; fails below 60 % coverage of pvsld
+   ```
+
+### AutoCAD tests
+
+Tests marked `@pytest.mark.autocad` need a licensed local AutoCAD 2027 and only run on Windows. By default, and in CI, they are **skipped** and the skip reason is printed. To run them on the licensed workstation, install the optional `autocad` extra (`pywin32`) and pass the flag:
+
+```bash
+pip install -e ".[dev,autocad]"
+pytest --run-autocad -m autocad
+```
+
+On a platform other than Windows the flag has no effect: the tests stay skipped. New tests that touch AutoCAD must carry the `autocad` marker.
+
 ## Testing Before Commit
 
 Run these locally before pushing:
 
 ```bash
-# Python (if applicable)
-python -m pytest
-python -m black --check .
-python -m flake8
+# Python (see Development Setup)
+ruff check .
+ruff format --check .
+pytest --cov
 
 # Node.js (if applicable)
 npm test
@@ -183,4 +227,4 @@ Open an issue in this repository or contact the maintainer (edu3250@gmail.com).
 
 ---
 
-**Last updated:** 2026-10-04
+**Last updated:** 2026-10-05
