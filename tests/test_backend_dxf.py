@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import time
 from collections import Counter
 from collections.abc import Callable
@@ -10,6 +11,7 @@ from pathlib import Path
 import ezdxf
 import pytest
 from ezdxf.document import Drawing
+from ezdxf.entities import Viewport
 
 from pvsld.backends.base import RenderBackend, sha256_hex
 from pvsld.backends.dxf import (
@@ -94,6 +96,60 @@ def test_a_paper_space_a3_layout_with_a_one_to_one_viewport(doc: Drawing) -> Non
     )
 
 
+def _overall_viewport(doc: Drawing) -> Viewport:
+    """The overall paper-space viewport (id 1) of the A3 layout, as AutoCAD identifies it."""
+    found = [v for v in doc.layouts.get(LAYOUT_NAME).viewports() if v.dxf.id == 1]
+    assert len(found) == 1, "the A3 layout must hold exactly one overall viewport (id 1)"
+    return found[0]
+
+
+def _entities_on_layer_zero(doc: Drawing) -> list[ezdxf.entities.DXFGraphic]:
+    """Every entity on layer 0, in every layout, block definition and INSERT attribute."""
+    found = []
+    for layout in doc.layouts:
+        for entity in layout:
+            found.append(entity)
+            found.extend(entity.attribs if entity.dxftype() == "INSERT" else [])
+    for block in doc.blocks:
+        if not block.name.startswith("*"):
+            found.extend(block)
+    return [e for e in found if e.dxf.layer == "0"]
+
+
+def test_the_overall_paper_space_viewport_is_the_only_entity_on_layer_zero(doc: Drawing) -> None:
+    # AutoCAD's AUDIT rejects the overall viewport on any other layer ("Paperspace vport layer
+    # Not 0", S4); every other entity must still stay off layer 0.
+    on_layer_zero = _entities_on_layer_zero(doc)
+    assert [(e.dxftype(), e.dxf.handle) for e in on_layer_zero] == [
+        ("VIEWPORT", _overall_viewport(doc).dxf.handle)
+    ]
+    assert _overall_viewport(doc).dxf.layer == layers.OVERALL_VIEWPORT == "0"
+
+
+def test_the_detail_viewport_stays_on_the_non_plot_layer(doc: Drawing) -> None:
+    detail = [v for v in doc.layouts.get(LAYOUT_NAME).viewports() if v.dxf.id != 1]
+    assert len(detail) == 1
+    assert detail[0].dxf.layer == layers.NON_PLOT
+
+
+def test_the_a3_layout_names_a_canonical_a3_landscape_medium(doc: Drawing) -> None:
+    # S4: the old name ISO_A3_(420.00_x_297.00_MM)_(420.00_x_297.00_MM) is no media name of
+    # "DWG To PDF.pc3". The canonical full-bleed A3 name matches the zero margins and 420 x 297.
+    settings = doc.layouts.get(LAYOUT_NAME).dxf_layout.dxf
+    assert settings.paper_size == "ISO_full_bleed_A3_(420.00_x_297.00_MM)"
+    assert re.fullmatch(r"ISO_full_bleed_A3_\(420\.00_x_297\.00_MM\)", settings.paper_size)
+    assert (settings.paper_width, settings.paper_height) == (420, 297)  # landscape
+    assert settings.plot_paper_units == 1  # millimetres
+    assert settings.plot_rotation == 0
+    assert (
+        settings.left_margin,
+        settings.bottom_margin,
+        settings.right_margin,
+        settings.top_margin,
+    ) == (0, 0, 0, 0)
+    assert settings.plot_configuration_file == "DWG To PDF.pc3"
+
+
 def test_the_title_block_lives_in_paper_space_the_schematic_in_model_space(doc: Drawing) -> None:
     paper_blocks = [e.dxf.name for e in doc.layouts.get(LAYOUT_NAME) if e.dxftype() == "INSERT"]
     model_blocks = [e.dxf.name for e in doc.modelspace() if e.dxftype() == "INSERT"]
@@ -122,7 +178,8 @@ def test_the_metric_dashed_linetypes_exist(doc: Drawing) -> None:
 
 def test_no_entity_lies_on_layer_zero_and_all_layers_are_standard(doc: Drawing) -> None:
     inventory = read_inventory(doc)
-    assert inventory.layer_zero_entities == 0
+    assert inventory.layer_zero_entities == 0  # drawing content; the overall viewport is apart
+    assert inventory.overall_viewport_layers == {LAYOUT_NAME: "0"}
     assert set(inventory.layer_counts) <= layers.LAYER_NAMES
     assert "Defpoints" not in inventory.layer_counts
     assert "VIEWPORTS" not in inventory.layer_counts
@@ -391,6 +448,40 @@ def test_non_deterministic_mode_stamps_fresh_metadata(diagram: Diagram) -> None:
     second = render_dxf(diagram, deterministic=False)
     assert first.data != second.data
     assert first.data != render_dxf(diagram).data
+
+
+def test_verify_demands_the_overall_viewport_on_layer_zero(
+    output: DxfOutput, diagram: Diagram
+) -> None:
+    report = _verify_mutated(
+        output,
+        diagram,
+        lambda doc: setattr(_overall_viewport(doc).dxf, "layer", layers.NON_PLOT),
+    )
+    assert not report.ok
+    assert any("overall viewport" in p and "layer 0" in p for p in report.problems)
+    assert report.layer_zero_entities == 0  # a misplaced viewport is not drawing content
+
+
+def test_verify_demands_an_overall_viewport(output: DxfOutput, diagram: Diagram) -> None:
+    report = _verify_mutated(
+        output,
+        diagram,
+        lambda doc: doc.layouts.get(LAYOUT_NAME).delete_entity(_overall_viewport(doc)),
+    )
+    assert any("no overall viewport" in p for p in report.problems)
+
+
+def test_verify_still_flags_a_detail_viewport_on_layer_zero(
+    output: DxfOutput, diagram: Diagram
+) -> None:
+    def move(doc: Drawing) -> None:
+        detail = next(v for v in doc.layouts.get(LAYOUT_NAME).viewports() if v.dxf.id != 1)
+        detail.dxf.layer = "0"
+
+    report = _verify_mutated(output, diagram, move)
+    assert report.layer_zero_entities == 1
+    assert any("1 entities on layer 0" in p for p in report.problems)
 
 
 def test_fixed_metadata_does_not_leak_into_later_renders(diagram: Diagram) -> None:

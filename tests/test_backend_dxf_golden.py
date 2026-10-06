@@ -14,6 +14,7 @@ and review the diff of the file in the pull request.
 
 from __future__ import annotations
 
+import io
 import os
 import subprocess
 import sys
@@ -68,6 +69,15 @@ def test_the_golden_fixture_itself_passes_every_read_back_check() -> None:
     readback = verify(build_diagram(report.spec, report.derived), GOLDEN.read_bytes())
     assert readback.problems == ()
     assert readback.ok
+
+
+def test_the_golden_fixture_keeps_the_overall_viewport_on_layer_zero_for_autocad() -> None:
+    """AutoCAD's AUDIT needs viewport id 1 on layer 0 (S4); the fixture must never regress."""
+    doc = ezdxf.read(io.StringIO(GOLDEN.read_text(encoding="utf-8")))
+    layout = doc.layouts.get("A3")
+    overall = [v for v in layout.viewports() if v.dxf.id == 1]
+    assert [v.dxf.layer for v in overall] == ["0"]
+    assert layout.dxf_layout.dxf.paper_size == "ISO_full_bleed_A3_(420.00_x_297.00_MM)"
 
 
 # Seeds 0 and 1 happened to give one CLASS order and 7 and 4242 the other before the fix.
