@@ -1,0 +1,308 @@
+{
+  "spike": "S2 AutoCAD 2027 connectivity",
+  "started_utc": "2026-10-06T16:11:07+00:00",
+  "machine": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "cpu": "AMD64 Family 23 Model 24 Stepping 1, AuthenticAMD"
+  },
+  "autocad": {
+    "preexisting_acad_pids": [],
+    "pid": 16520,
+    "startup_s": 27.6,
+    "version": "26.0s (LMS Tech)",
+    "com_binding": "early (makepy)",
+    "shutdown": {
+      "exited": true,
+      "seconds": 6.2,
+      "note": "closed our drawings without saving, then Quit()"
+    }
+  },
+  "com": {
+    "ping": {
+      "n": 200,
+      "min_ms": 0.35,
+      "p50_ms": 0.774,
+      "p95_ms": 2.673,
+      "p99_ms": 4.71,
+      "max_ms": 7.156,
+      "mean_ms": 1.012
+    },
+    "insert_block": {
+      "n": 50,
+      "min_ms": 38.808,
+      "p50_ms": 57.107,
+      "p95_ms": 107.613,
+      "p99_ms": 115.823,
+      "max_ms": 115.823,
+      "mean_ms": 65.411
+    },
+    "read_attributes": {
+      "n": 50,
+      "min_ms": 32.195,
+      "p50_ms": 46.672,
+      "p95_ms": 101.342,
+      "p99_ms": 253.671,
+      "max_ms": 253.671,
+      "mean_ms": 56.615
+    },
+    "batch_200_200": {
+      "n": 5,
+      "min_ms": 7748.386,
+      "p50_ms": 8778.955,
+      "p95_ms": 11573.888,
+      "p99_ms": 11573.888,
+      "max_ms": 11573.888,
+      "mean_ms": 9121.904
+    },
+    "reliability": {
+      "runs": 100,
+      "failures": 0,
+      "first_failures": [],
+      "seconds": 154.8,
+      "run": "ping + insert + read-back + batch 20 inserts/20 lines + count check"
+    }
+  },
+  "plugin_load": {
+    "dll": "plugin\\src\\PvSld.AutoCAD\\bin\\Release\\net10.0-windows\\PvSld.AutoCAD.dll",
+    "trust_dialogs": [
+      "Seguridad - Archivo ejecutable no firmado"
+    ],
+    "seconds": 26.2,
+    "loaded": true,
+    "pipe": "pvsld-acad-16520-6e4543eee5dd",
+    "server": "pvsld-autocad-bridge 0.2.0",
+    "discovery_file": "%USERPROFILE%\\AppData\\Local\\pvsld\\bridge\\autocad-16520.json",
+    "hello": {
+      "server": "pvsld-autocad-bridge",
+      "version": "0.2.0",
+      "protocol": 1,
+      "methods": [
+        "auth",
+        "ping",
+        "insert_block",
+        "read_attributes",
+        "batch",
+        "drawing_stats"
+      ]
+    }
+  },
+  "plugin": {
+    "ping_transport": {
+      "n": 200,
+      "min_ms": 0.156,
+      "p50_ms": 0.22,
+      "p95_ms": 0.434,
+      "p99_ms": 0.591,
+      "max_ms": 1.129,
+      "mean_ms": 0.246
+    },
+    "ping_main_thread": {
+      "n": 200,
+      "min_ms": 0.296,
+      "p50_ms": 0.651,
+      "p95_ms": 2.25,
+      "p99_ms": 16.158,
+      "max_ms": 99.34,
+      "mean_ms": 1.586
+    },
+    "insert_block": {
+      "n": 50,
+      "min_ms": 1.017,
+      "p50_ms": 1.551,
+      "p95_ms": 2.314,
+      "p99_ms": 2.613,
+      "max_ms": 2.613,
+      "mean_ms": 1.613
+    },
+    "read_attributes": {
+      "n": 50,
+      "min_ms": 0.527,
+      "p50_ms": 0.83,
+      "p95_ms": 2.137,
+      "p99_ms": 9.565,
+      "max_ms": 9.565,
+      "mean_ms": 1.207
+    },
+    "batch_200_200": {
+      "n": 5,
+      "min_ms": 42.459,
+      "p50_ms": 47.306,
+      "p95_ms": 71.415,
+      "p99_ms": 71.415,
+      "max_ms": 71.415,
+      "mean_ms": 54.189
+    },
+    "batch_200_200_main_thread": {
+      "n": 5,
+      "min_ms": 34.347,
+      "p50_ms": 37.64,
+      "p95_ms": 50.587,
+      "p99_ms": 50.587,
+      "max_ms": 50.587,
+      "mean_ms": 40.326
+    },
+    "reliability": {
+      "runs": 100,
+      "failures": 0,
+      "first_failures": [],
+      "seconds": 10.3,
+      "slowest_run_s": 0.313,
+      "run": "main-thread ping + insert + read-back + batch 200/200 + count and read-back checks"
+    }
+  },
+  "safety": {
+    "injected_failure": [
+      {
+        "block": "PVSLD_S2_TEST",
+        "fail_after_entities": 0,
+        "rolled_back": true,
+        "unchanged": true,
+        "com_count_unchanged": true
+      },
+      {
+        "block": "PVSLD_S2_TEST",
+        "fail_after_entities": 150,
+        "rolled_back": true,
+        "unchanged": true,
+        "com_count_unchanged": true
+      },
+      {
+        "block": "PVSLD_S2_TEST",
+        "fail_after_entities": 399,
+        "rolled_back": true,
+        "unchanged": true,
+        "com_count_unchanged": true
+      },
+      {
+        "block": "PVSLD_S2_TEST",
+        "fail_after_entities": 400,
+        "rolled_back": true,
+        "unchanged": true,
+        "com_count_unchanged": true
+      },
+      {
+        "block": "PVSLD_S2_ROLLBACK",
+        "fail_after_entities": 200,
+        "rolled_back": true,
+        "unchanged": true,
+        "com_count_unchanged": true
+      }
+    ],
+    "unauthenticated": {
+      "no_auth_error": {
+        "code": -32001,
+        "message": "unauthorized: the first request must be \"auth\" with the secret from the bridge discovery file"
+      },
+      "connection_closed": true,
+      "wrong_secret": "refused (BridgeAuthError)",
+      "silent_client_dropped_after_s": 5.02
+    },
+    "pipe_acl": {
+      "protected": true,
+      "aces": [
+        {
+          "type": "deny",
+          "mask": "0x1f019f",
+          "sid": "NT AUTHORITY\\NETWORK"
+        },
+        {
+          "type": "allow",
+          "mask": "0x1f019f",
+          "sid": "<machine>\\<user>"
+        }
+      ],
+      "owner": "<machine>\\<user>"
+    },
+    "secret_file_acl": {
+      "path": "%USERPROFILE%\\AppData\\Local\\pvsld\\bridge\\autocad-16520.json",
+      "protected": true,
+      "aces": [
+        {
+          "type": "allow",
+          "mask": "0x1f01ff",
+          "sid": "<machine>\\<user>"
+        }
+      ]
+    }
+  },
+  "busy": {
+    "modal_dialog": {
+      "plugin": {
+        "outcome": "busy",
+        "reason": "modal_dialog",
+        "message": "A modal dialog is open in AutoCAD. Close it, then retry.",
+        "seconds": 0.001
+      },
+      "com": {
+        "outcome": "ComBusyError",
+        "message": "AutoCAD rejected the call for 5.1 s (14 attempts): it is busy (modal dialog, active command or script). Finish or cancel it in AutoCAD, then retry.",
+        "seconds": 5.082
+      },
+      "recovered": true,
+      "recovery_s": 0.44
+    },
+    "command_running": {
+      "plugin": {
+        "outcome": "busy",
+        "reason": "command_active",
+        "message": "AutoCAD is running the command 'DELAY'. Finish it or press Esc in AutoCAD, then retry.",
+        "seconds": 0.536
+      },
+      "com": {
+        "outcome": "ComBusyError",
+        "message": "AutoCAD rejected the call for 5.0 s (3 attempts): it is busy (modal dialog, active command or script). Finish or cancel it in AutoCAD, then retry.",
+        "seconds": 5.005
+      },
+      "recovered": true,
+      "recovery_s": 0.06
+    },
+    "command_waiting_for_input": {
+      "plugin": {
+        "outcome": "busy",
+        "reason": "command_active",
+        "message": "AutoCAD is running the command 'LINE'. Finish it or press Esc in AutoCAD, then retry.",
+        "seconds": 1.887
+      },
+      "com": {
+        "outcome": "ComBusyError",
+        "message": "AutoCAD rejected the call for 4.8 s (11 attempts): it is busy (modal dialog, active command or script). Finish or cancel it in AutoCAD, then retry.",
+        "seconds": 4.817
+      },
+      "cancel": [
+        {
+          "keys": "'\\x1b'",
+          "sent": false,
+          "error": "AutoCAD rejected the call for 4.7 s (14 attempts): it is busy (modal dialog, active command or script). Finish or cancel"
+        },
+        {
+          "keys": "'\\x1b\\x1b'",
+          "sent": false,
+          "error": "AutoCAD rejected the call for 4.7 s (14 attempts): it is busy (modal dialog, active command or script). Finish or cancel"
+        },
+        {
+          "keys": "'\\x03'",
+          "sent": false,
+          "error": "AutoCAD rejected the call for 4.7 s (14 attempts): it is busy (modal dialog, active command or script). Finish or cancel"
+        },
+        {
+          "keys": "Esc keystroke to our AutoCAD",
+          "sent": true
+        },
+        {
+          "keys": "Esc by the owner (prompted)",
+          "sent": true
+        }
+      ],
+      "recovered": true,
+      "recovery_s": 42.7
+    },
+    "after": {
+      "quiescent": true,
+      "com_ping": "26.0s (LMS Tech)",
+      "plugin_main_thread_ping": true,
+      "plugin_insert": true
+    }
+  },
+  "finished_utc": "2026-10-06T16:17:32+00:00"
+}

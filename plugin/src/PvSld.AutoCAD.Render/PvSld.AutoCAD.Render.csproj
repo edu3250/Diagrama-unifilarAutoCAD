@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Core-safe render assembly (ADR-0001 B2 split): database-only drawing code that references only
+    AcCoreMgd/AcDbMgd, so the same DLL can later be NETLOADed by accoreconsole.exe or packaged for
+    the APS Automation API. No AcMgd, no UI, no pipes.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>PvSld.AutoCAD.Render</RootNamespace>
+    <AssemblyName>PvSld.AutoCAD.Render</AssemblyName>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoCAD.NET.Core" Version="$(AutoCADNetVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="AutoCAD.NET.Model" Version="$(AutoCADNetVersion)" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

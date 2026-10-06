@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PvSld.AutoCAD.Render/PvSld.AutoCAD.Render.csproj" />
+    <Project Path="src/PvSld.AutoCAD/PvSld.AutoCAD.csproj" />
+    <Project Path="src/PvSld.Bridge/PvSld.Bridge.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PvSld.Bridge.Tests/PvSld.Bridge.Tests.csproj" />
+  </Folder>
+</Solution>
