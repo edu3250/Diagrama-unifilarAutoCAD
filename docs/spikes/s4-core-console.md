@@ -8,6 +8,8 @@
 | Workstation | Windows 11 Pro 26200; AutoCAD 2027 (R26.0, build 26.0.118, Spanish, **Education licence**), `accoreconsole.exe` 26.0.118; Python 3.11.9 |
 | Status | **Stage 2.4 criteria met.** The S1 AUDIT criterion is **not met**: 2 errors, with a verified one-line fix for S1 (see [S1 AUDIT](#s1-audit-the-dxf-in-autocad-2027)) |
 
+> **Update (2026-10-06, Stage 2.5).** PR #7 put the overall paper-space viewport on layer `0` and wrote the canonical paper name `ISO_full_bleed_A3_(420.00_x_297.00_MM)`. AutoCAD AUDIT of the S1 DXF now reports **0 errors, 0 fixed** (DWG `AC1032` TrustedDWG, one-page A3 PDF, 12.2 s cold run). See [`phase-2-review.md`](phase-2-review.md).
+
 ## Summary
 
 `pvsld.finishers.core_console` turns one drawing into DWG 2018 and a PDF by running the AutoCAD Core Console:
