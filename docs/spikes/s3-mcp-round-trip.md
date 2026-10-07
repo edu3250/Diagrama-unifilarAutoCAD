@@ -9,6 +9,8 @@
 | Tests | `tests/test_mcp_*.py` (135 cases: in-memory client, real stdio subprocess, sandbox, preview) |
 | Vault note | `wiki/sources/Spike S3 Results 2026-10.md` (author's local vault) |
 
+> **Update (2026-10-06, Stage 2.5).** The owner closed the model-in-the-loop check with a manual Claude Code run (2.1.291). Validate → generate took 2 calls, and the VOLT-001 self-correction took 4, so both criteria are met. The MCP Inspector session is still not run (no Node.js). Pillow is now a declared dependency (`5fdddb4`). See [`phase-2-review.md`](phase-2-review.md).
+
 ## Result in one paragraph
 
 A stdio MCP server on the official Python SDK (`mcp` 2.3.0) exposes the two workflow tools of ADR-0001, `validate_pv_design` and `generate_single_line_diagram`, and three resources (parameter JSON Schema, rule-pack catalogue, symbol catalogue). Claude Code 2.1.150 registers it from the repo `.mcp.json` and reports it connected. The server starts and lists its tools in 2.0 to 2.6 s (the criterion is under 5 s). A spec with 12 modules per string comes back from both tools with VOLT-001 findings that name the limit ("máximo 11 módulos"); the generator turns it into a tool error and writes nothing. **Two criteria could not be measured and are marked pending: the model-in-the-loop run (the `claude` CLI on this workstation has an expired login, so a headless run is not possible without an interactive sign-in) and the MCP Inspector session (no Node.js).** Exact instructions to close both are in [Manual checks](#manual-checks-pending-owner).

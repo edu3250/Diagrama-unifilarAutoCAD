@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Phase 2, Stage 2.5: `docs/spikes/phase-2-review.md`, the spike review. It holds the per-stage results against the criteria, the ADR-0001 exit-gate evaluation (passed), the status of reversal triggers T1–T9 (none fired), the findings, the open items and the proposed (tentative) scope for Phases 3–5
+- Phase 2, Stage 2.4 (S4, PR #6): Core Console finisher `pvsld.finishers.core_console` and `pvsld finish`: DXF → DWG 2018 (TrustedDWG) plus an AutoCAD-plotted A3 PDF through `accoreconsole.exe /isolate`, in 4.2–10.8 s per sheet. A run is ok only on several independent signals (exit code, progress markers, AUDIT summary, output formats), so failures are never silent. It also adds a CI fake runner, live `autocad` tests and the `scripts/s4_measure.py` harness; report `docs/spikes/s4-core-console.md`
+- Phase 2, Stage 2.3 (S3, PR #5): stdio MCP server `pvsld-mcp` (`mcp` 2.3) with `validate_pv_design` and `generate_single_line_diagram`, plus the resources `pvsld://schema/pv-system-spec`, `pvsld://rulepack/mx-gd-2026.10` and `pvsld://symbols`. It writes into an output sandbox and returns a size-bounded PNG preview (`PVSLD_PREVIEW_MAX_BYTES`). The repo `.mcp.json` uses `${PVSLD_MCP_COMMAND:-pvsld-mcp}`. Pillow is a declared dependency, and specs over 256 KiB are refused. Report `docs/spikes/s3-mcp-round-trip.md`
 - Phase 2, Stage 2.1 (S1, PR #3): deterministic core (`pvsld.core`: Pydantic parameter model, calculations, rule-pack subset VOLT-001, STR-001, STR-004, CON-003, PCC-002, MET-001, DIS-003, DIS-004), code-defined symbol catalogue (`pvsld.symbols`), backend-neutral diagram model and ezdxf DXF R2018 backend with PNG preview; `pvsld validate` and `pvsld generate`; byte-identical golden DXF on Windows and Linux
 - Phase 2, Stage 2.2 (S2, PR #2): AutoCAD 2027 .NET 10 plug-in (bridge, Core-safe render assembly, desktop host) on a current-user named pipe with per-start secret; Python pipe client, fake plug-in and COM baseline; CI job building the plug-in and running its bridge tests
 - `docs/decisions/ADR-0003-symbol-library-format.md`: symbol library format and `PVSLD_*` naming (accepted 2026-10-06)
@@ -21,7 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `.github/workflows/ci.yml`: ruff and pytest on Ubuntu and Windows with Python 3.11 and 3.12 (`contents: read` permissions)
   - "Development setup" sections in `README.md` and `CONTRIBUTING.md` (virtual environment, ruff, pytest, AutoCAD tests)
 
+### Fixed
+- Backend (PR #7): the overall paper-space viewport is on layer `0` and the layout names the canonical `ISO_full_bleed_A3_(420.00_x_297.00_MM)` paper. AutoCAD 2027 AUDIT of the S1 DXF goes from 2 errors to 0 errors, 0 fixed (Core Console). The read-back counts that viewport apart from drawing content; the golden DXF is regenerated, and ADR-0003 states the layer-0 exception
+
 ### Changed
+- `docs/decisions/ADR-0001-claude-autocad-integration.md`: "Phase 2 validation (2026-10-06)" section appended. The ADR is confirmed by spikes S1–S4 and its status is unchanged
+- `IMPLEMENTATION_PLAN.md`: Stages 2.3 and 2.4 Complete; Stage 2.5 Complete except the `v0.2.0-spike` tag; Phase 2 Complete pending release; tentative scopes for Phases 3–5 refined from the review
+- `README.md`: status (Phase 2 complete, pending `v0.2.0-spike`), roadmap, and quick-start notes for the MCP server and `PVSLD_MCP_COMMAND`
+- `docs/README.md`: lists `docs/spikes/` and ADR-0003; update notes on the S2, S3 and S4 reports point to the review
 - `IMPLEMENTATION_PLAN.md`: Stage 1.7 records the public GitHub repository and the `v0.1.0-docs` GitHub release
 - `IMPLEMENTATION_PLAN.md`: Stages 2.0–2.2 Complete; the `.mcp.json` placeholder is replaced by creating `.mcp.json` in Stage 2.3 together with a working server
 - `.gitignore`: ignore `.venv/` and `.ruff_cache/`
@@ -72,4 +82,4 @@ Phase 1 (Documentation & Regulatory Research) complete.
 
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD  
 **Maintainer:** edu3250 (edu3250@gmail.com)  
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06

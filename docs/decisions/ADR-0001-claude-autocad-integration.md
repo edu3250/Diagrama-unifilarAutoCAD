@@ -298,6 +298,36 @@ These are **not** reversal triggers: a NOM-001-SEDE revision, the new GD DACG an
 - **ADR-0002, parameter model schema v1:** JSON Schema, versioning, catalogue references; builds on PV SLD Parameter Model.
 - **ADR-0003, symbol library format and naming:** block prefix, XDATA AppID, port encoding, IEC/NMX variants; informed by S1 and Block-Based Symbol Libraries.
 
+## Phase 2 validation (2026-10-06)
+
+> Appended by Stage 2.5. The decision text above is unchanged. Full review: [`docs/spikes/phase-2-review.md`](../spikes/phase-2-review.md).
+
+**Outcome.** Spikes S1–S4 confirm the decision. The exit gate is passed, no reversal trigger fired, and the status stays **Accepted** (vault status `active`).
+
+| Spike | Key numbers | Gate |
+|---|---|---|
+| S1 ezdxf (PR #3, fix #7) | `doc.audit()` 0/0; byte-identical across runs, seeds and the Windows/Linux CI matrix; 147/147 attributes by `COMP_ID`; 0 dangling ports; build + write 97 ms; PNG about 1.1 s. AutoCAD 2027 AUDIT first reported 2 errors: the overall paper-space viewport must be on layer `0`. After #7: 0/0 | met |
+| S2 plug-in vs COM (PR #2) | ping p95 2.25 ms; 200 + 200 batch 47 ms p50 (COM 8.8 s, 186×); 100/100 runs; "busy" errors in 0.001–1.89 s; 5/5 rollbacks; unauthenticated clients refused | met |
+| S3 MCP round trip (PR #5) | start + `tools/list` 2.0–2.6 s; result with preview about 20.9k tokens (estimate); owner's Claude Code run: validate → generate in 2 calls, VOLT-001 self-correction in 4. MCP Inspector not run (no Node.js) | met (Inspector open) |
+| S4 Core Console (PR #6) | DWG `AC1032` TrustedDWG; 1-page A3 PDF; 4.2–10.8 s per sheet (12.2 s cold after #7); 4/4 failure modes reported | met |
+
+**Reversal triggers.** T1–T9 were not fired. T2 was the closest: AutoCAD AUDIT rejected the first S1 DXF, but the cause was one viewport on the wrong layer, fixed in our backend; ezdxf was not at fault. T4 does not fire, because COM is 37–186× slower for drawing work and cannot name busy states. The plug-in's friction (an unsigned DLL needs "Load once" each session) is a signing and deployment task. T3 and T5 are untested; they depend on reviewers and users, not on the spikes.
+
+**Settled open questions.**
+- Named-pipe vs COM: measured in S2.
+- Core Console with named-user licensing: works on this workstation, and failures are reported (S4). A run outside the licensed session was simulated, not reproduced.
+- Symbol naming: `PVSLD_` (ADR-0003).
+
+Still open: Claude Desktop limits, CFE/UVIE acceptance of DXF or ezdxf PDFs, and reading back manual edits.
+
+**Carried into Phases 3–5.**
+- Complete the rule pack: only 8 of the 98 rules are implemented. The owner's test found that STR-007 (inverter DC power) is missing from the code.
+- Non-ASCII paths in the Core Console finisher.
+- A signed `.bundle` for the plug-in.
+- DWG "last saved by" privacy.
+- Absolute venv command for `.mcp.json` (`PVSLD_MCP_COMMAND`).
+- The Education licence: no marking was found, and a hidden flag is unverified.
+
 ## References
 
 Vault notes (Obsidian research vault, `wiki/`), grouped by topic:
@@ -338,4 +368,4 @@ Vault notes (Obsidian research vault, `wiki/`), grouped by topic:
 
 ---
 
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06 (Phase 2 validation appended)

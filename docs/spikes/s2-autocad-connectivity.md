@@ -8,6 +8,8 @@
 | Workstation | Windows 11 Pro 26200, AMD64 Family 23; AutoCAD 2027 (R26.0, Spanish, **Education licence**); .NET SDK 10.0.401; Python 3.11.9; pywin32 312 |
 | Status | **Complete: every Stage 2.2 criterion met** (see [Results](#results)) |
 
+> **Update (2026-10-06, Stage 2.5).** Spike S4 examined real output of this Education licence and found no educational marking in the PDF or in the DWG's readable content. The statements below that the licence "stamps drawings" are therefore unconfirmed. A flag in the DWG's compressed sections is unverified, and the licence terms (non-commercial use) apply either way. See [`s4-core-console.md`](s4-core-console.md) and [`phase-2-review.md`](phase-2-review.md).
+
 ## Summary
 
 Backend B2 is built as ADR-0001 describes:
