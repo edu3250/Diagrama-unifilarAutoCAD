@@ -1,0 +1,39 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per power level.
+component_type: pv_module
+family_id: JINKO-JKM-60HL4
+manufacturer: Jinko Solar
+model_family: JKM460-480N-60HL4-(V) Tiger Neo N-type
+cell_type: N-type mono-crystalline
+cells: 120
+bifacial: false
+dimensions_mm: [1903, 1134, 30]
+weight_kg: 24.2
+frame: anodized aluminium alloy
+max_system_voltage_v: 1000          # datasheet: "1000/1500VDC (IEC)"; -V models assumed 1500 V (see notes)
+max_series_fuse_a: 25
+operating_temp_c: [-40, 85]
+noct_c: 45                          # ±2 °C
+power_tolerance_pct: [0, 3]
+temp_coef_pmax_pct_per_c: -0.30
+temp_coef_voc_pct_per_c: -0.25
+temp_coef_isc_pct_per_c: 0.046
+certifications: [IEC 61215 (2016), IEC 61730 (2016)]
+variants:   # STC (1000 W/m², 25 °C, AM1.5); noct = 800 W/m², 20 °C ambient, AM1.5, 1 m/s
+  - {component_id: JINKO-JKM460N-60HL4, pmax_w: 460, vmp_v: 34.72, imp_a: 13.25, voc_v: 42.05, isc_a: 13.99, efficiency_pct: 21.32, noct: {pmax_w: 346, vmp_v: 32.60, imp_a: 10.61, voc_v: 39.94, isc_a: 11.29}}
+  - {component_id: JINKO-JKM465N-60HL4, pmax_w: 465, vmp_v: 34.89, imp_a: 13.33, voc_v: 42.22, isc_a: 14.07, efficiency_pct: 21.55, noct: {pmax_w: 350, vmp_v: 32.77, imp_a: 10.67, voc_v: 40.10, isc_a: 11.36}}
+  - {component_id: JINKO-JKM470N-60HL4, pmax_w: 470, vmp_v: 35.05, imp_a: 13.41, voc_v: 42.38, isc_a: 14.15, efficiency_pct: 21.78, noct: {pmax_w: 353, vmp_v: 32.94, imp_a: 10.73, voc_v: 40.25, isc_a: 11.42}}
+  - {component_id: JINKO-JKM475N-60HL4, pmax_w: 475, vmp_v: 35.21, imp_a: 13.49, voc_v: 42.54, isc_a: 14.23, efficiency_pct: 22.01, noct: {pmax_w: 357, vmp_v: 33.10, imp_a: 10.79, voc_v: 40.41, isc_a: 11.49}}
+  - {component_id: JINKO-JKM480N-60HL4, pmax_w: 480, vmp_v: 35.38, imp_a: 13.57, voc_v: 42.71, isc_a: 14.31, efficiency_pct: 22.24, noct: {pmax_w: 361, vmp_v: 33.27, imp_a: 10.85, voc_v: 40.57, isc_a: 11.55}}
+source:
+  filename: JKM460-480N-60HL4-(V)-F1-EN.pdf
+  sha256: ac1ace5685a715abd734ae1e331481d6b82656f785507ba2e805d638cff63efd
+  title: JKM460-480N-60HL4-(V)-F1-EN (IEC 2016), © 2021 Jinko Solar
+  pages: [2]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: null
+  review_date: null
+  notes: >-
+    The datasheet covers JKMxxxN-60HL4 and JKMxxxN-60HL4-V with identical electrical values and states "1000/1500VDC".
+    Following Jinko's naming convention the -V suffix is assumed to be the 1500 V version; the record keeps the
+    conservative 1000 V for all variants until the owner confirms which version is installed.
