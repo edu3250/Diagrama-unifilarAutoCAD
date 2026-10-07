@@ -78,7 +78,7 @@ FOOTER_MM = 22.0
 MAX_ROW_MM = 18.0
 FAMILY_ROW_MM = 7.0
 CELL_PADDING_MM = 4.0
-CHAR_WIDTH_FACTOR = 0.68
+CHAR_WIDTH_FACTOR = 0.76
 """Average glyph width over text height of the sheet font, to wrap text without measuring it."""
 
 

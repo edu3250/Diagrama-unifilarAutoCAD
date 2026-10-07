@@ -553,7 +553,7 @@ $SPLINESEGS
   9
 $HANDSEED
   5
-6D5
+6E8
   9
 $SURFTAB1
  70
@@ -2455,7 +2455,7 @@ AcAecLayerStandard
   0
 APPID
   5
-6D2
+6E5
 330
 3
 100
@@ -2469,7 +2469,7 @@ HATCHBACKGROUNDCOLOR
   0
 APPID
   5
-6D3
+6E6
 330
 3
 100
@@ -5629,7 +5629,7 @@ pvsld (sin símbolo en CFE G0100-04 ni IEC 60617)
   0
 BLOCK_RECORD
   5
-562
+566
 330
 9
 100
@@ -5639,7 +5639,7 @@ AcDbBlockTableRecord
   2
 *Paper_Space0
 340
-565
+569
  70
 0
 280
@@ -5649,7 +5649,7 @@ AcDbBlockTableRecord
   0
 BLOCK_RECORD
   5
-63D
+648
 330
 9
 100
@@ -5659,7 +5659,7 @@ AcDbBlockTableRecord
   2
 *Paper_Space1
 340
-640
+64B
  70
 0
 280
@@ -38537,9 +38537,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-563
+567
 330
-562
+566
 100
 AcDbEntity
   8
@@ -38563,9 +38563,9 @@ AcDbBlockBegin
   0
 VIEWPORT
   5
-566
+56A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38667,9 +38667,9 @@ AcDbViewport
   0
 LWPOLYLINE
   5
-567
+56B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38703,9 +38703,9 @@ AcDbPolyline
   0
 TEXT
   5
-568
+56C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38737,9 +38737,9 @@ AcDbText
   0
 TEXT
   5
-569
+56D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38771,9 +38771,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-56A
+56E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38805,9 +38805,9 @@ AcDbPolyline
   0
 LINE
   5
-56B
+56F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38831,9 +38831,9 @@ AcDbLine
   0
 TEXT
   5
-56C
+570
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38865,9 +38865,9 @@ AcDbText
   0
 TEXT
   5
-56D
+571
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38899,9 +38899,9 @@ AcDbText
   0
 TEXT
   5
-56E
+572
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38933,9 +38933,9 @@ AcDbText
   0
 LINE
   5
-56F
+573
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38959,9 +38959,9 @@ AcDbLine
   0
 TEXT
   5
-570
+574
 330
-562
+566
 100
 AcDbEntity
  67
@@ -38993,9 +38993,9 @@ AcDbText
   0
 LINE
   5
-571
+575
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39019,9 +39019,9 @@ AcDbLine
   0
 LINE
   5
-572
+576
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39045,9 +39045,9 @@ AcDbLine
   0
 LINE
   5
-573
+577
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39071,9 +39071,9 @@ AcDbLine
   0
 INSERT
   5
-574
+578
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39099,9 +39099,9 @@ PVSLD_SWITCH
   0
 TEXT
   5
-576
+57A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39133,9 +39133,9 @@ AcDbText
   0
 TEXT
   5
-577
+57B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39167,9 +39167,9 @@ AcDbText
   0
 TEXT
   5
-578
+57C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39201,9 +39201,9 @@ AcDbText
   0
 LINE
   5
-579
+57D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39227,9 +39227,9 @@ AcDbLine
   0
 LINE
   5
-57A
+57E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39253,9 +39253,9 @@ AcDbLine
   0
 LINE
   5
-57B
+57F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39279,9 +39279,9 @@ AcDbLine
   0
 INSERT
   5
-57C
+580
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39307,9 +39307,9 @@ PVSLD_DC_DISCONNECT
   0
 TEXT
   5
-57E
+582
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39341,9 +39341,9 @@ AcDbText
   0
 TEXT
   5
-57F
+583
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39361,7 +39361,7 @@ AcDbText
  40
 3.2
   1
-(interruptor manual con carga)
+(interruptor manual con
   7
 PVSLD_STD
  11
@@ -39375,9 +39375,9 @@ AcDbText
   0
 TEXT
   5
-580
+584
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39389,7 +39389,41 @@ AcDbText
  10
 60.0
  20
-215.0
+215.2
+ 30
+0.0
+ 40
+3.2
+  1
+carga)
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+215.2
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+585
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+210.6
  30
 0.0
  40
@@ -39401,7 +39435,7 @@ PVSLD_STD
  11
 60.0
  21
-215.0
+210.6
  31
 0.0
 100
@@ -39409,9 +39443,9 @@ AcDbText
   0
 TEXT
   5
-581
+586
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39443,9 +39477,9 @@ AcDbText
   0
 TEXT
   5
-582
+587
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39463,7 +39497,7 @@ AcDbText
  40
 2.4
   1
-manual), usado como desconectador de CD
+manual), usado como desconectador de
   7
 PVSLD_STD
  11
@@ -39477,9 +39511,9 @@ AcDbText
   0
 TEXT
   5
-583
+588
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39497,7 +39531,7 @@ AcDbText
  40
 2.4
   1
-en Apéndice D, fig. D1
+CD en Apéndice D, fig. D1
   7
 PVSLD_STD
  11
@@ -39511,9 +39545,9 @@ AcDbText
   0
 LINE
   5
-584
+589
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39537,9 +39571,9 @@ AcDbLine
   0
 LINE
   5
-585
+58A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39563,9 +39597,9 @@ AcDbLine
   0
 LINE
   5
-586
+58B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39589,9 +39623,9 @@ AcDbLine
   0
 INSERT
   5
-587
+58C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39611,9 +39645,9 @@ PVSLD_FUSE_DISC
   0
 TEXT
   5
-589
+58E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39645,9 +39679,9 @@ AcDbText
   0
 TEXT
   5
-58A
+58F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39679,9 +39713,9 @@ AcDbText
   0
 TEXT
   5
-58B
+590
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39699,7 +39733,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.176 (FUS-SECC,
+NMX-J-136-ANCE-2019 4.2.176 (FUS-
   7
 PVSLD_STD
  11
@@ -39713,9 +39747,9 @@ AcDbText
   0
 TEXT
   5
-58C
+591
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39733,7 +39767,7 @@ AcDbText
  40
 2.4
   1
-IEC S00369)
+SECC, IEC S00369)
   7
 PVSLD_STD
  11
@@ -39747,9 +39781,9 @@ AcDbText
   0
 LINE
   5
-58D
+592
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39773,9 +39807,9 @@ AcDbLine
   0
 LINE
   5
-58E
+593
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39799,9 +39833,9 @@ AcDbLine
   0
 LINE
   5
-58F
+594
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39825,9 +39859,9 @@ AcDbLine
   0
 INSERT
   5
-590
+595
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39847,9 +39881,9 @@ PVSLD_SAFETY_SWITCH
   0
 TEXT
   5
-592
+597
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39867,7 +39901,7 @@ AcDbText
  40
 3.2
   1
-Interruptor de seguridad con
+Interruptor de seguridad
   7
 PVSLD_STD
  11
@@ -39881,9 +39915,9 @@ AcDbText
   0
 TEXT
   5
-593
+598
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39901,7 +39935,7 @@ AcDbText
  40
 3.2
   1
-fusibles (CA)
+con fusibles (CA)
   7
 PVSLD_STD
  11
@@ -39915,9 +39949,9 @@ AcDbText
   0
 TEXT
   5
-594
+599
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39949,9 +39983,9 @@ AcDbText
   0
 TEXT
   5
-595
+59A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -39969,7 +40003,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.128 (IS, forma
+NMX-J-136-ANCE-2019 4.2.128 (IS,
   7
 PVSLD_STD
  11
@@ -39983,9 +40017,9 @@ AcDbText
   0
 TEXT
   5
-596
+59B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40003,7 +40037,7 @@ AcDbText
  40
 2.4
   1
-unifilar)
+forma unifilar)
   7
 PVSLD_STD
  11
@@ -40017,9 +40051,9 @@ AcDbText
   0
 LINE
   5
-597
+59C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40043,9 +40077,9 @@ AcDbLine
   0
 LINE
   5
-598
+59D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40069,9 +40103,9 @@ AcDbLine
   0
 LINE
   5
-599
+59E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40095,9 +40129,9 @@ AcDbLine
   0
 INSERT
   5
-59A
+59F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40123,9 +40157,9 @@ PVSLD_TRANSFER_SW
   0
 TEXT
   5
-59C
+5A1
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40143,7 +40177,7 @@ AcDbText
  40
 3.2
   1
-Interruptor de transferencia
+Interruptor de
   7
 PVSLD_STD
  11
@@ -40157,9 +40191,9 @@ AcDbText
   0
 TEXT
   5
-59D
+5A2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40171,7 +40205,41 @@ AcDbText
  10
 60.0
  20
-165.4
+165.6
+ 30
+0.0
+ 40
+3.2
+  1
+transferencia
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+165.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+5A3
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+161.0
  30
 0.0
  40
@@ -40183,7 +40251,7 @@ PVSLD_STD
  11
 60.0
  21
-165.4
+161.0
  31
 0.0
 100
@@ -40191,9 +40259,9 @@ AcDbText
   0
 TEXT
   5
-59E
+5A4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40225,9 +40293,9 @@ AcDbText
   0
 TEXT
   5
-59F
+5A5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40259,9 +40327,9 @@ AcDbText
   0
 TEXT
   5
-5A0
+5A6
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40293,9 +40361,9 @@ AcDbText
   0
 LINE
   5
-5A1
+5A7
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40319,9 +40387,9 @@ AcDbLine
   0
 LINE
   5
-5A2
+5A8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40345,9 +40413,9 @@ AcDbLine
   0
 LINE
   5
-5A3
+5A9
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40371,9 +40439,9 @@ AcDbLine
   0
 INSERT
   5
-5A4
+5AA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40393,9 +40461,9 @@ PVSLD_CONTACTOR
   0
 TEXT
   5
-5A6
+5AC
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40427,9 +40495,9 @@ AcDbText
   0
 TEXT
   5
-5A7
+5AD
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40461,9 +40529,9 @@ AcDbText
   0
 TEXT
   5
-5A8
+5AE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40481,7 +40549,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.168 (contacto,
+NMX-J-136-ANCE-2019 4.2.168
   7
 PVSLD_STD
  11
@@ -40495,9 +40563,9 @@ AcDbText
   0
 TEXT
   5
-5A9
+5AF
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40515,7 +40583,7 @@ AcDbText
  40
 2.4
   1
-IEC S00284)
+(contacto, IEC S00284)
   7
 PVSLD_STD
  11
@@ -40529,9 +40597,9 @@ AcDbText
   0
 LINE
   5
-5AA
+5B0
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40555,9 +40623,9 @@ AcDbLine
   0
 TEXT
   5
-5AB
+5B1
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40589,9 +40657,9 @@ AcDbText
   0
 LINE
   5
-5AC
+5B2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40615,9 +40683,9 @@ AcDbLine
   0
 LINE
   5
-5AD
+5B3
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40641,9 +40709,9 @@ AcDbLine
   0
 LINE
   5
-5AE
+5B4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40667,9 +40735,9 @@ AcDbLine
   0
 INSERT
   5
-5AF
+5B5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40695,9 +40763,9 @@ PVSLD_METER
   0
 TEXT
   5
-5B1
+5B7
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40729,9 +40797,9 @@ AcDbText
   0
 TEXT
   5
-5B2
+5B8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40763,9 +40831,9 @@ AcDbText
   0
 TEXT
   5
-5B3
+5B9
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40797,9 +40865,9 @@ AcDbText
   0
 TEXT
   5
-5B4
+5BA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40831,9 +40899,9 @@ AcDbText
   0
 LINE
   5
-5B5
+5BB
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40857,9 +40925,9 @@ AcDbLine
   0
 LINE
   5
-5B6
+5BC
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40883,9 +40951,9 @@ AcDbLine
   0
 LINE
   5
-5B7
+5BD
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40909,9 +40977,9 @@ AcDbLine
   0
 INSERT
   5
-5B8
+5BE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40937,9 +41005,9 @@ PVSLD_METER_M
   0
 TEXT
   5
-5BA
+5C0
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40957,7 +41025,7 @@ AcDbText
  40
 3.2
   1
-Medidor de consumo o límite de
+Medidor de consumo o límite
   7
 PVSLD_STD
  11
@@ -40971,9 +41039,9 @@ AcDbText
   0
 TEXT
   5
-5BB
+5C1
 330
-562
+566
 100
 AcDbEntity
  67
@@ -40991,7 +41059,7 @@ AcDbText
  40
 3.2
   1
-exportación
+de exportación
   7
 PVSLD_STD
  11
@@ -41005,9 +41073,9 @@ AcDbText
   0
 TEXT
   5
-5BC
+5C2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41039,9 +41107,9 @@ AcDbText
   0
 TEXT
   5
-5BD
+5C3
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41059,7 +41127,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.126 (equipo de
+NMX-J-136-ANCE-2019 4.2.126 (equipo
   7
 PVSLD_STD
  11
@@ -41073,9 +41141,9 @@ AcDbText
   0
 TEXT
   5
-5BE
+5C4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41093,7 +41161,7 @@ AcDbText
  40
 2.4
   1
-medición, M)
+de medición, M)
   7
 PVSLD_STD
  11
@@ -41107,9 +41175,9 @@ AcDbText
   0
 LINE
   5
-5BF
+5C5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41133,9 +41201,9 @@ AcDbLine
   0
 LINE
   5
-5C0
+5C6
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41159,9 +41227,9 @@ AcDbLine
   0
 LINE
   5
-5C1
+5C7
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41185,9 +41253,9 @@ AcDbLine
   0
 INSERT
   5
-5C2
+5C8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41213,9 +41281,9 @@ PVSLD_CT
   0
 TEXT
   5
-5C4
+5CA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41247,9 +41315,9 @@ AcDbText
   0
 TEXT
   5
-5C5
+5CB
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41281,9 +41349,9 @@ AcDbText
   0
 TEXT
   5
-5C6
+5CC
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41315,9 +41383,9 @@ AcDbText
   0
 LINE
   5
-5C7
+5CD
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41341,9 +41409,9 @@ AcDbLine
   0
 LINE
   5
-5C8
+5CE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41367,9 +41435,9 @@ AcDbLine
   0
 LINE
   5
-5C9
+5CF
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41393,9 +41461,9 @@ AcDbLine
   0
 INSERT
   5
-5CA
+5D0
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41421,9 +41489,9 @@ PVSLD_MONITOR
   0
 TEXT
   5
-5CC
+5D2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41455,9 +41523,9 @@ AcDbText
   0
 TEXT
   5
-5CD
+5D3
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41489,9 +41557,9 @@ AcDbText
   0
 TEXT
   5
-5CE
+5D4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41523,9 +41591,9 @@ AcDbText
   0
 TEXT
   5
-5CF
+5D5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41543,7 +41611,7 @@ AcDbText
  40
 2.4
   1
-CFE G0100-04 Apéndice D, figs. D1 y D2
+CFE G0100-04 Apéndice D, figs. D1 y
   7
 PVSLD_STD
  11
@@ -41557,9 +41625,9 @@ AcDbText
   0
 TEXT
   5
-5D0
+5D6
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41577,7 +41645,7 @@ AcDbText
  40
 2.4
   1
-(subsistema de control y monitoreo)
+D2 (subsistema de control y
   7
 PVSLD_STD
  11
@@ -41589,11 +41657,45 @@ PVSLD_STD
 100
 AcDbText
   0
+TEXT
+  5
+5D7
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
+66.0
+ 30
+0.0
+ 40
+2.4
+  1
+monitoreo)
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+66.0
+ 31
+0.0
+100
+AcDbText
+  0
 LWPOLYLINE
   5
-5D1
+5D8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41625,9 +41727,9 @@ AcDbPolyline
   0
 LINE
   5
-5D2
+5D9
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41651,9 +41753,9 @@ AcDbLine
   0
 TEXT
   5
-5D3
+5DA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41685,9 +41787,9 @@ AcDbText
   0
 TEXT
   5
-5D4
+5DB
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41719,9 +41821,9 @@ AcDbText
   0
 TEXT
   5
-5D5
+5DC
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41753,9 +41855,9 @@ AcDbText
   0
 LINE
   5
-5D6
+5DD
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41779,9 +41881,9 @@ AcDbLine
   0
 TEXT
   5
-5D7
+5DE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41813,9 +41915,9 @@ AcDbText
   0
 LINE
   5
-5D8
+5DF
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41839,9 +41941,9 @@ AcDbLine
   0
 LINE
   5
-5D9
+5E0
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41865,9 +41967,9 @@ AcDbLine
   0
 LINE
   5
-5DA
+5E1
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41891,9 +41993,9 @@ AcDbLine
   0
 INSERT
   5
-5DB
+5E2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41919,9 +42021,9 @@ PVSLD_GRID
   0
 TEXT
   5
-5DD
+5E4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41939,7 +42041,7 @@ AcDbText
  40
 3.2
   1
-Red eléctrica de distribución
+Red eléctrica de
   7
 PVSLD_STD
  11
@@ -41953,9 +42055,9 @@ AcDbText
   0
 TEXT
   5
-5DE
+5E5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -41967,7 +42069,41 @@ AcDbText
  10
 260.0
  20
-237.4
+237.6
+ 30
+0.0
+ 40
+3.2
+  1
+distribución
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+237.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+5E6
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+233.0
  30
 0.0
  40
@@ -41979,7 +42115,7 @@ PVSLD_STD
  11
 260.0
  21
-237.4
+233.0
  31
 0.0
 100
@@ -41987,9 +42123,9 @@ AcDbText
   0
 TEXT
   5
-5DF
+5E7
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42021,9 +42157,9 @@ AcDbText
   0
 LINE
   5
-5E0
+5E8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42047,9 +42183,9 @@ AcDbLine
   0
 LINE
   5
-5E1
+5E9
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42073,9 +42209,9 @@ AcDbLine
   0
 LINE
   5
-5E2
+5EA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42099,9 +42235,9 @@ AcDbLine
   0
 INSERT
   5
-5E3
+5EB
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42121,9 +42257,9 @@ PVSLD_PI
   0
 TEXT
   5
-5E5
+5ED
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42141,7 +42277,7 @@ AcDbText
  40
 3.2
   1
-Punto de interconexión (PI) con
+Punto de interconexión (PI)
   7
 PVSLD_STD
  11
@@ -42155,9 +42291,9 @@ AcDbText
   0
 TEXT
   5
-5E6
+5EE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42175,7 +42311,7 @@ AcDbText
  40
 3.2
   1
-la red de distribución
+con la red de distribución
   7
 PVSLD_STD
  11
@@ -42189,9 +42325,9 @@ AcDbText
   0
 TEXT
   5
-5E7
+5EF
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42223,9 +42359,9 @@ AcDbText
   0
 TEXT
   5
-5E8
+5F0
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42243,7 +42379,7 @@ AcDbText
  40
 2.4
   1
-pvsld (sin símbolo en CFE G0100-04 ni IEC
+pvsld (sin símbolo en CFE G0100-04 ni
   7
 PVSLD_STD
  11
@@ -42257,9 +42393,9 @@ AcDbText
   0
 TEXT
   5
-5E9
+5F1
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42277,7 +42413,7 @@ AcDbText
  40
 2.4
   1
-60617)
+IEC 60617)
   7
 PVSLD_STD
  11
@@ -42291,9 +42427,9 @@ AcDbText
   0
 LINE
   5
-5EA
+5F2
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42317,9 +42453,9 @@ AcDbLine
   0
 LINE
   5
-5EB
+5F3
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42343,9 +42479,9 @@ AcDbLine
   0
 LINE
   5
-5EC
+5F4
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42369,9 +42505,9 @@ AcDbLine
   0
 INSERT
   5
-5ED
+5F5
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42397,9 +42533,9 @@ PVSLD_PANEL
   0
 TEXT
   5
-5EF
+5F7
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42417,7 +42553,7 @@ AcDbText
  40
 3.2
   1
-Centro de carga o tablero con
+Centro de carga o tablero
   7
 PVSLD_STD
  11
@@ -42431,9 +42567,9 @@ AcDbText
   0
 TEXT
   5
-5F0
+5F8
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42451,7 +42587,7 @@ AcDbText
  40
 3.2
   1
-barra
+con barra
   7
 PVSLD_STD
  11
@@ -42465,9 +42601,9 @@ AcDbText
   0
 TEXT
   5
-5F1
+5F9
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42499,9 +42635,9 @@ AcDbText
   0
 TEXT
   5
-5F2
+5FA
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42533,9 +42669,9 @@ AcDbText
   0
 LINE
   5
-5F3
+5FB
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42559,9 +42695,9 @@ AcDbLine
   0
 LINE
   5
-5F4
+5FC
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42585,9 +42721,9 @@ AcDbLine
   0
 LINE
   5
-5F5
+5FD
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42611,9 +42747,9 @@ AcDbLine
   0
 INSERT
   5
-5F6
+5FE
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42639,9 +42775,9 @@ PVSLD_LOAD_LIGHT
   0
 TEXT
   5
-5F8
+600
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42673,9 +42809,9 @@ AcDbText
   0
 TEXT
   5
-5F9
+601
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42707,9 +42843,9 @@ AcDbText
   0
 TEXT
   5
-5FA
+602
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42741,9 +42877,9 @@ AcDbText
   0
 LINE
   5
-5FB
+603
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42767,9 +42903,9 @@ AcDbLine
   0
 LINE
   5
-5FC
+604
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42793,9 +42929,9 @@ AcDbLine
   0
 LINE
   5
-5FD
+605
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42819,9 +42955,9 @@ AcDbLine
   0
 INSERT
   5
-5FE
+606
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42841,9 +42977,9 @@ PVSLD_LOAD_RECEPT
   0
 TEXT
   5
-600
+608
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42875,9 +43011,9 @@ AcDbText
   0
 TEXT
   5
-601
+609
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42909,9 +43045,9 @@ AcDbText
   0
 TEXT
   5
-602
+60A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42943,9 +43079,9 @@ AcDbText
   0
 LINE
   5
-603
+60B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -42969,9 +43105,9 @@ AcDbLine
   0
 TEXT
   5
-604
+60C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43003,9 +43139,9 @@ AcDbText
   0
 LINE
   5
-605
+60D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43029,9 +43165,9 @@ AcDbLine
   0
 LINE
   5
-606
+60E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43055,9 +43191,9 @@ AcDbLine
   0
 LINE
   5
-607
+60F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43081,9 +43217,9 @@ AcDbLine
   0
 INSERT
   5
-608
+610
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43103,9 +43239,9 @@ PVSLD_GND
   0
 TEXT
   5
-60A
+612
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43123,7 +43259,7 @@ AcDbText
  40
 3.2
   1
-Electrodo de puesta a tierra
+Electrodo de puesta a
   7
 PVSLD_STD
  11
@@ -43137,9 +43273,9 @@ AcDbText
   0
 TEXT
   5
-60B
+613
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43151,7 +43287,41 @@ AcDbText
  10
 260.0
  20
-140.4
+140.6
+ 30
+0.0
+ 40
+3.2
+  1
+tierra
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+140.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+614
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+136.0
  30
 0.0
  40
@@ -43163,7 +43333,7 @@ PVSLD_STD
  11
 260.0
  21
-140.4
+136.0
  31
 0.0
 100
@@ -43171,9 +43341,9 @@ AcDbText
   0
 TEXT
   5
-60C
+615
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43205,9 +43375,9 @@ AcDbText
   0
 LINE
   5
-60D
+616
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43231,9 +43401,9 @@ AcDbLine
   0
 LINE
   5
-60E
+617
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43257,9 +43427,9 @@ AcDbLine
   0
 LINE
   5
-60F
+618
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43283,9 +43453,9 @@ AcDbLine
   0
 INSERT
   5
-610
+619
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43305,9 +43475,9 @@ PVSLD_PE
   0
 TEXT
   5
-612
+61B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43325,7 +43495,7 @@ AcDbText
  40
 3.2
   1
-Tierra de protección (conductor
+Tierra de protección
   7
 PVSLD_STD
  11
@@ -43339,9 +43509,9 @@ AcDbText
   0
 TEXT
   5
-613
+61C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43359,7 +43529,7 @@ AcDbText
  40
 3.2
   1
-de puesta a tierra de equipos)
+(conductor de puesta a
   7
 PVSLD_STD
  11
@@ -43373,9 +43543,9 @@ AcDbText
   0
 TEXT
   5
-614
+61D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43387,7 +43557,41 @@ AcDbText
  10
 260.0
  20
-117.99999999999999
+118.19999999999999
+ 30
+0.0
+ 40
+3.2
+  1
+tierra de equipos)
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+118.19999999999999
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+61E
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+113.59999999999998
  30
 0.0
  40
@@ -43399,7 +43603,7 @@ PVSLD_STD
  11
 260.0
  21
-117.99999999999999
+113.59999999999998
  31
 0.0
 100
@@ -43407,9 +43611,9 @@ AcDbText
   0
 TEXT
   5
-615
+61F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43441,9 +43645,9 @@ AcDbText
   0
 TEXT
   5
-616
+620
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43475,9 +43679,9 @@ AcDbText
   0
 LINE
   5
-617
+621
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43501,9 +43705,9 @@ AcDbLine
   0
 LINE
   5
-618
+622
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43527,9 +43731,9 @@ AcDbLine
   0
 LINE
   5
-619
+623
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43553,9 +43757,9 @@ AcDbLine
   0
 INSERT
   5
-61A
+624
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43575,9 +43779,9 @@ PVSLD_GND_BUS
   0
 TEXT
   5
-61C
+626
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43609,9 +43813,9 @@ AcDbText
   0
 TEXT
   5
-61D
+627
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43643,9 +43847,9 @@ AcDbText
   0
 TEXT
   5
-61E
+628
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43677,9 +43881,9 @@ AcDbText
   0
 LINE
   5
-61F
+629
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43703,9 +43907,9 @@ AcDbLine
   0
 LINE
   5
-620
+62A
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43729,9 +43933,9 @@ AcDbLine
   0
 LINE
   5
-621
+62B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43755,9 +43959,9 @@ AcDbLine
   0
 INSERT
   5
-622
+62C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43777,9 +43981,9 @@ PVSLD_NEUTRAL_BUS
   0
 TEXT
   5
-624
+62E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43811,9 +44015,9 @@ AcDbText
   0
 TEXT
   5
-625
+62F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43845,9 +44049,9 @@ AcDbText
   0
 TEXT
   5
-626
+630
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43879,9 +44083,9 @@ AcDbText
   0
 LINE
   5
-627
+631
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43905,9 +44109,9 @@ AcDbLine
   0
 TEXT
   5
-628
+632
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43939,9 +44143,9 @@ AcDbText
   0
 LINE
   5
-629
+633
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43965,9 +44169,9 @@ AcDbLine
   0
 LINE
   5
-62A
+634
 330
-562
+566
 100
 AcDbEntity
  67
@@ -43991,9 +44195,9 @@ AcDbLine
   0
 LINE
   5
-62B
+635
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44017,9 +44221,9 @@ AcDbLine
   0
 INSERT
   5
-62C
+636
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44045,9 +44249,9 @@ PVSLD_XFMR
   0
 TEXT
   5
-62E
+638
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44065,7 +44269,7 @@ AcDbText
  40
 3.2
   1
-Transformador de potencia MT/BT
+Transformador de potencia
   7
 PVSLD_STD
  11
@@ -44079,9 +44283,9 @@ AcDbText
   0
 TEXT
   5
-62F
+639
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44093,7 +44297,41 @@ AcDbText
  10
 260.0
  20
-61.4
+61.6
+ 30
+0.0
+ 40
+3.2
+  1
+MT/BT
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+61.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+63A
+330
+566
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+57.0
  30
 0.0
  40
@@ -44105,7 +44343,7 @@ PVSLD_STD
  11
 260.0
  21
-61.4
+57.0
  31
 0.0
 100
@@ -44113,9 +44351,9 @@ AcDbText
   0
 TEXT
   5
-630
+63B
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44147,9 +44385,9 @@ AcDbText
   0
 LINE
   5
-631
+63C
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44173,9 +44411,9 @@ AcDbLine
   0
 LINE
   5
-632
+63D
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44199,9 +44437,9 @@ AcDbLine
   0
 LINE
   5
-633
+63E
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44225,9 +44463,9 @@ AcDbLine
   0
 INSERT
   5
-634
+63F
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44247,9 +44485,9 @@ PVSLD_CUTOUT
   0
 TEXT
   5
-636
+641
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44281,9 +44519,9 @@ AcDbText
   0
 TEXT
   5
-637
+642
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44315,9 +44553,9 @@ AcDbText
   0
 TEXT
   5
-638
+643
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44335,7 +44573,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.122 (FUS-DES, IEC
+NMX-J-136-ANCE-2019 4.2.122 (FUS-DES,
   7
 PVSLD_STD
  11
@@ -44349,9 +44587,9 @@ AcDbText
   0
 TEXT
   5
-639
+644
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44369,7 +44607,7 @@ AcDbText
  40
 2.4
   1
-S00368)
+IEC S00368)
   7
 PVSLD_STD
  11
@@ -44383,9 +44621,9 @@ AcDbText
   0
 TEXT
   5
-63A
+645
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44417,9 +44655,9 @@ AcDbText
   0
 TEXT
   5
-63B
+646
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44451,9 +44689,9 @@ AcDbText
   0
 TEXT
   5
-63C
+647
 330
-562
+566
 100
 AcDbEntity
  67
@@ -44485,9 +44723,9 @@ AcDbText
   0
 ENDBLK
   5
-564
+568
 330
-562
+566
 100
 AcDbEntity
   8
@@ -44497,9 +44735,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-63E
+649
 330
-63D
+648
 100
 AcDbEntity
   8
@@ -44523,9 +44761,9 @@ AcDbBlockBegin
   0
 VIEWPORT
   5
-641
+64C
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44627,9 +44865,9 @@ AcDbViewport
   0
 LWPOLYLINE
   5
-642
+64D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44663,9 +44901,9 @@ AcDbPolyline
   0
 TEXT
   5
-643
+64E
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44697,9 +44935,9 @@ AcDbText
   0
 TEXT
   5
-644
+64F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44731,9 +44969,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-645
+650
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44765,9 +45003,9 @@ AcDbPolyline
   0
 LINE
   5
-646
+651
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44791,9 +45029,9 @@ AcDbLine
   0
 TEXT
   5
-647
+652
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44825,9 +45063,9 @@ AcDbText
   0
 TEXT
   5
-648
+653
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44859,9 +45097,9 @@ AcDbText
   0
 TEXT
   5
-649
+654
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44893,9 +45131,9 @@ AcDbText
   0
 LINE
   5
-64A
+655
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44919,9 +45157,9 @@ AcDbLine
   0
 TEXT
   5
-64B
+656
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44953,9 +45191,9 @@ AcDbText
   0
 LINE
   5
-64C
+657
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -44979,9 +45217,9 @@ AcDbLine
   0
 LINE
   5
-64D
+658
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45005,9 +45243,9 @@ AcDbLine
   0
 LINE
   5
-64E
+659
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45031,9 +45269,9 @@ AcDbLine
   0
 INSERT
   5
-64F
+65A
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45059,9 +45297,9 @@ PVSLD_ARRESTER_MV
   0
 TEXT
   5
-651
+65C
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45079,7 +45317,7 @@ AcDbText
  40
 3.2
   1
-Apartarrayos de media tensión
+Apartarrayos de media
   7
 PVSLD_STD
  11
@@ -45093,9 +45331,9 @@ AcDbText
   0
 TEXT
   5
-652
+65D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45107,7 +45345,41 @@ AcDbText
  10
 60.0
  20
-237.4
+237.6
+ 30
+0.0
+ 40
+3.2
+  1
+tensión
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+237.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+65E
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+233.0
  30
 0.0
  40
@@ -45119,7 +45391,7 @@ PVSLD_STD
  11
 60.0
  21
-237.4
+233.0
  31
 0.0
 100
@@ -45127,9 +45399,9 @@ AcDbText
   0
 TEXT
   5
-653
+65F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45161,9 +45433,9 @@ AcDbText
   0
 TEXT
   5
-654
+660
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45195,9 +45467,9 @@ AcDbText
   0
 LINE
   5
-655
+661
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45221,9 +45493,9 @@ AcDbLine
   0
 LINE
   5
-656
+662
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45247,9 +45519,9 @@ AcDbLine
   0
 LINE
   5
-657
+663
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45273,9 +45545,9 @@ AcDbLine
   0
 INSERT
   5
-658
+664
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45295,9 +45567,9 @@ PVSLD_DISCONNECT_MV
   0
 TEXT
   5
-65A
+666
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45315,7 +45587,7 @@ AcDbText
  40
 3.2
   1
-Cuchillas desconectadoras de
+Cuchillas desconectadoras
   7
 PVSLD_STD
  11
@@ -45329,9 +45601,9 @@ AcDbText
   0
 TEXT
   5
-65B
+667
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45349,7 +45621,7 @@ AcDbText
  40
 3.2
   1
-media tensión
+de media tensión
   7
 PVSLD_STD
  11
@@ -45363,9 +45635,9 @@ AcDbText
   0
 TEXT
   5
-65C
+668
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45397,9 +45669,9 @@ AcDbText
   0
 TEXT
   5
-65D
+669
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45431,9 +45703,9 @@ AcDbText
   0
 LINE
   5
-65E
+66A
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45457,9 +45729,9 @@ AcDbLine
   0
 LINE
   5
-65F
+66B
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45483,9 +45755,9 @@ AcDbLine
   0
 LINE
   5
-660
+66C
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45509,9 +45781,9 @@ AcDbLine
   0
 INSERT
   5
-661
+66D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45531,9 +45803,9 @@ PVSLD_CT_MV
   0
 TEXT
   5
-663
+66F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45551,7 +45823,7 @@ AcDbText
  40
 3.2
   1
-Transformador de corriente (TC)
+Transformador de corriente
   7
 PVSLD_STD
  11
@@ -45565,9 +45837,9 @@ AcDbText
   0
 TEXT
   5
-664
+670
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45579,7 +45851,41 @@ AcDbText
  10
 60.0
  20
-201.4
+201.6
+ 30
+0.0
+ 40
+3.2
+  1
+(TC)
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+201.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+671
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+197.0
  30
 0.0
  40
@@ -45591,7 +45897,7 @@ PVSLD_STD
  11
 60.0
  21
-201.4
+197.0
  31
 0.0
 100
@@ -45599,9 +45905,9 @@ AcDbText
   0
 TEXT
   5
-665
+672
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45633,9 +45939,9 @@ AcDbText
   0
 LINE
   5
-666
+673
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45659,9 +45965,9 @@ AcDbLine
   0
 LINE
   5
-667
+674
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45685,9 +45991,9 @@ AcDbLine
   0
 LINE
   5
-668
+675
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45711,9 +46017,9 @@ AcDbLine
   0
 INSERT
   5
-669
+676
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45733,9 +46039,9 @@ PVSLD_VT_MV
   0
 TEXT
   5
-66B
+678
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45753,7 +46059,7 @@ AcDbText
  40
 3.2
   1
-Transformador de potencial (TP)
+Transformador de potencial
   7
 PVSLD_STD
  11
@@ -45767,9 +46073,9 @@ AcDbText
   0
 TEXT
   5
-66C
+679
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45781,7 +46087,41 @@ AcDbText
  10
 60.0
  20
-183.4
+183.6
+ 30
+0.0
+ 40
+3.2
+  1
+(TP)
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+183.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+67A
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+179.0
  30
 0.0
  40
@@ -45793,7 +46133,7 @@ PVSLD_STD
  11
 60.0
  21
-183.4
+179.0
  31
 0.0
 100
@@ -45801,9 +46141,9 @@ AcDbText
   0
 TEXT
   5
-66D
+67B
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45835,9 +46175,9 @@ AcDbText
   0
 LINE
   5
-66E
+67C
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45861,9 +46201,9 @@ AcDbLine
   0
 TEXT
   5
-66F
+67D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45895,9 +46235,9 @@ AcDbText
   0
 LINE
   5
-670
+67E
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45921,9 +46261,9 @@ AcDbLine
   0
 LINE
   5
-671
+67F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45947,9 +46287,9 @@ AcDbLine
   0
 LINE
   5
-672
+680
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45973,9 +46313,9 @@ AcDbLine
   0
 INSERT
   5
-673
+681
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -45995,9 +46335,9 @@ PVSLD_BUSBAR
   0
 TEXT
   5
-675
+683
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46015,7 +46355,7 @@ AcDbText
  40
 3.2
   1
-Barra colectora con puntos de
+Barra colectora con puntos
   7
 PVSLD_STD
  11
@@ -46029,9 +46369,9 @@ AcDbText
   0
 TEXT
   5
-676
+684
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46049,7 +46389,7 @@ AcDbText
  40
 3.2
   1
-unión
+de unión
   7
 PVSLD_STD
  11
@@ -46063,9 +46403,9 @@ AcDbText
   0
 TEXT
   5
-677
+685
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46097,9 +46437,9 @@ AcDbText
   0
 TEXT
   5
-678
+686
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46117,7 +46457,7 @@ AcDbText
  40
 2.4
   1
-CFE G0100-04 Apéndice D, figs. D1 y D2
+CFE G0100-04 Apéndice D, figs. D1 y
   7
 PVSLD_STD
  11
@@ -46131,9 +46471,9 @@ AcDbText
   0
 TEXT
   5
-679
+687
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46151,7 +46491,7 @@ AcDbText
  40
 2.4
   1
-(barra de ramas)
+D2 (barra de ramas)
   7
 PVSLD_STD
  11
@@ -46165,9 +46505,9 @@ AcDbText
   0
 LINE
   5
-67A
+688
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46191,9 +46531,9 @@ AcDbLine
   0
 LINE
   5
-67B
+689
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46217,9 +46557,9 @@ AcDbLine
   0
 LINE
   5
-67C
+68A
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46243,9 +46583,9 @@ AcDbLine
   0
 INSERT
   5
-67D
+68B
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46265,9 +46605,9 @@ PVSLD_TERMINAL
   0
 TEXT
   5
-67F
+68D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46299,9 +46639,9 @@ AcDbText
   0
 TEXT
   5
-680
+68E
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46333,9 +46673,9 @@ AcDbText
   0
 TEXT
   5
-681
+68F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46353,7 +46693,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.140 (IEC S00017)
+NMX-J-136-ANCE-2019 4.2.140 (IEC
   7
 PVSLD_STD
  11
@@ -46365,11 +46705,45 @@ PVSLD_STD
 100
 AcDbText
   0
+TEXT
+  5
+690
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
+141.5
+ 30
+0.0
+ 40
+2.4
+  1
+S00017)
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+141.5
+ 31
+0.0
+100
+AcDbText
+  0
 LINE
   5
-682
+691
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46393,9 +46767,9 @@ AcDbLine
   0
 LINE
   5
-683
+692
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46419,9 +46793,9 @@ AcDbLine
   0
 LINE
   5
-684
+693
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46445,9 +46819,9 @@ AcDbLine
   0
 INSERT
   5
-685
+694
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46467,9 +46841,9 @@ PVSLD_CROSSING
   0
 TEXT
   5
-687
+696
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46501,9 +46875,9 @@ AcDbText
   0
 TEXT
   5
-688
+697
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46535,9 +46909,9 @@ AcDbText
   0
 TEXT
   5
-689
+698
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46569,9 +46943,9 @@ AcDbText
   0
 TEXT
   5
-68A
+699
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46603,9 +46977,9 @@ AcDbText
   0
 LINE
   5
-68B
+69A
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46629,9 +47003,9 @@ AcDbLine
   0
 LINE
   5
-68C
+69B
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46655,9 +47029,9 @@ AcDbLine
   0
 LINE
   5
-68D
+69C
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46681,9 +47055,9 @@ AcDbLine
   0
 INSERT
   5
-68E
+69D
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46703,9 +47077,9 @@ PVSLD_JUNCTION
   0
 TEXT
   5
-690
+69F
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46723,7 +47097,7 @@ AcDbText
  40
 3.2
   1
-Unión de conductores (punto)
+Unión de conductores
   7
 PVSLD_STD
  11
@@ -46737,9 +47111,9 @@ AcDbText
   0
 TEXT
   5
-691
+6A0
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46751,7 +47125,41 @@ AcDbText
  10
 60.0
  20
-104.39999999999999
+104.6
+ 30
+0.0
+ 40
+3.2
+  1
+(punto)
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+104.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+6A1
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+99.99999999999999
  30
 0.0
  40
@@ -46763,7 +47171,7 @@ PVSLD_STD
  11
 60.0
  21
-104.39999999999999
+99.99999999999999
  31
 0.0
 100
@@ -46771,9 +47179,9 @@ AcDbText
   0
 TEXT
   5
-692
+6A2
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46805,9 +47213,9 @@ AcDbText
   0
 LINE
   5
-693
+6A3
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46831,9 +47239,9 @@ AcDbLine
   0
 LINE
   5
-694
+6A4
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46857,9 +47265,9 @@ AcDbLine
   0
 LINE
   5
-695
+6A5
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46883,9 +47291,9 @@ AcDbLine
   0
 INSERT
   5
-696
+6A6
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46905,9 +47313,9 @@ PVSLD_COND_MARK
   0
 TEXT
   5
-698
+6A8
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46925,7 +47333,7 @@ AcDbText
  40
 3.2
   1
-Marca de número de conductores
+Marca de número de
   7
 PVSLD_STD
  11
@@ -46939,9 +47347,9 @@ AcDbText
   0
 TEXT
   5
-699
+6A9
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -46953,7 +47361,41 @@ AcDbText
  10
 60.0
  20
-86.39999999999999
+86.6
+ 30
+0.0
+ 40
+3.2
+  1
+conductores
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+86.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+6AA
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+81.99999999999999
  30
 0.0
  40
@@ -46965,7 +47407,7 @@ PVSLD_STD
  11
 60.0
  21
-86.39999999999999
+81.99999999999999
  31
 0.0
 100
@@ -46973,9 +47415,9 @@ AcDbText
   0
 TEXT
   5
-69A
+6AB
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47007,9 +47449,9 @@ AcDbText
   0
 LINE
   5
-69B
+6AC
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47033,9 +47475,9 @@ AcDbLine
   0
 LINE
   5
-69C
+6AD
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47059,9 +47501,9 @@ AcDbLine
   0
 LINE
   5
-69D
+6AE
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47085,9 +47527,9 @@ AcDbLine
   0
 INSERT
   5
-69E
+6AF
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47107,9 +47549,9 @@ PVSLD_POL_POS
   0
 TEXT
   5
-6A0
+6B1
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47141,9 +47583,9 @@ AcDbText
   0
 TEXT
   5
-6A1
+6B2
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47175,9 +47617,9 @@ AcDbText
   0
 TEXT
   5
-6A2
+6B3
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47209,9 +47651,9 @@ AcDbText
   0
 LINE
   5
-6A3
+6B4
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47235,9 +47677,9 @@ AcDbLine
   0
 LINE
   5
-6A4
+6B5
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47261,9 +47703,9 @@ AcDbLine
   0
 LINE
   5
-6A5
+6B6
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47287,9 +47729,9 @@ AcDbLine
   0
 INSERT
   5
-6A6
+6B7
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47309,9 +47751,9 @@ PVSLD_POL_NEG
   0
 TEXT
   5
-6A8
+6B9
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47343,9 +47785,9 @@ AcDbText
   0
 TEXT
   5
-6A9
+6BA
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47377,9 +47819,9 @@ AcDbText
   0
 TEXT
   5
-6AA
+6BB
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47411,9 +47853,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-6AB
+6BC
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47445,9 +47887,9 @@ AcDbPolyline
   0
 LINE
   5
-6AC
+6BD
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47471,9 +47913,9 @@ AcDbLine
   0
 TEXT
   5
-6AD
+6BE
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47505,9 +47947,9 @@ AcDbText
   0
 TEXT
   5
-6AE
+6BF
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47539,9 +47981,9 @@ AcDbText
   0
 TEXT
   5
-6AF
+6C0
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47573,9 +48015,9 @@ AcDbText
   0
 LINE
   5
-6B0
+6C1
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47599,9 +48041,9 @@ AcDbLine
   0
 TEXT
   5
-6B1
+6C2
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47633,9 +48075,9 @@ AcDbText
   0
 LINE
   5
-6B2
+6C3
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47659,9 +48101,9 @@ AcDbLine
   0
 LINE
   5
-6B3
+6C4
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47685,9 +48127,9 @@ AcDbLine
   0
 LINE
   5
-6B4
+6C5
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47711,9 +48153,9 @@ AcDbLine
   0
 INSERT
   5
-6B5
+6C6
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47739,9 +48181,9 @@ PVSLD_ENCLOSURE
   0
 TEXT
   5
-6B7
+6C8
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47759,7 +48201,7 @@ AcDbText
  40
 3.2
   1
-Gabinete o estructura metálica
+Gabinete o estructura
   7
 PVSLD_STD
  11
@@ -47773,9 +48215,9 @@ AcDbText
   0
 TEXT
   5
-6B8
+6C9
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47787,7 +48229,41 @@ AcDbText
  10
 260.0
  20
-237.4
+237.6
+ 30
+0.0
+ 40
+3.2
+  1
+metálica
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+237.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+6CA
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+233.0
  30
 0.0
  40
@@ -47799,7 +48275,7 @@ PVSLD_STD
  11
 260.0
  21
-237.4
+233.0
  31
 0.0
 100
@@ -47807,9 +48283,9 @@ AcDbText
   0
 TEXT
   5
-6B9
+6CB
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47841,9 +48317,9 @@ AcDbText
   0
 LINE
   5
-6BA
+6CC
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47867,9 +48343,9 @@ AcDbLine
   0
 LINE
   5
-6BB
+6CD
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47893,9 +48369,9 @@ AcDbLine
   0
 LINE
   5
-6BC
+6CE
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47919,9 +48395,9 @@ AcDbLine
   0
 INSERT
   5
-6BD
+6CF
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47947,9 +48423,9 @@ PVSLD_BOUNDARY
   0
 TEXT
   5
-6BF
+6D1
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -47967,7 +48443,7 @@ AcDbText
  40
 3.2
   1
-Límite de responsabilidad CFE /
+Límite de responsabilidad
   7
 PVSLD_STD
  11
@@ -47981,9 +48457,9 @@ AcDbText
   0
 TEXT
   5
-6C0
+6D2
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48001,7 +48477,7 @@ AcDbText
  40
 3.2
   1
-usuario
+CFE / usuario
   7
 PVSLD_STD
  11
@@ -48015,9 +48491,9 @@ AcDbText
   0
 TEXT
   5
-6C1
+6D3
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48049,9 +48525,9 @@ AcDbText
   0
 TEXT
   5
-6C2
+6D4
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48069,7 +48545,7 @@ AcDbText
  40
 2.4
   1
-pvsld (composición); línea punto-punto-
+pvsld (composición); línea punto-
   7
 PVSLD_STD
  11
@@ -48083,9 +48559,9 @@ AcDbText
   0
 TEXT
   5
-6C3
+6D5
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48103,7 +48579,7 @@ AcDbText
  40
 2.4
   1
-raya con los rótulos CFE y USUARIO
+punto-raya con los rótulos CFE y
   7
 PVSLD_STD
  11
@@ -48115,11 +48591,45 @@ PVSLD_STD
 100
 AcDbText
   0
+TEXT
+  5
+6D6
+330
+648
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+217.0
+ 30
+0.0
+ 40
+2.4
+  1
+USUARIO
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+217.0
+ 31
+0.0
+100
+AcDbText
+  0
 LINE
   5
-6C4
+6D7
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48143,9 +48653,9 @@ AcDbLine
   0
 LINE
   5
-6C5
+6D8
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48169,9 +48679,9 @@ AcDbLine
   0
 LINE
   5
-6C6
+6D9
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48195,9 +48705,9 @@ AcDbLine
   0
 INSERT
   5
-6C7
+6DA
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48223,9 +48733,9 @@ PVSLD_TTLB
   0
 TEXT
   5
-6C9
+6DC
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48243,7 +48753,7 @@ AcDbText
  40
 3.2
   1
-Cuadro de datos del plano (pie
+Cuadro de datos del plano
   7
 PVSLD_STD
  11
@@ -48257,9 +48767,9 @@ AcDbText
   0
 TEXT
   5
-6CA
+6DD
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48277,7 +48787,7 @@ AcDbText
  40
 3.2
   1
-de plano)
+(pie de plano)
   7
 PVSLD_STD
  11
@@ -48291,9 +48801,9 @@ AcDbText
   0
 TEXT
   5
-6CB
+6DE
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48325,9 +48835,9 @@ AcDbText
   0
 TEXT
   5
-6CC
+6DF
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48345,7 +48855,7 @@ AcDbText
  40
 2.4
   1
-pvsld (sin símbolo en CFE G0100-04 ni IEC
+pvsld (sin símbolo en CFE G0100-04 ni
   7
 PVSLD_STD
  11
@@ -48359,9 +48869,9 @@ AcDbText
   0
 TEXT
   5
-6CD
+6E0
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48379,7 +48889,7 @@ AcDbText
  40
 2.4
   1
-60617)
+IEC 60617)
   7
 PVSLD_STD
  11
@@ -48393,9 +48903,9 @@ AcDbText
   0
 TEXT
   5
-6CE
+6E1
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48427,9 +48937,9 @@ AcDbText
   0
 TEXT
   5
-6CF
+6E2
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48461,9 +48971,9 @@ AcDbText
   0
 TEXT
   5
-6D0
+6E3
 330
-63D
+648
 100
 AcDbEntity
  67
@@ -48495,9 +49005,9 @@ AcDbText
   0
 ENDBLK
   5
-63F
+64A
 330
-63D
+648
 100
 AcDbEntity
   8
@@ -49277,7 +49787,7 @@ AcDbText
  40
 3.2
   1
-Rama de módulos fotovoltaicos
+Rama de módulos
   7
 PVSLD_STD
  11
@@ -49311,7 +49821,7 @@ AcDbText
  40
 3.2
   1
-en serie
+fotovoltaicos en serie
   7
 PVSLD_STD
  11
@@ -49829,7 +50339,7 @@ AcDbText
  40
 2.4
   1
-pvsld (composición) según CFE G0100-04
+pvsld (composición) según CFE
   7
 PVSLD_STD
  11
@@ -49863,7 +50373,7 @@ AcDbText
  40
 2.4
   1
-Apéndice D, figs. D1 y D2
+G0100-04 Apéndice D, figs. D1 y D2
   7
 PVSLD_STD
  11
@@ -50071,7 +50581,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.280 (batería de
+NMX-J-136-ANCE-2019 4.2.280 (batería
   7
 PVSLD_STD
  11
@@ -50105,7 +50615,7 @@ AcDbText
  40
 2.4
   1
-celdas, forma 1)
+de celdas, forma 1)
   7
 PVSLD_STD
  11
@@ -50513,7 +51023,7 @@ AcDbText
  40
 3.2
   1
-Inversor híbrido (con puerto de
+Inversor híbrido (con
   7
 PVSLD_STD
  11
@@ -50547,7 +51057,7 @@ AcDbText
  40
 3.2
   1
-batería)
+puerto de batería)
   7
 PVSLD_STD
  11
@@ -50615,7 +51125,7 @@ AcDbText
  40
 2.4
   1
-pvsld (composición) sobre CFE G0100-04
+pvsld (composición) sobre CFE
   7
 PVSLD_STD
  11
@@ -50649,7 +51159,7 @@ AcDbText
  40
 2.4
   1
-Apéndice C (inversor); ref. DGE 06-63-06
+G0100-04 Apéndice C (inversor); ref.
   7
 PVSLD_STD
  11
@@ -50661,9 +51171,43 @@ PVSLD_STD
 100
 AcDbText
   0
-LINE
+TEXT
   5
 4CE
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
+120.0
+ 30
+0.0
+ 40
+2.4
+  1
+DGE 06-63-06
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+120.0
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+4CF
 330
 1B
 100
@@ -50689,7 +51233,7 @@ AcDbLine
   0
 LINE
   5
-4CF
+4D0
 330
 1B
 100
@@ -50715,7 +51259,7 @@ AcDbLine
   0
 LINE
   5
-4D0
+4D1
 330
 1B
 100
@@ -50741,7 +51285,7 @@ AcDbLine
   0
 INSERT
   5
-4D1
+4D2
 330
 1B
 100
@@ -50769,7 +51313,7 @@ PVSLD_MICROINV
   0
 TEXT
   5
-4D3
+4D4
 330
 1B
 100
@@ -50803,7 +51347,7 @@ AcDbText
   0
 TEXT
   5
-4D4
+4D5
 330
 1B
 100
@@ -50837,40 +51381,6 @@ AcDbText
   0
 TEXT
   5
-4D5
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-134.0
- 20
-109.0
- 30
-0.0
- 40
-2.4
-  1
-pvsld (composición) sobre CFE G0100-04
-  7
-PVSLD_STD
- 11
-134.0
- 21
-109.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
 4D6
 330
 1B
@@ -50885,13 +51395,47 @@ AcDbText
  10
 134.0
  20
+109.0
+ 30
+0.0
+ 40
+2.4
+  1
+pvsld (composición) sobre CFE
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+109.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+4D7
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
 105.5
  30
 0.0
  40
 2.4
   1
-Apéndice C (inversor)
+G0100-04 Apéndice C (inversor)
   7
 PVSLD_STD
  11
@@ -50905,7 +51449,7 @@ AcDbText
   0
 LINE
   5
-4D7
+4D8
 330
 1B
 100
@@ -50931,7 +51475,7 @@ AcDbLine
   0
 LINE
   5
-4D8
+4D9
 330
 1B
 100
@@ -50957,7 +51501,7 @@ AcDbLine
   0
 LINE
   5
-4D9
+4DA
 330
 1B
 100
@@ -50983,7 +51527,7 @@ AcDbLine
   0
 INSERT
   5
-4DA
+4DB
 330
 1B
 100
@@ -51011,7 +51555,7 @@ PVSLD_OPTIMIZER
   0
 TEXT
   5
-4DC
+4DD
 330
 1B
 100
@@ -51045,7 +51589,7 @@ AcDbText
   0
 TEXT
   5
-4DD
+4DE
 330
 1B
 100
@@ -51079,7 +51623,7 @@ AcDbText
   0
 TEXT
   5
-4DE
+4DF
 330
 1B
 100
@@ -51113,40 +51657,6 @@ AcDbText
   0
 TEXT
   5
-4DF
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-134.0
- 20
-91.0
- 30
-0.0
- 40
-2.4
-  1
-pvsld (composición); convertidor CD/CD de
-  7
-PVSLD_STD
- 11
-134.0
- 21
-91.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
 4E0
 330
 1B
@@ -51161,13 +51671,47 @@ AcDbText
  10
 134.0
  20
+91.0
+ 30
+0.0
+ 40
+2.4
+  1
+pvsld (composición); convertidor
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+91.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+4E1
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
 87.5
  30
 0.0
  40
 2.4
   1
-DGE (basada en IEC 60617) 06-63-02
+CD/CD de DGE (basada en IEC 60617)
   7
 PVSLD_STD
  11
@@ -51179,9 +51723,43 @@ PVSLD_STD
 100
 AcDbText
   0
+TEXT
+  5
+4E2
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
+84.0
+ 30
+0.0
+ 40
+2.4
+  1
+06-63-02
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+84.0
+ 31
+0.0
+100
+AcDbText
+  0
 LINE
   5
-4E1
+4E3
 330
 1B
 100
@@ -51207,7 +51785,7 @@ AcDbLine
   0
 LINE
   5
-4E2
+4E4
 330
 1B
 100
@@ -51233,7 +51811,7 @@ AcDbLine
   0
 LINE
   5
-4E3
+4E5
 330
 1B
 100
@@ -51259,7 +51837,7 @@ AcDbLine
   0
 INSERT
   5
-4E4
+4E6
 330
 1B
 100
@@ -51287,7 +51865,7 @@ PVSLD_CHARGE_CTRL
   0
 TEXT
   5
-4E6
+4E8
 330
 1B
 100
@@ -51321,7 +51899,7 @@ AcDbText
   0
 TEXT
   5
-4E7
+4E9
 330
 1B
 100
@@ -51355,7 +51933,7 @@ AcDbText
   0
 TEXT
   5
-4E8
+4EA
 330
 1B
 100
@@ -51375,7 +51953,7 @@ AcDbText
  40
 2.4
   1
-pvsld (composición); convertidor CD/CD de
+pvsld (composición); convertidor
   7
 PVSLD_STD
  11
@@ -51389,7 +51967,7 @@ AcDbText
   0
 TEXT
   5
-4E9
+4EB
 330
 1B
 100
@@ -51409,7 +51987,7 @@ AcDbText
  40
 2.4
   1
-DGE (basada en IEC 60617) 06-63-02
+CD/CD de DGE (basada en IEC 60617)
   7
 PVSLD_STD
  11
@@ -51421,9 +51999,43 @@ PVSLD_STD
 100
 AcDbText
   0
+TEXT
+  5
+4EC
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+134.0
+ 20
+66.0
+ 30
+0.0
+ 40
+2.4
+  1
+06-63-02
+  7
+PVSLD_STD
+ 11
+134.0
+ 21
+66.0
+ 31
+0.0
+100
+AcDbText
+  0
 LINE
   5
-4EA
+4ED
 330
 1B
 100
@@ -51449,7 +52061,7 @@ AcDbLine
   0
 LINE
   5
-4EB
+4EE
 330
 1B
 100
@@ -51475,7 +52087,7 @@ AcDbLine
   0
 LINE
   5
-4EC
+4EF
 330
 1B
 100
@@ -51501,7 +52113,7 @@ AcDbLine
   0
 INSERT
   5
-4ED
+4F0
 330
 1B
 100
@@ -51529,7 +52141,7 @@ PVSLD_XFMR_ISO
   0
 TEXT
   5
-4EF
+4F2
 330
 1B
 100
@@ -51549,7 +52161,7 @@ AcDbText
  40
 3.2
   1
-Transformador de aislamiento
+Transformador de
   7
 PVSLD_STD
  11
@@ -51563,7 +52175,7 @@ AcDbText
   0
 TEXT
   5
-4F0
+4F3
 330
 1B
 100
@@ -51577,7 +52189,41 @@ AcDbText
  10
 60.0
  20
-50.4
+50.6
+ 30
+0.0
+ 40
+3.2
+  1
+aislamiento
+  7
+PVSLD_STD
+ 11
+60.0
+ 21
+50.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+4F4
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+60.0
+ 20
+46.0
  30
 0.0
  40
@@ -51589,7 +52235,7 @@ PVSLD_STD
  11
 60.0
  21
-50.4
+46.0
  31
 0.0
 100
@@ -51597,7 +52243,7 @@ AcDbText
   0
 TEXT
   5
-4F1
+4F5
 330
 1B
 100
@@ -51631,7 +52277,7 @@ AcDbText
   0
 LWPOLYLINE
   5
-4F2
+4F6
 330
 1B
 100
@@ -51665,7 +52311,7 @@ AcDbPolyline
   0
 LINE
   5
-4F3
+4F7
 330
 1B
 100
@@ -51691,7 +52337,7 @@ AcDbLine
   0
 TEXT
   5
-4F4
+4F8
 330
 1B
 100
@@ -51725,7 +52371,7 @@ AcDbText
   0
 TEXT
   5
-4F5
+4F9
 330
 1B
 100
@@ -51759,7 +52405,7 @@ AcDbText
   0
 TEXT
   5
-4F6
+4FA
 330
 1B
 100
@@ -51793,7 +52439,7 @@ AcDbText
   0
 LINE
   5
-4F7
+4FB
 330
 1B
 100
@@ -51819,7 +52465,7 @@ AcDbLine
   0
 TEXT
   5
-4F8
+4FC
 330
 1B
 100
@@ -51853,7 +52499,7 @@ AcDbText
   0
 LINE
   5
-4F9
+4FD
 330
 1B
 100
@@ -51879,7 +52525,7 @@ AcDbLine
   0
 LINE
   5
-4FA
+4FE
 330
 1B
 100
@@ -51905,7 +52551,7 @@ AcDbLine
   0
 LINE
   5
-4FB
+4FF
 330
 1B
 100
@@ -51931,7 +52577,7 @@ AcDbLine
   0
 INSERT
   5
-4FC
+500
 330
 1B
 100
@@ -51953,7 +52599,7 @@ PVSLD_CB
   0
 TEXT
   5
-4FE
+502
 330
 1B
 100
@@ -51987,7 +52633,7 @@ AcDbText
   0
 TEXT
   5
-4FF
+503
 330
 1B
 100
@@ -52021,7 +52667,7 @@ AcDbText
   0
 TEXT
   5
-500
+504
 330
 1B
 100
@@ -52055,7 +52701,7 @@ AcDbText
   0
 TEXT
   5
-501
+505
 330
 1B
 100
@@ -52089,7 +52735,7 @@ AcDbText
   0
 LINE
   5
-502
+506
 330
 1B
 100
@@ -52115,7 +52761,7 @@ AcDbLine
   0
 LINE
   5
-503
+507
 330
 1B
 100
@@ -52141,7 +52787,7 @@ AcDbLine
   0
 LINE
   5
-504
+508
 330
 1B
 100
@@ -52167,7 +52813,7 @@ AcDbLine
   0
 INSERT
   5
-505
+509
 330
 1B
 100
@@ -52195,7 +52841,7 @@ PVSLD_CB_IEC
   0
 TEXT
   5
-507
+50B
 330
 1B
 100
@@ -52229,7 +52875,7 @@ AcDbText
   0
 TEXT
   5
-508
+50C
 330
 1B
 100
@@ -52263,7 +52909,7 @@ AcDbText
   0
 TEXT
   5
-509
+50D
 330
 1B
 100
@@ -52297,7 +52943,7 @@ AcDbText
   0
 TEXT
   5
-50A
+50E
 330
 1B
 100
@@ -52317,7 +52963,7 @@ AcDbText
  40
 2.4
   1
-UNE-EN 60617 (hoja del propietario, p.
+UNE-EN 60617 (hoja del propietario,
   7
 PVSLD_STD
  11
@@ -52331,7 +52977,7 @@ AcDbText
   0
 TEXT
   5
-50B
+50F
 330
 1B
 100
@@ -52351,7 +52997,7 @@ AcDbText
  40
 2.4
   1
-4); cf. NMX-J-136-ANCE-2019 4.2.169 (IEC
+p. 4); cf. NMX-J-136-ANCE-2019
   7
 PVSLD_STD
  11
@@ -52365,7 +53011,7 @@ AcDbText
   0
 TEXT
   5
-50C
+510
 330
 1B
 100
@@ -52385,7 +53031,7 @@ AcDbText
  40
 2.4
   1
-S00287)
+4.2.169 (IEC S00287)
   7
 PVSLD_STD
  11
@@ -52399,7 +53045,7 @@ AcDbText
   0
 LINE
   5
-50D
+511
 330
 1B
 100
@@ -52425,7 +53071,7 @@ AcDbLine
   0
 LINE
   5
-50E
+512
 330
 1B
 100
@@ -52451,7 +53097,7 @@ AcDbLine
   0
 LINE
   5
-50F
+513
 330
 1B
 100
@@ -52477,7 +53123,7 @@ AcDbLine
   0
 INSERT
   5
-510
+514
 330
 1B
 100
@@ -52505,7 +53151,7 @@ PVSLD_RCD
   0
 TEXT
   5
-512
+516
 330
 1B
 100
@@ -52539,7 +53185,7 @@ AcDbText
   0
 TEXT
   5
-513
+517
 330
 1B
 100
@@ -52573,7 +53219,7 @@ AcDbText
   0
 TEXT
   5
-514
+518
 330
 1B
 100
@@ -52607,7 +53253,7 @@ AcDbText
   0
 TEXT
   5
-515
+519
 330
 1B
 100
@@ -52641,7 +53287,7 @@ AcDbText
   0
 TEXT
   5
-516
+51A
 330
 1B
 100
@@ -52661,7 +53307,7 @@ AcDbText
  40
 2.4
   1
-UNE-EN 60617 (hoja del propietario, p. 4,
+UNE-EN 60617 (hoja del propietario,
   7
 PVSLD_STD
  11
@@ -52675,7 +53321,7 @@ AcDbText
   0
 TEXT
   5
-517
+51B
 330
 1B
 100
@@ -52695,7 +53341,7 @@ AcDbText
  40
 2.4
   1
-interruptor diferencial); sin símbolo en
+p. 4, interruptor diferencial); sin
   7
 PVSLD_STD
  11
@@ -52709,7 +53355,7 @@ AcDbText
   0
 TEXT
   5
-518
+51C
 330
 1B
 100
@@ -52729,7 +53375,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019
+símbolo en NMX-J-136-ANCE-2019
   7
 PVSLD_STD
  11
@@ -52743,7 +53389,7 @@ AcDbText
   0
 LINE
   5
-519
+51D
 330
 1B
 100
@@ -52769,7 +53415,7 @@ AcDbLine
   0
 LINE
   5
-51A
+51E
 330
 1B
 100
@@ -52795,7 +53441,7 @@ AcDbLine
   0
 LINE
   5
-51B
+51F
 330
 1B
 100
@@ -52821,7 +53467,7 @@ AcDbLine
   0
 INSERT
   5
-51C
+520
 330
 1B
 100
@@ -52843,7 +53489,7 @@ PVSLD_FUSE
   0
 TEXT
   5
-51E
+522
 330
 1B
 100
@@ -52877,7 +53523,7 @@ AcDbText
   0
 TEXT
   5
-51F
+523
 330
 1B
 100
@@ -52911,7 +53557,7 @@ AcDbText
   0
 TEXT
   5
-520
+524
 330
 1B
 100
@@ -52931,7 +53577,7 @@ AcDbText
  40
 2.4
   1
-NMX-J-136-ANCE-2019 4.2.21 (FUS, forma
+NMX-J-136-ANCE-2019 4.2.21 (FUS,
   7
 PVSLD_STD
  11
@@ -52945,7 +53591,7 @@ AcDbText
   0
 TEXT
   5
-521
+525
 330
 1B
 100
@@ -52965,7 +53611,7 @@ AcDbText
  40
 2.4
   1
-nacional 1)
+forma nacional 1)
   7
 PVSLD_STD
  11
@@ -52979,7 +53625,7 @@ AcDbText
   0
 LINE
   5
-522
+526
 330
 1B
 100
@@ -53005,7 +53651,7 @@ AcDbLine
   0
 LINE
   5
-523
+527
 330
 1B
 100
@@ -53031,7 +53677,7 @@ AcDbLine
   0
 LINE
   5
-524
+528
 330
 1B
 100
@@ -53057,7 +53703,7 @@ AcDbLine
   0
 INSERT
   5
-525
+529
 330
 1B
 100
@@ -53085,7 +53731,7 @@ PVSLD_SPD
   0
 TEXT
   5
-527
+52B
 330
 1B
 100
@@ -53119,7 +53765,7 @@ AcDbText
   0
 TEXT
   5
-528
+52C
 330
 1B
 100
@@ -53153,7 +53799,7 @@ AcDbText
   0
 TEXT
   5
-529
+52D
 330
 1B
 100
@@ -53187,7 +53833,7 @@ AcDbText
   0
 TEXT
   5
-52A
+52E
 330
 1B
 100
@@ -53221,7 +53867,7 @@ AcDbText
   0
 TEXT
   5
-52B
+52F
 330
 1B
 100
@@ -53255,7 +53901,7 @@ AcDbText
   0
 LINE
   5
-52C
+530
 330
 1B
 100
@@ -53281,7 +53927,7 @@ AcDbLine
   0
 LINE
   5
-52D
+531
 330
 1B
 100
@@ -53307,7 +53953,7 @@ AcDbLine
   0
 LINE
   5
-52E
+532
 330
 1B
 100
@@ -53333,7 +53979,7 @@ AcDbLine
   0
 INSERT
   5
-52F
+533
 330
 1B
 100
@@ -53361,7 +54007,7 @@ PVSLD_SPD_AC
   0
 TEXT
   5
-531
+535
 330
 1B
 100
@@ -53381,7 +54027,7 @@ AcDbText
  40
 3.2
   1
-Varistor en CA (dispositivo de
+Varistor en CA (dispositivo
   7
 PVSLD_STD
  11
@@ -53395,7 +54041,7 @@ AcDbText
   0
 TEXT
   5
-532
+536
 330
 1B
 100
@@ -53415,7 +54061,7 @@ AcDbText
  40
 3.2
   1
-protección contra
+de protección contra
   7
 PVSLD_STD
  11
@@ -53429,7 +54075,7 @@ AcDbText
   0
 TEXT
   5
-533
+537
 330
 1B
 100
@@ -53463,7 +54109,7 @@ AcDbText
   0
 TEXT
   5
-534
+538
 330
 1B
 100
@@ -53497,7 +54143,7 @@ AcDbText
   0
 TEXT
   5
-535
+539
 330
 1B
 100
@@ -53517,7 +54163,7 @@ AcDbText
  40
 2.4
   1
-CFE G0100-04 Apéndice C (varistor), usado
+CFE G0100-04 Apéndice C (varistor),
   7
 PVSLD_STD
  11
@@ -53531,7 +54177,7 @@ AcDbText
   0
 TEXT
   5
-536
+53A
 330
 1B
 100
@@ -53551,7 +54197,7 @@ AcDbText
  40
 2.4
   1
-en CA en Apéndice D
+usado en CA en Apéndice D
   7
 PVSLD_STD
  11
@@ -53565,7 +54211,7 @@ AcDbText
   0
 LINE
   5
-537
+53B
 330
 1B
 100
@@ -53591,7 +54237,7 @@ AcDbLine
   0
 LINE
   5
-538
+53C
 330
 1B
 100
@@ -53617,7 +54263,7 @@ AcDbLine
   0
 LINE
   5
-539
+53D
 330
 1B
 100
@@ -53643,7 +54289,7 @@ AcDbLine
   0
 INSERT
   5
-53A
+53E
 330
 1B
 100
@@ -53671,7 +54317,7 @@ PVSLD_GFDI
   0
 TEXT
   5
-53C
+540
 330
 1B
 100
@@ -53705,7 +54351,7 @@ AcDbText
   0
 TEXT
   5
-53D
+541
 330
 1B
 100
@@ -53739,7 +54385,7 @@ AcDbText
   0
 TEXT
   5
-53E
+542
 330
 1B
 100
@@ -53773,7 +54419,7 @@ AcDbText
   0
 TEXT
   5
-53F
+543
 330
 1B
 100
@@ -53807,7 +54453,7 @@ AcDbText
   0
 LINE
   5
-540
+544
 330
 1B
 100
@@ -53833,7 +54479,7 @@ AcDbLine
   0
 LINE
   5
-541
+545
 330
 1B
 100
@@ -53859,7 +54505,7 @@ AcDbLine
   0
 LINE
   5
-542
+546
 330
 1B
 100
@@ -53885,7 +54531,7 @@ AcDbLine
   0
 INSERT
   5
-543
+547
 330
 1B
 100
@@ -53913,7 +54559,7 @@ PVSLD_INS_MONITOR
   0
 TEXT
   5
-545
+549
 330
 1B
 100
@@ -53947,7 +54593,7 @@ AcDbText
   0
 TEXT
   5
-546
+54A
 330
 1B
 100
@@ -53981,7 +54627,7 @@ AcDbText
   0
 TEXT
   5
-547
+54B
 330
 1B
 100
@@ -54001,7 +54647,7 @@ AcDbText
  40
 2.4
   1
-CFE G0100-04 Apéndice D, fig. D2 (monitor
+CFE G0100-04 Apéndice D, fig. D2
   7
 PVSLD_STD
  11
@@ -54015,7 +54661,7 @@ AcDbText
   0
 TEXT
   5
-548
+54C
 330
 1B
 100
@@ -54035,7 +54681,7 @@ AcDbText
  40
 2.4
   1
-de aislamiento)
+(monitor de aislamiento)
   7
 PVSLD_STD
  11
@@ -54049,7 +54695,7 @@ AcDbText
   0
 LINE
   5
-549
+54D
 330
 1B
 100
@@ -54075,7 +54721,7 @@ AcDbLine
   0
 LINE
   5
-54A
+54E
 330
 1B
 100
@@ -54101,7 +54747,7 @@ AcDbLine
   0
 LINE
   5
-54B
+54F
 330
 1B
 100
@@ -54127,7 +54773,7 @@ AcDbLine
   0
 INSERT
   5
-54C
+550
 330
 1B
 100
@@ -54155,7 +54801,7 @@ PVSLD_AFCI
   0
 TEXT
   5
-54E
+552
 330
 1B
 100
@@ -54189,7 +54835,7 @@ AcDbText
   0
 TEXT
   5
-54F
+553
 330
 1B
 100
@@ -54223,7 +54869,7 @@ AcDbText
   0
 TEXT
   5
-550
+554
 330
 1B
 100
@@ -54257,7 +54903,7 @@ AcDbText
   0
 TEXT
   5
-551
+555
 330
 1B
 100
@@ -54277,7 +54923,7 @@ AcDbText
  40
 2.4
   1
-pvsld (composición); bloque rotulado al
+pvsld (composición); bloque rotulado
   7
 PVSLD_STD
  11
@@ -54291,7 +54937,7 @@ AcDbText
   0
 TEXT
   5
-552
+556
 330
 1B
 100
@@ -54311,7 +54957,7 @@ AcDbText
  40
 2.4
   1
-estilo de CFE G0100-04 Apéndice D
+al estilo de CFE G0100-04 Apéndice D
   7
 PVSLD_STD
  11
@@ -54325,7 +54971,7 @@ AcDbText
   0
 LINE
   5
-553
+557
 330
 1B
 100
@@ -54351,7 +54997,7 @@ AcDbLine
   0
 LINE
   5
-554
+558
 330
 1B
 100
@@ -54377,7 +55023,7 @@ AcDbLine
   0
 LINE
   5
-555
+559
 330
 1B
 100
@@ -54403,7 +55049,7 @@ AcDbLine
   0
 INSERT
   5
-556
+55A
 330
 1B
 100
@@ -54433,7 +55079,7 @@ PVSLD_RELAY
   0
 ATTRIB
   5
-558
+55C
 330
 1B
 100
@@ -54469,7 +55115,7 @@ FUNCTION
   0
 ATTRIB
   5
-559
+55D
 330
 1B
 100
@@ -54505,9 +55151,9 @@ ANSI_NO
   0
 SEQEND
   5
-557
+55B
 330
-556
+55A
 100
 AcDbEntity
  67
@@ -54517,7 +55163,7 @@ E-ANNO-NOTE
   0
 TEXT
   5
-55A
+55E
 330
 1B
 100
@@ -54551,7 +55197,7 @@ AcDbText
   0
 TEXT
   5
-55B
+55F
 330
 1B
 100
@@ -54585,7 +55231,7 @@ AcDbText
   0
 TEXT
   5
-55C
+560
 330
 1B
 100
@@ -54619,7 +55265,7 @@ AcDbText
   0
 TEXT
   5
-55D
+561
 330
 1B
 100
@@ -54653,7 +55299,7 @@ AcDbText
   0
 TEXT
   5
-55E
+562
 330
 1B
 100
@@ -54687,7 +55333,7 @@ AcDbText
   0
 TEXT
   5
-55F
+563
 330
 1B
 100
@@ -54721,7 +55367,7 @@ AcDbText
   0
 TEXT
   5
-560
+564
 330
 1B
 100
@@ -54755,7 +55401,7 @@ AcDbText
   0
 TEXT
   5
-561
+565
 330
 1B
 100
@@ -54891,11 +55537,11 @@ Legend
   3
 Legend2
 350
-565
+569
   3
 Legend3
 350
-640
+64B
   0
 DICTIONARY
   5
@@ -55789,11 +56435,11 @@ CREATED_BY_EZDXF
   3
 PVSLD_LIBRARY_VERSION
 350
-6D1
+6E4
   3
 WRITTEN_BY_EZDXF
 350
-6D4
+6E7
   0
 DICTIONARYVAR
   5
@@ -55809,7 +56455,7 @@ DictionaryVariables
   0
 LAYOUT
   5
-565
+569
 330
 D
 100
@@ -55931,13 +56577,13 @@ Legend2
  76
 1
 330
-562
-331
 566
+331
+56A
   0
 LAYOUT
   5
-640
+64B
 330
 D
 100
@@ -56059,13 +56705,13 @@ Legend3
  76
 1
 330
-63D
+648
 331
-641
+64C
   0
 DICTIONARYVAR
   5
-6D1
+6E4
 330
 2D
 100
@@ -56077,7 +56723,7 @@ DictionaryVariables
   0
 DICTIONARYVAR
   5
-6D4
+6E7
 330
 2D
 100
