@@ -68,6 +68,7 @@ class Polyline:
     points: tuple[tuple[float, float], ...]
     layer: str
     closed: bool = False
+    linetype: str | None = None
 
 
 @dataclass(frozen=True)

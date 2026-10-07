@@ -54,6 +54,8 @@ _EQ_UT = layers.UTILITY_EQUIPMENT
 _ENCL = layers.ENCLOSURES
 _LABL = layers.LABELS
 _DOTTED = "DOTTED"
+_DASHDOT_SMALL = "DASHDOT_S"
+_SOLID = "CONTINUOUS"
 
 
 def _r(value: float) -> float:
@@ -285,9 +287,9 @@ INVERTER = _spec(
     (
         Polyline(_rect(0, -22.5, 50, 22.5), _EQ_AC, closed=True),
         Line(0, -22.5, 50, 22.5, _EQ_AC),
-        Line(5, 15, 13, 15, _EQ_AC),
-        Line(5, 12, 13, 12, _EQ_AC),
-        Polyline(_sine(40, -14, 8, 2), _EQ_AC),
+        Line(8, 15, 18, 15, _EQ_AC),
+        Line(8, 12, 18, 12, _EQ_AC),
+        Polyline(_sine(38, -13, 10, 2.5), _EQ_AC),
         Label(1.5, 11.5, TEXT_HEIGHT_MM, "A"),
         Label(1.5, -14, TEXT_HEIGHT_MM, "B"),
     ),
@@ -375,14 +377,15 @@ ENCLOSURE = _spec(
     "Gabinete o estructura metálica",
     SOURCE_CFE_C,
     _ENCL,
-    (Polyline(_rect(0, -15, 40, 15), _ENCL, closed=True),),
+    (Polyline(_rect(0, -15, 40, 15), _ENCL, closed=True, linetype=_DASHDOT_SMALL),),
     (),
     tag_xy=(0, 18),
     desc_xy=(0, -19),
     extra=_hidden(("ENCL_TYPE", "Tipo de gabinete")),
     note=(
-        "Dash-dot rectangle (layer E-ANNO-ENCL, linetype DASHDOT). Nominal 40 x 30 mm; scale the "
-        "INSERT to enclose a part of the diagram. Ports: none, conductors cross the line."
+        "Dash-dot rectangle (layer E-ANNO-ENCL, finer DASHDOT_S pattern so that a small symbol "
+        "shows several dashes per side). Nominal 40 x 30 mm; scale the INSERT to enclose a part "
+        "of the diagram. Ports: none, conductors cross the line."
     ),
 )
 
@@ -567,10 +570,10 @@ GROUND = _spec(
     SOURCE_CFE_D,
     layers.GROUNDING,
     (
-        Line(0, 0, 0, -5, layers.GROUNDING),
-        Line(-6, -5, 6, -5, layers.GROUNDING),
-        Line(-4, -7.5, 4, -7.5, layers.GROUNDING),
-        Line(-2, -10, 2, -10, layers.GROUNDING),
+        Line(0, 0, 0, -5, layers.GROUNDING, linetype=_SOLID),
+        Line(-6, -5, 6, -5, layers.GROUNDING, linetype=_SOLID),
+        Line(-4, -7.5, 4, -7.5, layers.GROUNDING, linetype=_SOLID),
+        Line(-2, -10, 2, -10, layers.GROUNDING, linetype=_SOLID),
     ),
     (Port("PE", 0, 0, "up", "PE"),),
     iec_ref="IEC 60617 S00200",
@@ -584,7 +587,10 @@ GROUND = _spec(
             ("GEC_SIZE", "Calibre del conductor al electrodo"),
         ),
     ),
-    note="Stem and three bars that shorten, as drawn under the inverter and the arrays in D1.",
+    note=(
+        "Stem and three bars that shorten, as drawn under the inverter and the arrays in D1. "
+        "Strokes are continuous (the layer linetype is dashed) so the bars read as a symbol."
+    ),
 )
 
 CONDUCTOR_MARK = _spec(
@@ -607,7 +613,7 @@ POLARITY_POSITIVE = _spec(
     "Polaridad positiva (+)",
     SOURCE_CFE_D,
     _LABL,
-    (Line(-1.5, 0, 1.5, 0, _LABL), Line(0, -1.5, 0, 1.5, _LABL)),
+    (Line(-2, 0, 2, 0, _LABL), Line(0, -2, 0, 2, _LABL)),
     (),
     visible=False,
     note="Plus sign centred on the insertion point, next to the DC terminal of the inverter.",
@@ -618,7 +624,7 @@ POLARITY_NEGATIVE = _spec(
     "Polaridad negativa (-)",
     SOURCE_CFE_D,
     _LABL,
-    (Line(-1.5, 0, 1.5, 0, _LABL),),
+    (Line(-2, 0, 2, 0, _LABL),),
     (),
     visible=False,
     note="Minus sign centred on the insertion point.",
@@ -640,7 +646,7 @@ JUNCTION = _spec(
 PV_STRING = _spec(
     "PVSLD_PV_STRING",
     "Rama de módulos fotovoltaicos en serie",
-    "CFE G0100-04 Apéndice C (módulo) y D (rama)",
+    "CFE G0100-04 Apéndices C y D",
     _EQ_DC,
     (
         Polyline(_rect(0, -10, 10, 10), _EQ_DC, closed=True),
@@ -701,8 +707,8 @@ LOAD_CENTER = _spec(
         Polyline(_rect(0, -27.5, 45, 27.5), _ENCL, closed=True),
         Line(0, 0, 45, 0, _EQ_AC),
         Line(22.5, -15, 22.5, 22.5, layers.AC_CONDUCTORS, lineweight=70),
-        Line(12.5, -22.5, 32.5, -22.5, layers.GROUNDING),
-        Line(22.5, -27.5, 22.5, -22.5, layers.GROUNDING),
+        Line(12.5, -22.5, 32.5, -22.5, layers.GROUNDING, linetype=_SOLID),
+        Line(22.5, -27.5, 22.5, -22.5, layers.GROUNDING, linetype=_SOLID),
     ),
     (
         Port("LEFT", 0, 0, "left", "AC"),

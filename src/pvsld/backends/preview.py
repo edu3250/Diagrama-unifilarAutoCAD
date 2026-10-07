@@ -74,14 +74,16 @@ def _sheet_backend_class() -> type:
     return _SheetBackend
 
 
-def render_png(document: Drawing, *, dpi: int = DEFAULT_DPI) -> bytes:
-    """Render the A3 layout of ``document`` to PNG bytes (white background, layer colours)."""
+def render_png(
+    document: Drawing, *, dpi: int = DEFAULT_DPI, layout_name: str = LAYOUT_NAME
+) -> bytes:
+    """Render a paper-space layout (the A3 sheet by default) to PNG bytes: white, layer colours."""
     from ezdxf.addons.drawing import Frontend, RenderContext
     from ezdxf.addons.drawing.config import BackgroundPolicy, ColorPolicy, Configuration
     from matplotlib.backends.backend_agg import FigureCanvasAgg
     from matplotlib.figure import Figure
 
-    layout = document.layouts.get(LAYOUT_NAME)
+    layout = document.layouts.get(layout_name)
     width_mm = float(layout.dxf_layout.dxf.paper_width)
     height_mm = float(layout.dxf_layout.dxf.paper_height)
 
@@ -102,9 +104,11 @@ def render_png(document: Drawing, *, dpi: int = DEFAULT_DPI) -> bytes:
     return buffer.getvalue()
 
 
-def write_png(document: Drawing, path: Path, *, dpi: int = DEFAULT_DPI) -> bytes:
+def write_png(
+    document: Drawing, path: Path, *, dpi: int = DEFAULT_DPI, layout_name: str = LAYOUT_NAME
+) -> bytes:
     """Render the preview and write it to ``path`` (parent folders are created)."""
-    data = render_png(document, dpi=dpi)
+    data = render_png(document, dpi=dpi, layout_name=layout_name)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
     return data
