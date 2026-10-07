@@ -2,9 +2,9 @@
 
 Usage (repository root, virtual environment active):
 
-    python scripts/build_symbol_library.py                       # writes symbols/pvsld-symbols-cfe.dxf
-    python scripts/build_symbol_library.py --png out/legend.png  # also draws the Legend for review
-    python scripts/build_symbol_library.py --check               # CI guard: exit 1 if the file is stale
+    python scripts/build_symbol_library.py                       # writes the library DXF
+    python scripts/build_symbol_library.py --png out/legend.png  # also draws the Legend
+    python scripts/build_symbol_library.py --check               # CI: exit 1 if stale
 
 It is the same as ``pvsld symbols build``; the arguments are passed through. The output is
 byte-identical on every run and platform.
