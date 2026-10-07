@@ -339,51 +339,232 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-## Phase 3: Parametric PV Sizing Engine
+## Phase 3: Parametric PV Sizing Engine & Complete Rule Pack
 
-**Tentative Intent:** Implement the deterministic sizing engine and complete the rule pack (per ADR-0001 and the Phase 2 review). It accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes the string/inverter configuration. Tentative stages, owner to confirm:
-- 3.1 Parameter model schema v1 (ADR-0002): the fields that 7 catalogue rules still need, equipment catalogue entries from datasheets, versioning
-- 3.2 Complete rule pack `mx-gd-2026.10`: all 98 rules, starting with STR-007 (inverter DC power and DC/AC ratio, the gap found in the owner's Claude test); NOM tables re-read against the published text; coverage tests per MX item
-- 3.3 Sizing engine: string configuration proposals, inverter matching, DC/AC ratio, conductor, OCPD and voltage-drop sizing
-- 3.4 MCP surface: a sizing tool and the full rule-catalogue resource; confirm the preview token budget; close the MCP Inspector check
+**Goal:** Implement the deterministic PV system sizing engine, store component specifications from manufacturer datasheets, complete the validation rule pack to all 98 rules (including STR-007, the gap found in Phase 2), and expose sizing as an MCP tool to Claude. The owner supplies component datasheets; the team extracts specifications, validates them, and stores them in a versioned catalogue. The sizing engine proposes string configurations, inverter matching, and balance-of-system (BOS) sizing deterministically, while Claude elicits parameters and explains trade-offs.
 
 **Target Release:** `v0.3.0-engine`
 
-**Status:** To be defined (tentative, owner confirmation pending)
+---
 
-**Estimated Stages:** 3.1–3.4
+### Stage 3.1: Component Catalogue Data Model & Storage Format (ADR-0004)
+
+**Goal:** Design and implement the component catalogue schema and storage backend. Define how equipment datasheets map to the parameter model, including PV module specs (Pstc, Voc, Vmp, Imp, temp coefficients), inverter specs (Pdc_max, Vdc_max, MPPT count and limits, AC power, certifications), and balance-of-system components (conductors, fuses, breakers, SPD ratings). Establish a workflow for datasheet ingestion: PDF → markitdown → human review → versioned catalogue.
+
+**Success Criteria:**
+
+- ADR-0004 (proposed) documents the chosen storage format (YAML per component, SQLite, or JSON), with rationale for cost-of-change, auditability, and version control
+- Component schema defined and validated:
+  - PV modules: `pstc_w`, `voc_v`, `vmp_v`, `imp_a`, `temp_coef_voc` (V/K), `temp_coef_pmp` (%/K), `temp_coef_imp` (A/K), `isc_a`, dimensions, weight, frame type, source (datasheet SHA-256, page ref, extraction date, reviewed flag)
+  - String/hybrid inverters: `pdc_max_w`, `vdc_max_v`, `vdc_min_v`, `mppt_count`, per-MPPT `isc_max_a`, `vmp_window_v`, `pac_nominal_w`, `pf_range`, `thd_max`, certifications (UL-1741-SB, IEEE-1547, NMX), source fields
+  - Conductors: rated ampacity vs. temperature, insulation type, core cross-section, voltage drop per meter at rated current
+  - Overcurrent devices: interrupting rating (KAIC), voltage rating, current rating, certifications
+- `src/pvsld/catalogue.py` module with typed schema (Pydantic) and a `ComponentRegistry` class
+- Git-ignored `datasheets/inbox/` and `datasheets/cache/` directories (raw PDFs and markitdown); committed `datasheets/records/` with per-component JSON/YAML records including provenance
+- Unit validation tests (e.g., Vmp < Voc, Imp < Isc, temperature coefficients in plausible ranges)
+- Documentation in `CONTRIBUTING.md` on the datasheet ingestion workflow
+
+**Tests:**
+
+- Schema validation: 10+ fixtures pass Pydantic type checking and unit plausibility
+- Three mutated specs fail expected validations (e.g., Voc < Vmp, negative temp coeff where positive expected)
+- Roundtrip test: record → model → JSON serialization is lossless
+- File integrity test: source SHA-256 and extraction metadata are present and immutable after commit
+- Coverage: at least 3 PV modules, 3 inverters, 5 conductor types, 10 protection devices in the initial commit
+
+**Status:** Not Started
+
+---
+
+### Stage 3.2: Datasheet Ingestion Pipeline & Validation Workflow
+
+**Goal:** Create a semi-automated pipeline to extract component specifications from manufacturer PDFs using markitdown and Claude's reading ability, validate the extracted facts, and store them in the catalogue. Establish a human-review workflow so the owner can approve extracted records before they're committed.
+
+**Success Criteria:**
+
+- `docs/datasheet-ingestion-protocol.md` documents the workflow:
+  1. Owner places PDF in `datasheets/inbox/<component_type>/<model>.pdf`
+  2. markitdown converts to markdown, cached in `datasheets/cache/` (git-ignored)
+  3. Claude reads the markdown and extracts structured facts into a JSON template
+  4. Python validation script checks plausibility (units, ranges, cross-field consistency)
+  5. Owner reviews the extracted record and either approves or flags for re-read
+  6. Approved record is committed to `datasheets/records/<component_type>/<model>.yaml`
+- `src/pvsld/ingest.py` script:
+  - `ingest_datasheet(pdf_path: Path, component_type: str) → dict` (returns extraction template for human review)
+  - `validate_component_record(record: dict, schema: Type[BaseModel]) → tuple[bool, list[str]]` (returns validity and any warnings)
+  - Token budget for PDFs: estimate tokens with markitdown, then chunk if > 50k
+- Example ingestion of 3 real datasheets (modules, inverter, protection device) in the repo history
+- Validation catches at least 5 common datasheet mistakes (ambiguous specs, unit mismatches, out-of-range values)
+- `src/pvsld/rules.py` extended with a datasheet-sourced fact check (rule DTS-001: every catalogue component has a source and extraction date)
+
+**Tests:**
+
+- Unit test: `test_validate_component_record` with 10+ fixture records (valid, under-spec'd, out-of-range, missing required fields)
+- Integration test: `test_ingest_example_datasheet` reads a sample markdown (synthetic, no copyright), extracts to template, validates, and compares against expected fields (photosynthetic match, not byte match)
+- Workflow test: a dry run of the full pipeline on one owner-supplied PDF (marked `autocad` to skip in CI; result committed as a fixture)
+- No full PDFs committed to the public repo; `.gitignore` enforces this
+
+**Status:** Not Started
+
+---
+
+### Stage 3.3: Rule Pack Completion & STR-007 Priority
+
+**Goal:** Implement all 98 validation rules in the Mexican PV SLD rule pack (`mx-gd-2026.10`), with immediate focus on STR-007 (inverter DC power and DC/AC ratio), which Phase 2 identified as a gap. Update the vault tables against the current NOM-001-SEDE-2012 and CRE regulations.
+
+**Success Criteria:**
+
+- Phase 2 baseline: 8 of 98 rules implemented; Phase 3 target: ≥ 80 of 98 (85 %)
+- **STR-007 (inverter DC power)** implemented and tested:
+  - Rule: Σ(P_STC of modules on each string × number of strings) ≤ inverter P_dc,max (error if violated)
+  - DC/AC ratio check: ratio ≥ 1.0 and ≤ policy ceiling (e.g., 1.35 for warnings, 1.5+ as errors per owner policy; configurable)
+  - Test case: the Phase 2 owner test (2 × 11 × 550 W = 12.1 kWp vs. inverter P_dc,max = 9 kW) correctly rejects as STR-007
+- Vault note `PV SLD Validation Rules.md` re-read against NOM-001-SEDE-2012 (published text, not phase 2 memory); all 98 rules updated with:
+  - Rule ID (`STR-NNN`, `VOLT-NNN`, `CON-NNN`, `PCC-NNN`, `MET-NNN`, `DIS-NNN`, `PROT-NNN`, `I-NNN`)
+  - Mexican regulation reference (NOM, CRE/CNE table, CFE guideline, UVIE requirement)
+  - Machine-checkable condition (formal or pseudo-code)
+  - Severity (error vs. warning/info)
+- Coverage test per MX-xx checklist item: 65 of 71 machine-checkable items (MX-A through MX-I) have a mapping in `src/pvsld/rules.py`
+- `src/pvsld/rules.py`:
+  - One rule class per catalogue rule (factory or registry pattern)
+  - `RulePack` with a `check(spec: PVSystemSpec, catalogue: ComponentRegistry) → list[Finding]`
+  - `Finding` dataclass with rule_id, severity, description, affected_component_ids, remediation hint
+- Rule test suite:
+  - Happy path: the residential_7p7kwp example passes all implemented rules
+  - Sad paths: 30+ mutations of the example (bad string voltage, bad conductor size, too many modules, inverter overload, etc.) each fail the expected rule
+  - Regression: the Phase 2 8-rule subset still passes
+
+**Tests:**
+
+- `test_rule_str_007_dc_power`: nominal, at limit, and over limit cases
+- `test_rule_pack_coverage`: every MX-xx item has a mapping
+- `test_residential_7p7kwp_passes`: golden spec passes all implemented rules
+- `test_mutations_fail_expected_rules`: 30+ mutations each trigger exactly one expected rule
+- Vault lint: all 98 rule IDs in the vault have a corresponding Python implementation or a deferred note
+- CLI: `pvsld check examples/residential_7p7kwp.yaml` reports 0 findings
+
+**Status:** Not Started
+
+---
+
+### Stage 3.4: Parametric Sizing Engine (Strings, Inverters, Conductors, OCPD)
+
+**Goal:** Implement the deterministic sizing engine: given a site (min/max temperature, utility service voltage/frequency), a target system size (kWp), and a choice of components from the catalogue, compute viable string configurations, inverter matching, DC/AC ratio, conductor sizes, overcurrent protection, and voltage drop. Return a ranked list of candidate designs and recommend one. Explain why alternatives were rejected.
+
+**Success Criteria:**
+
+- `src/pvsld/sizing.py`:
+  - `propose_string_configs(modules: list[PVModule], vdc_window: tuple[float, float], mppt_isc_max_a: float, site: SiteParams) → list[StringConfig]`
+    - Input: module model, min/max counts per string (from voltage rules VOLT-NNN), MPPT current limit, temperature extremes
+    - Output: ≥ 1 and ≤ 10 candidate configs with (modules_per_string, count, voc_min_hot, voc_max_cold, isc, pdc)
+    - Compute temperature-corrected Voc at T_min (cold) and T_max (hot) using module temp coefficient
+    - Reject configs where Voc_cold > MPPT V_max or Voc_hot < MPPT V_min (VOLT rules)
+    - Reject configs where string Isc > MPPT I_max or total Pdc > inverter Pdc_max (STR-007)
+  - `match_inverters(target_pdc_w: float, target_vdc_window: tuple, site: SiteParams, catalogue: ComponentRegistry) → list[InverterMatch]`
+    - Propose ≥ 1 inverter from the catalogue that fits the DC power and voltage window
+    - Compute DC/AC ratio and report as info/warning/error per policy
+  - `size_conductors_and_ocpd(strings: list[StringConfig], pdc_total: float, vdc: float, circuit_type: str, max_voltage_drop_pct: float = 3.0) → BosSpec`
+    - Input: DC current (Isc × safety factor), AC current (Pac / V_ac), conductor routing length, ambient temperature
+    - Output: conductor AWG/mm², OCPD type and rating, voltage drop %, grounding requirements
+    - Use NOM-001 tables from vault for copper conductor ampacity (temperature-derating and bundling)
+    - Apply 125 % factor for continuous loads, 80 % factor for non-continuous; STR rules for string current limits
+    - Reject sizing where voltage drop > max (3 % DC typical, 3 % AC typical per NOM)
+  - `size_pv_system(site: SiteParams, target_pdc_w: float, module_model: str, inverter_choice: Optional[str], owner_constraints: dict) → SizingResult`
+    - Orchestrator: call propose_string_configs, match_inverters, size_conductors, then validate full spec with rule pack
+    - Return a `SizingResult` with a ranked list of candidate specs (best first), selected spec, and a human-readable report explaining trade-offs and rejections
+  - All sizing is deterministic Python; no LLM calls
+- Example: size a 7.7 kWp residential system for Mexico City (T_min -3°C, T_max 45°C, CFE service 220V single phase), using module X and inverter Y; engine proposes 2 strings × 11 modules (8.8 kWp) with inverter Z, DC/AC 1.47, 10 mm² Cu DC conductors (2.1 % drop), 32 A MCB
+- Test harness: `test_size_residential_7p7kwp` passes known configurations
+- Token budget: sizing result (candidate list + selected spec + explanations) stays under 10k tokens (leaves room for Claude's reasoning)
+
+**Tests:**
+
+- `test_string_config_temp_corrected_voc`: Voc at hot and cold temperatures is within voltage window
+- `test_string_config_reject_overvoltage`: config with Voc_cold > MPPT_Vmax is rejected
+- `test_string_config_reject_overpower`: config with Pdc > inverter Pdc_max is rejected (STR-007)
+- `test_inverter_match`: only inverters with Vdc_min ≤ string_vmp ≤ Vdc_max are matched
+- `test_conductor_size_voltage_drop`: 7.7 kWp system has ≤ 3 % drop on 50 m DC run with chosen conductor
+- `test_ocpd_rating_continuous`: DC OCPD is sized at 125 % × Isc (continuous load rule)
+- `test_sizing_result_passes_rule_pack`: proposed spec runs through full rule validation and reports 0 errors (warnings/info allowed)
+- `test_residential_example`: end-to-end sizing of the Phase 2 7.7 kWp example returns ≥ 1 candidate, selected spec, no validation errors
+
+**Status:** Not Started
+
+---
+
+### Stage 3.5: MCP Tool Surface & Token Budget Confirmation
+
+**Goal:** Expose the sizing engine as an MCP tool (`size_pv_system`) and publish the component catalogue and rule pack as MCP resources. Confirm the preview token budget with real Claude runs and document the limits.
+
+**Success Criteria:**
+
+- `src/pvsld/mcp/server.py` extended with:
+  - `size_pv_system` tool: input schema (site, target_pdc_w, preferred_components, owner_constraints), returns result JSON with candidates, selected spec, report text, and a visual diagram preview (SVG or small PNG, ≤ 5 kB)
+  - `list_components` resource / tool: filter by type (module, inverter, conductor, ocpd), return brief catalogue
+  - `get_component` tool: fetch full datasheet-sourced spec of one catalogue entry
+  - `ingest_datasheet` tool (optional, early): upload a PDF and trigger the extraction pipeline (returns a template for owner review, not a committed record)
+- `.mcp.json` updated to list the new tools
+- Token budget test (real Claude Code run or estimate):
+  - Sizing result (full candidate list + explanations): ≤ 8k tokens
+  - Rule catalogue (all 98 rules + MX references): ≤ 15k tokens (published as a resource, not in every call)
+  - Total per `size_pv_system` call: ≤ 20k tokens (margin for Claude's reasoning: 25k hard cap, so 5k buffer)
+- Environment variable `PVSLD_MCP_COMMAND` documented in README and `.mcp.json` configured correctly
+- Optional MCP Inspector session run (if Node.js is installed; confirm tools and schemas are listed)
+- User-facing documentation: a worked example in the README ("Size a 10 kWp system for Guadalajara") that calls `size_pv_system`, shows the result and selected spec
+
+**Tests:**
+
+- `test_mcp_size_pv_system_schema`: tool input and output schemas are valid OpenAPI
+- `test_size_pv_system_result_under_token_cap`: result JSON serialization is ≤ 20k tokens
+- `test_mcp_list_components_by_type`: filter works and returns expected items
+- `test_mcp_get_component_detail`: fetches full spec including datasheet provenance
+- Integration test: `test_mcp_server_lists_tools`: the server starts, lists tools in < 5 s, and schemas match the code
+- Optional: manual Claude Code session ("size a 15 kWp commercial system") within 240 s, no output-cap errors
+
+**Status:** Not Started
+
+---
+
+**Phase 3 Status Summary:** Planned (owner confirmation pending; stages 3.1–3.5 on the `develop` branch)
 
 ---
 
 ## Phase 4: Diagram Generation & Symbol Library
 
-**Tentative Intent:** Develop the Claude reasoning engine that translates parametric configuration into single-line diagram topology, and render AutoCAD .dwg files with proper symbology and labeling.
+**Tentative Intent:** Grow the symbol library to Mexican standards and develop layout templates for diverse PV topologies. Extend the B1 (ezdxf DXF) and B2 (AutoCAD .NET plug-in) diagram rendering, and implement the Core Console finisher for DWG and PDF export.
 
-**Note (ADR-0001):** Topology and layout are assigned to deterministic code, not to Claude; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf), with DWG coming from the AutoCAD backend or a finisher. Revise this description when Phase 4 is planned.
+**Note (ADR-0001):** Topology and layout are deterministic; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf, B1), with native DWG and AutoCAD PDF coming from the plug-in (B2) or Core Console finisher (optional). 
 
-**Proposed scope (Phase 2 review, tentative):**
-- Layout templates beyond `bt_string_residential_v1`: more strings and MPPTs, several inverters, three-phase, microinverters and optimizers
-- The symbol library grown to the NMX-J-136-ANCE figures, with approved Mexican SLDs as references
-- B2 production methods (`render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, `zoom_to`), the B1/B2 parity test, and a signed `.bundle` that loads without the per-session prompt
-- `export_drawing` (Core Console finisher with batching, non-ASCII paths and DWGPROPS "last saved by" privacy) and `get_diagram_summary`
+**Proposed scope (Phase 2 review, tentative, pending Phase 3 completion):**
 
-**Status:** To be defined (tentative, owner confirmation pending)
+- **Symbol library expansion:** Grow beyond the Phase 2 minimal set to the NMX-J-136-ANCE figures (purchase the standard, P1) with approved Mexican SLDs as references and golden files (P12). Support ANSI variants (layout.symbol_style: ANSI) as a separate block set.
+- **Layout templates:** Beyond `bt_string_residential_v1`, add templates for 2–4 strings, multiple MPPTs, several inverters, three-phase configurations, and later microinverters and optimizers.
+- **B2 production methods:** `render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, and `zoom_to` on the diagram model. B1/B2 parity test (golden ezdxf files). A signed `.bundle` for the .NET plug-in (removes the "Load once" prompt).
+- **Core Console finisher:** `export_drawing` with batching (multiple sheets per session), non-ASCII path support, and DWGPROPS privacy (clear "last saved by" field). Validation that the output is TrustedDWG 2018 and error-free under AutoCAD AUDIT.
+- **Diagram summary tool:** `get_diagram_summary` (name, kWp, inverter, string count, BOS details) for annotation.
 
-**Estimated Stages:** 4.1–4.5
+**Status:** To be defined (depends on Phase 3; owner confirmation pending)
+
+**Estimated Stages:** 4.1–4.4
 
 ---
 
-## Phase 5: Validation & Production Release
+## Phase 5: Validation, Plugin Packaging & Production Release
 
-**Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE), create integration test suite, package as standalone tool, and release `v1.0.0`.
+**Tentative Intent:** Validate diagram output against Mexican electrical standards and professional reviewers. Package the MCP server and optional .NET plug-in as a Claude Code plugin (`.claude-plugin` bundle) for distribution. Release `v1.0.0`.
 
-**Proposed scope (Phase 2 review, tentative):**
-- Reviewer acceptance of DXF and PDF output (UVIE and CFE feedback; ADR-0001 trigger T3)
-- A package validator for MX-I01…I07, post-drawing TOP and DRW rules, and end-to-end tests
-- An MCPB bundle and a Claude Desktop run
-- A commercial-seat check of the Education-licence question
+**Proposed scope (Phase 2 review, tentative, pending Phase 3 and Phase 4 completion):**
 
-**Status:** To be defined (tentative, owner confirmation pending)
+- **Regulatory validation (trigger T3, open item Z1):** Gather feedback from UVIE inspection units and CFE on whether DXF and ezdxf PDFs are accepted, or if native DWG and AutoCAD PDFs are required. This feeds the plugin packaging decision.
+- **Package validator:** Implement TOP and DRW rules (post-drawing checks), validator for MX-I01…I07, and end-to-end test suite that exercises all diagram types.
+- **Claude Code plugin packaging:** Bundle the MCP server (`pvsld-mcp` executable), the configuration, and optional frontend skill/slash command into a `.claude-plugin` package compatible with the Claude Code plugin system. Decide whether to include the .NET plug-in (Phase 4 B2) in the distribution: if regulatory feedback requires native DWG, include it with a signed `.bundle` and installer; otherwise, distribute B1 (ezdxf) only. Host the plugin on a public registry or GitHub Releases.
+- **Distribution variants:** 
+  - **v1.0.0-core**: MCP server + ezdxf B1, no AutoCAD plug-in, works on any OS with Python 3.11+
+  - **v1.0.0-plugin** (conditional): includes the signed .NET 10 plug-in + B2 backend (Windows only), requires AutoCAD 2027
+  - Documentation in Spanish and English
+- **Claude Desktop support (optional):** Test a full end-to-end run on Claude Desktop (150k character limit, 240 s timeout).
+
+**Status:** To be defined (depends on Phase 4 and regulatory feedback; owner confirmation pending)
 
 **Estimated Stages:** 5.1–5.4
 
