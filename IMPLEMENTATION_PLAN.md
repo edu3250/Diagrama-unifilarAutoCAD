@@ -401,7 +401,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 - Unit test: `test_validate_component_record` with 10+ fixture records (valid, under-spec'd, out-of-range, missing required fields)
 - Integration test: `test_ingest_example_datasheet` reads a sample markdown (synthetic, no copyright), extracts to template, validates, and compares against expected fields (photosynthetic match, not byte match)
-- Workflow test: a dry run of the full pipeline on one owner-supplied PDF (marked `autocad` to skip in CI; result committed as a fixture)
+- Workflow test: a dry run of the full pipeline on one owner-supplied PDF (marked `datasheets`, skipped in CI because the PDF is not in the repository; only the reviewed record is committed)
 - No full PDFs committed to the public repo; `.gitignore` enforces this
 
 **Status:** Not Started
@@ -473,7 +473,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
     - Orchestrator: call propose_string_configs, match_inverters, size_conductors, then validate full spec with rule pack
     - Return a `SizingResult` with a ranked list of candidate specs (best first), selected spec, and a human-readable report explaining trade-offs and rejections
   - All sizing is deterministic Python; no LLM calls
-- Example: size a 7.7 kWp residential system for Mexico City (T_min -3°C, T_max 45°C, CFE service 220V single phase), using module X and inverter Y; engine proposes 2 strings × 11 modules (8.8 kWp) with inverter Z, DC/AC 1.47, 10 mm² Cu DC conductors (2.1 % drop), 32 A MCB
+- Example (the Phase 2 owner test): with the sample 550 W module and the 6 kW inverter (P_dc,max 9 kW, V_dc,max 600 V) at T_min −3 °C, the engine rejects 2 × 12 (VOLT-001, 640 V) and 2 × 11 (STR-007, 12.1 kWp > 9 kW), and selects 2 × 8 (8.8 kWp, DC/AC 1.47, Voc 426.8 V), reporting why each alternative was rejected; its conductors, OCPD and voltage drop pass the rule pack
 - Test harness: `test_size_residential_7p7kwp` passes known configurations
 - Token budget: sizing result (candidate list + selected spec + explanations) stays under 10k tokens (leaves room for Claude's reasoning)
 
@@ -525,7 +525,25 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-**Phase 3 Status Summary:** Planned (owner confirmation pending; stages 3.1–3.5 on the `develop` branch)
+### Stage 3.6: Minimum Installable Claude Code Plugin
+
+**Goal:** The owner's short-term goal is a Claude Code plugin. Package the `pvsld` MCP server with the plugin layout Claude Code uses (`.claude-plugin/plugin.json`, a plugin-level MCP server definition, skills or slash commands), so that installing the plugin gives Claude the validate, size and generate tools plus guided workflows: design a PV single-line diagram end to end, and ingest a datasheet into the catalogue.
+
+**Success Criteria:**
+- Plugin layout follows the structure of plugins actually installed on the workstation (checked against an installed plugin, not memory)
+- The plugin starts the MCP server without the `PVSLD_MCP_COMMAND` workaround (e.g., a launcher that finds or creates the Python environment, or a documented `pip install` step the plugin verifies)
+- Skills or commands: `design` (elicit inputs → `size_pv_system` → `validate_pv_design` → `generate_single_line_diagram` → review the preview) and `ingest-datasheet` (markitdown → extraction → validation → owner review)
+- Installed from a local marketplace/path by the owner in a fresh Claude Code session; the end-to-end design flow works on the owner's datasheet-based catalogue
+
+**Tests:**
+- CI: plugin manifest and MCP definition are valid JSON with the required fields; referenced files exist
+- Manual (owner): install the plugin, run the design workflow for one real installation, and record the result in the vault
+
+**Status:** Not Started
+
+---
+
+**Phase 3 Status Summary:** In progress (owner confirmed 2026-10-06: Claude Code plugin as the short-term goal; component catalogue from the owner's datasheets via markitdown; parametric sizing in Python)
 
 ---
 
@@ -551,7 +569,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ## Phase 5: Validation, Plugin Packaging & Production Release
 
-**Tentative Intent:** Validate diagram output against Mexican electrical standards and professional reviewers. Package the MCP server and optional .NET plug-in as a Claude Code plugin (`.claude-plugin` bundle) for distribution. Release `v1.0.0`.
+**Tentative Intent:** Validate diagram output against Mexican electrical standards and professional reviewers. Harden and distribute the Claude Code plugin started in Stage 3.6 (signed .NET plug-in if needed, public marketplace or GitHub Releases). Release `v1.0.0`.
 
 **Proposed scope (Phase 2 review, tentative, pending Phase 3 and Phase 4 completion):**
 
