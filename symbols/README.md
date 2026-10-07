@@ -2,15 +2,22 @@
 
 `pvsld-symbols-cfe.dxf` (DXF R2018, UTF-8, LF) is the master file of the drawing symbols
 ([ADR-0005](../docs/decisions/ADR-0005-cfe-symbol-library.md)). Every symbol is a named block
-`PVSLD_<FUNCTION>` with attributes and ports, plus a paper-space layout `Legend` (A3) with the table
-*Símbolo | Designación | Fuente*.
+`PVSLD_<FUNCTION>` with attributes and ports, plus three paper-space layouts `Legend`, `Legend2` and
+`Legend3` (A3) with the table *Símbolo | Designación | Fuente*, grouped by family (generation and
+storage, conversion, protection, switching, measurement, grid and loads, earthing, medium voltage,
+conductors and annotation).
 
-* Library version: **0.4.0** (stored in every block record and printed on the Legend).
-* Shapes: the 13 symbols of CFE G0100-04 Appendix C, redrawn as vector geometry from the
-  specification; earth, conductor-count ticks, polarity and junction dot as used in Appendix D
-  (figures D1 and D2); and the symbols the generator needs that CFE does not define (PV string
-  built from the module, point of interconnection, load center, title block). No image or text of
-  the specification is embedded. `pvsld symbols list` shows each block with its source.
+* Library version: **0.5.0**, 56 blocks (stored in every block record and printed on the Legend).
+* Shapes, by source priority **CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617**: the 13 symbols of
+  CFE Appendix C and the usage of Appendix D (earth, ticks, polarity, junction, combiner, ground-fault
+  detector, monitoring subsystem); the NMX figures (fuse, fuse-switch, safety switch, battery,
+  contactor, MV transformer, cutout, arrester, disconnect, CT/VT, earth bus, terminal, crossing,
+  export meter `M`); IEC through the Peruvian DGE norm (transfer switch, protective relay) and the
+  UNE-EN 60617 sheet of the owner (IEC thermomagnetic breaker, residual-current device); and
+  compositions where no official symbol exists (hybrid inverter, optimizer, microinverter, charge
+  controller, AFCI, CFE/user boundary, combiner), recorded as `pvsld (composición)`. Each block's
+  source names the clause, figure or code. All geometry is redrawn as vectors; no image or text of
+  any standard is embedded. `pvsld symbols list` shows each block with its source.
 * Source of truth: `src/pvsld/symbols/cfe/definitions.py`. Do not edit the DXF by hand; the
   committed bytes must equal what the definitions render (a test and `pvsld symbols build --check`
   enforce it).
@@ -18,7 +25,7 @@
 ## Regenerate and validate
 
 ```powershell
-pvsld symbols build --png out/pvsld-symbols-legend.png   # or: python scripts/build_symbol_library.py
+pvsld symbols build --png out/pvsld-symbols-legend.png   # writes legend-1.png, -2, -3
 pvsld symbols validate                                   # audit 0/0, attributes, ports, sources, Legend
 pvsld symbols build --check                              # exit 1 when symbols/pvsld-symbols-cfe.dxf is stale
 ```
@@ -27,8 +34,8 @@ Bump `LIBRARY_VERSION` in `src/pvsld/symbols/cfe/model.py` with the rules of ADR
 
 ## Review in AutoCAD
 
-1. Open `pvsld-symbols-cfe.dxf`. It opens on the `Legend` layout; compare each row with Appendix C
-   (page 40 of 43 of CFE G0100-04) and figures D1 and D2.
+1. Open `pvsld-symbols-cfe.dxf`. It opens on the `Legend` layout (tabs `Legend2`, `Legend3` follow);
+   compare each row with its source named in the *Fuente* column.
 2. Run `AUDIT` (expect 0 errors) and `-INSERT` a few blocks into a new drawing: `TAG` and `DESC`
    prompt, the other attributes are hidden; `ATTDISP` set to `On` shows them.
 3. Look at the layers: every entity uses the house layer standard, none lies on layer `0` except the
@@ -41,6 +48,9 @@ Bump `LIBRARY_VERSION` in `src/pvsld/symbols/cfe/model.py` with the rules of ADR
 * Attributes: visible `TAG`, `DESC`; hidden `COMP_ID`, `IEC_REF`, `NMX_REF`, `SOURCE_STANDARD`;
   function-specific tags carry their unit (`RATING_A`, `VOLT_V`). Annotation blocks (conductor
   tick, polarity, junction dot) hide `TAG` and `DESC` too.
+* Port kinds are `DC`, `AC`, `PE`, plus `SIG` (signal or control link) and `ANY` (terminal, crossing).
+  In-line devices run left to right (IN at the origin); shunt devices (varistor, arrester, earth) hang
+  below it.
 * Ports are block-record XDATA (application `PVSLD`, `pvsld.block/1`); the library version follows
   the port count, six tags per port, and the source of the symbol is the last tag.
 * Importing blocks into another drawing: ezdxf's `Importer` does not copy block-record XDATA, so use
