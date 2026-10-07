@@ -6,12 +6,15 @@ Usage::
     pvsld validate examples/residential_7p7kwp.yaml [--json]
     pvsld generate examples/residential_7p7kwp.yaml -o out/sld.dxf [--png]
     pvsld finish out/sld.dxf [-d out/finished] [--no-pdf] [--json]
+    pvsld catalogue validate [PATH] | list [--type T] | show ID
 
 ``validate`` parses the specification against the parameter model and runs the rule pack
 ``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
 again, writes the DXF R2018 sheet (and a PNG preview with ``--png``) and verifies the written file.
 ``finish`` turns a DXF into DWG 2018 and a PDF with the local AutoCAD Core Console (Windows, a
 licensed full AutoCAD); the exit code is 1 unless every output was produced and checked.
+``catalogue`` works with the component records in ``datasheets/records`` (see
+:mod:`pvsld.catalogue.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
 
@@ -25,6 +28,7 @@ from collections.abc import Sequence
 from pathlib import Path
 
 from pvsld import __version__
+from pvsld.catalogue import cli as catalogue_cli
 from pvsld.core.rules import Finding
 from pvsld.core.validation import ValidationReport
 from pvsld.finishers.core_console import (
@@ -284,6 +288,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     finish_cmd.add_argument("--json", action="store_true", help="print the result as JSON")
     finish_cmd.set_defaults(run=_finish)
+    catalogue_cli.register(subcommands)
     return parser
 
 
