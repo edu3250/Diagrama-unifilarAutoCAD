@@ -73,69 +73,103 @@ datasheets/
 ```python
 class Provenance(BaseModel):
     filename: str
-    sha256: str                     # of the owner's PDF; the PDF itself is never committed
-    title: str                      # datasheet title, revision/version and date as printed
+    sha256: str  # of the owner's PDF; the PDF itself is never committed
+    title: str  # datasheet title, revision/version and date as printed
     pages: list[int]
     extraction_method: Literal["markitdown", "rendered_page"]
     extraction_date: date
-    reviewed_by: str | None         # None until the owner approves; only reviewed records are committed
+    reviewed_by: str | None  # None until the owner approves; only reviewed records are committed
     review_date: date | None
     notes: str | None = None
 
-class ModuleVariant(BaseModel):     # one per power level, all values at STC
-    component_id: str               # e.g. "JINKO-JKM650N-66HL4M-BDV"
-    pmax_w: float; vmp_v: float; imp_a: float; voc_v: float; isc_a: float
+
+class ModuleVariant(BaseModel):  # one per power level, all values at STC
+    component_id: str  # e.g. "JINKO-JKM650N-66HL4M-BDV"
+    pmax_w: float
+    vmp_v: float
+    imp_a: float
+    voc_v: float
+    isc_a: float
     efficiency_pct: float
-    bnpi: ElectricalPoint | None    # bifacial nameplate irradiance values (Pmax, Vmp, Imp, Voc, Isc)
+    bnpi: ElectricalPoint | None  # bifacial nameplate irradiance values (Pmax, Vmp, Imp, Voc, Isc)
+
 
 class PVModuleFamily(BaseModel):
     component_type: Literal["pv_module"]
-    family_id: str; manufacturer: str; model_family: str
-    cell_type: str; cells: int
-    bifacial: bool; bifaciality_pct: dict[str, float] | None
-    dimensions_mm: tuple[float, float, float]; weight_kg: float
-    max_system_voltage_v: float     # e.g. 1500 (IEC)
-    max_series_fuse_a: float        # bounds the string OCPD
-    temp_coef_pmax_pct_per_c: float; temp_coef_voc_pct_per_c: float; temp_coef_isc_pct_per_c: float
+    family_id: str
+    manufacturer: str
+    model_family: str
+    cell_type: str
+    cells: int
+    bifacial: bool
+    bifaciality_pct: dict[str, float] | None
+    dimensions_mm: tuple[float, float, float]
+    weight_kg: float
+    max_system_voltage_v: float  # e.g. 1500 (IEC)
+    max_series_fuse_a: float  # bounds the string OCPD
+    temp_coef_pmax_pct_per_c: float
+    temp_coef_voc_pct_per_c: float
+    temp_coef_isc_pct_per_c: float
     operating_temp_c: tuple[float, float]
     certifications: list[str]
     variants: list[ModuleVariant]
     source: Provenance
 
-class InverterVariant(BaseModel):   # one per model of the family
-    component_id: str               # e.g. "HUAWEI-SUN2000-5KTL-L1"
-    recommended_max_pv_power_wp: float   # what datasheets publish; STR-007 uses it as P_dc,max
-    max_pv_power_with_optimizers_wp: float | None
-    rated_ac_power_w: float; max_apparent_power_va: float
-    max_ac_output_current_a: float  # sizes the AC OCPD and conductors
-    max_efficiency_pct: float; euro_efficiency_pct: float | None
 
-class InverterFamily(BaseModel):    # values common to all models
+class InverterVariant(BaseModel):  # one per model of the family
+    component_id: str  # e.g. "HUAWEI-SUN2000-5KTL-L1"
+    recommended_max_pv_power_wp: float  # what datasheets publish; STR-007 uses it as P_dc,max
+    max_pv_power_with_optimizers_wp: float | None
+    rated_ac_power_w: float
+    max_apparent_power_va: float
+    max_ac_output_current_a: float  # sizes the AC OCPD and conductors
+    max_efficiency_pct: float
+    euro_efficiency_pct: float | None
+
+
+class InverterFamily(BaseModel):  # values common to all models
     component_type: Literal["string_inverter", "hybrid_inverter"]
-    family_id: str; manufacturer: str; model_family: str
-    max_input_voltage_v: float; startup_voltage_v: float; rated_input_voltage_v: float
+    family_id: str
+    manufacturer: str
+    model_family: str
+    max_input_voltage_v: float
+    startup_voltage_v: float
+    rated_input_voltage_v: float
     mppt_voltage_range_v: tuple[float, float]
-    mppt_count: int; inputs_per_mppt: int
-    max_input_current_per_mppt_a: float          # operating limit (current above it is clipped)
+    mppt_count: int
+    inputs_per_mppt: int
+    max_input_current_per_mppt_a: float  # operating limit (current above it is clipped)
     max_short_circuit_current_per_mppt_a: float  # hard limit for array Isc (incl. bifacial gain)
     grid: Literal["single_phase", "split_phase", "three_phase"]
-    rated_ac_voltage_v: list[float]; frequency_hz: list[float]
-    power_factor_range: tuple[float, float]; thd_max_pct: float | None
+    rated_ac_voltage_v: list[float]
+    frequency_hz: list[float]
+    power_factor_range: tuple[float, float]
+    thd_max_pct: float | None
     battery: BatteryPort | None
-    certifications_safety: list[str]; certifications_grid: list[str]
+    certifications_safety: list[str]
+    certifications_grid: list[str]
     variants: list[InverterVariant]
     source: Provenance
 
+
 class DcBreakerVariant(BaseModel):
-    component_id: str               # catalogue reference, e.g. "SCHNEIDER-A9N61652"
+    component_id: str  # catalogue reference, e.g. "SCHNEIDER-A9N61652"
     rated_current_a: float
-    breaking_capacity_dc: list[tuple[float, float]]  # (voltage V, Icu kA) pairs, e.g. [(650, 3.0), (800, 1.5)]
+    breaking_capacity_dc: list[
+        tuple[float, float]
+    ]  # (voltage V, Icu kA) pairs, e.g. [(650, 3.0), (800, 1.5)]
+
 
 class ProtectionFamily(BaseModel):  # DC/AC breakers, fuses, SPDs, disconnects
     component_type: Literal["dc_breaker", "ac_breaker", "fuse", "spd", "disconnect"]
-    family_id: str; manufacturer: str; range_name: str
-    poles: int; rated_voltage_v: float; trip_curve: str | None
-    polarity_sensitive: bool | None; standard: str
+    family_id: str
+    manufacturer: str
+    range_name: str
+    poles: int
+    rated_voltage_v: float
+    trip_curve: str | None
+    polarity_sensitive: bool | None
+    standard: str
     operating_temp_c: tuple[float, float]
     variants: list[DcBreakerVariant]
     source: Provenance
