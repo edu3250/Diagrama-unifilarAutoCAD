@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per power level.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: pv_module
 family_id: ETSOLAR-ET-M672BH
 manufacturer: ET Solar
@@ -35,6 +34,6 @@ source:
   pages: [2]
   extraction_method: markitdown
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: WW/WB suffixes are frame/backsheet colour options with identical electrical data.

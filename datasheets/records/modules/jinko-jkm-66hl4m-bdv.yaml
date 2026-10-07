@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per power level.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: pv_module
 family_id: JINKO-JKM-66HL4M-BDV
 manufacturer: Jinko Solar
@@ -35,6 +34,6 @@ source:
   pages: [2]
   extraction_method: rendered_page
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: No text layer (Adobe Illustrator, fonts outlined); page 2 rendered with pypdfium2 and read visually.

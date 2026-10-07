@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rated current.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: dc_breaker
 family_id: SUNTREE-SL7N-63
 manufacturer: Suntree
@@ -52,8 +51,8 @@ source:
   pages: [3]
   extraction_method: rendered_page
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: >-
     No text layer; pages rendered with pypdfium2. Ue per pole count is a list of options, so the pole/voltage
     configuration is chosen at design time (e.g. 2P 550 V or 2P 800 V). Product images also show "2P 550V" and "4P 1000V"

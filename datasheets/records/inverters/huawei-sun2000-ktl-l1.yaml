@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per model.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: hybrid_inverter
 family_id: HUAWEI-SUN2000-KTL-L1
 manufacturer: Huawei
@@ -45,8 +44,8 @@ source:
   pages: [2]
   extraction_method: markitdown
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: >-
     Per-model values mapped by column order (2, 3, 3.68, 4, 4.6, 5, 6 kW). Footnote 1 (10,000 Wp with optimizers on long
     strings) is attached to the 6KTL-L1 column header; whether it also applies to other models must be confirmed by the owner.

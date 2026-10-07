@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per model.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: string_inverter
 family_id: GROWATT-MIN-TL-X2
 manufacturer: Growatt
@@ -41,8 +40,8 @@ source:
   pages: [2]
   extraction_method: rendered_page
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: >-
     No text layer; page 2 rendered with pypdfium2 and read visually. The 3000TL-X2 rated power cell is printed with overlapping
     digits; read as 3000 W, consistent with its 3000 VA apparent power.
