@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | **Proposed** → owner decision pending acceptance |
-| Decision date | proposed 2026-10-07; owner clarification 2026-10-07 |
+| Status | **Accepted** |
+| Decision date | proposed 2026-10-07; owner clarification and acceptance 2026-10-07 |
 | Phase / stage | Phase 4, Stage 4.1 (symbol library specification) |
-| Deciders | edu3250 (project owner) — *pending approval* |
+| Deciders | edu3250 (project owner) |
 | Supersedes | none; settles the open question of how to transition from code-defined to file-based symbol library (ADR-0003 open question) |
 | Vault original | `wiki/decisions/ADR-0005 CFE Symbol Library.md` (not yet created; mirrors to this file once accepted) |
 
@@ -117,7 +117,7 @@ A Python script (`scripts/regenerate_symbol_library.py`) rebuilds the master DXF
 
 - **Block import:** `src/pvsld/backends/ezdxf_backend.py` loads the master DXF:
   ```python
-  import_dwg = ezdxf.readfile('symbols/pvsld-symbols-cfe.dxf')
+  import_dwg = ezdxf.readfile("symbols/pvsld-symbols-cfe.dxf")
   diagram_dwg.blocks.import_blocks(import_dwg)
   ```
 - **Symbol insertion:** Generator inserts blocks by name (e.g., `diagram_dwg.modelspace().add_blockref('PVSLD_INV', insert=(x, y))`)
