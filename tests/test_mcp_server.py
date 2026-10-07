@@ -225,11 +225,13 @@ def test_validate_reports_volt_001_for_twelve_modules_per_string(server: Any) ->
     assert result.structured_content is not None
     content = result.structured_content
     assert content["ok"] is False
-    assert content["errors"] == 2
+    # 2 x 12 x 550 W = 13.2 kWp also exceeds the inverter's 9 kW (STR-007, Stage 3.3).
+    assert content["errors"] == 3
     findings = content["findings"]
     assert [(f["rule_id"], f["subject"], f["severity"]) for f in findings] == [
         ("VOLT-001", "S1", "error"),
         ("VOLT-001", "S2", "error"),
+        ("STR-007", "INV1", "error"),
     ]
     first = findings[0]
     assert "máximo 11 módulos" in first["message_es"]
@@ -396,6 +398,7 @@ def test_generate_refuses_an_invalid_spec_with_the_findings(
     assert [(f["rule_id"], f["subject"]) for f in findings] == [
         ("VOLT-001", "S1"),
         ("VOLT-001", "S2"),
+        ("STR-007", "INV1"),
     ]
     text = text_of(result)
     assert text.startswith("REFUSED: nothing was written.")

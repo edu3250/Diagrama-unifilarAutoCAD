@@ -11,7 +11,19 @@ from pvsld.core.rules import RULES, Finding, Severity, rulepack_catalogue
 from pvsld.core.validation import ValidationReport, validate_pv_design
 from s1_helpers import load_example, mutated
 
-SUBSET = ("VOLT-001", "STR-001", "STR-004", "CON-003", "PCC-002", "MET-001", "DIS-003", "DIS-004")
+SUBSET = (
+    "VOLT-001",
+    "STR-001",
+    "STR-004",
+    "STR-007",
+    "CON-003",
+    "PCC-002",
+    "MET-001",
+    "DIS-003",
+    "DIS-004",
+)
+# STR-007 has no Mexican checklist item in the vault ("MX" column is "—").
+NO_CHECKLIST_ITEM = {"STR-007"}
 
 
 def _ids(report: ValidationReport, severity: Severity | None = None) -> list[str]:
@@ -27,7 +39,7 @@ def _only(report: ValidationReport, rule_id: str) -> Finding:
 # --- The pack itself ---------------------------------------------------------------------------
 
 
-def test_pack_implements_exactly_the_stage_2_1_subset() -> None:
+def test_pack_implements_exactly_the_implemented_subset() -> None:
     assert tuple(rule.id for rule in RULES) == SUBSET
 
 
@@ -36,9 +48,9 @@ def test_catalogue_documents_every_rule_in_spanish_with_citations() -> None:
     assert [entry["id"] for entry in catalogue] == list(SUBSET)
     for entry in catalogue:
         assert entry["title_es"]
-        assert entry["mx_ids"]
+        assert entry["mx_ids"] or entry["id"] in NO_CHECKLIST_ITEM
         assert entry["cites"]
-        assert entry["severity"] in {"E", "W", "E/W"}
+        assert entry["severity"] in {"E", "W", "E/W", "E/W/I"}
         assert entry["basis"]
 
 
@@ -242,9 +254,11 @@ def test_a_failing_spec_collects_every_violated_rule_in_pack_order() -> None:
         spec["ac_bos"]["meters"] = []
         spec["ac_bos"]["main_breakers"][0]["bidirectional"] = False
 
+    # 2 x 12 x 550 W = 13.2 kWp also exceeds the 9 kW inverter limit (STR-007, pack order).
     assert _ids(validate_pv_design(mutated(broken))) == [
         "VOLT-001",
         "VOLT-001",
+        "STR-007",
         "MET-001",
         "DIS-004",
     ]

@@ -29,6 +29,7 @@ from pathlib import Path
 
 from pvsld import __version__
 from pvsld.catalogue import cli as catalogue_cli
+from pvsld.core.policy import DEFAULT_DC_AC_ERROR_ABOVE, DEFAULT_DC_AC_WARN_ABOVE, DcAcPolicy
 from pvsld.core.rules import Finding
 from pvsld.core.validation import ValidationReport
 from pvsld.finishers.core_console import (
@@ -71,7 +72,12 @@ def _validate(args: argparse.Namespace) -> int:
     except SpecFileError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
-    report = validate_pv_design(data)
+    try:
+        policy = DcAcPolicy(warn_above=args.dc_ac_warn, error_above=args.dc_ac_error)
+    except ValueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    report = validate_pv_design(data, dc_ac_policy=policy)
     if args.json:
         print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
         return 0 if report.ok else 1
@@ -210,6 +216,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate.add_argument("path", type=Path, metavar="PATH", help="parameter YAML or JSON file")
     validate.add_argument("--json", action="store_true", help="print the report as JSON")
+    validate.add_argument(
+        "--dc-ac-warn",
+        type=float,
+        default=DEFAULT_DC_AC_WARN_ABOVE,
+        metavar="RATIO",
+        help=f"STR-007: warn above this DC/AC ratio (default {DEFAULT_DC_AC_WARN_ABOVE:g})",
+    )
+    validate.add_argument(
+        "--dc-ac-error",
+        type=float,
+        default=DEFAULT_DC_AC_ERROR_ABOVE,
+        metavar="RATIO",
+        help=f"STR-007: fail above this DC/AC ratio (default {DEFAULT_DC_AC_ERROR_ABOVE:g})",
+    )
     validate.set_defaults(run=_validate)
 
     generate = subcommands.add_parser(

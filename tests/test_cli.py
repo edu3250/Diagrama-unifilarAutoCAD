@@ -76,6 +76,30 @@ def test_validate_reports_a_violated_rule_in_spanish_and_fails(
     assert "MX-C02" in err
 
 
+def test_validate_dc_ac_thresholds_are_configurable(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def eight(spec: dict[str, Any]) -> None:
+        for string in spec["strings"]:
+            string["n_series"] = 8
+
+    path = _write_spec(tmp_path / "eight.yaml", mutated(eight))
+    # default policy: 8.8 kWp / 6 kW = 1.47 -> warning only
+    assert main(["validate", str(path)]) == 0
+    assert "[W] STR-007 INV1" in capsys.readouterr().out
+    assert main(["validate", str(path), "--dc-ac-warn", "1.3", "--dc-ac-error", "1.4"]) == 1
+    assert "[E] STR-007 INV1" in capsys.readouterr().err
+    assert main(["validate", str(path), "--dc-ac-warn", "1.6", "--dc-ac-error", "1.8"]) == 0
+    assert "STR-007" not in capsys.readouterr().out
+
+
+def test_validate_rejects_inconsistent_dc_ac_thresholds(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(["validate", str(EXAMPLE), "--dc-ac-warn", "1.6", "--dc-ac-error", "1.4"]) == 1
+    assert "warn_above <= error_above" in capsys.readouterr().err
+
+
 def test_validate_json_prints_the_report(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

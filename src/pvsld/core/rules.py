@@ -7,13 +7,17 @@ correct the spec. Rule data (titles, citations, MX ids) is separate from the che
 published through :func:`rulepack_catalogue` for the future ``pvsld://rulepack/mx-gd-2026.10``
 MCP resource.
 
-Implemented in this version: VOLT-001, STR-001, STR-004, CON-003, PCC-002, MET-001, DIS-003 and
-DIS-004. The remaining rules of the vault pack (98 in total) arrive with later stages.
+Implemented in this version: VOLT-001, STR-001, STR-004, STR-007, CON-003, PCC-002, MET-001,
+DIS-003 and DIS-004. The remaining rules of the vault pack (98 in total) arrive with later stages.
 
 Scope notes, where the vault definition needs data that schema 0.1.0 does not carry:
 
 * MET-001 checks the count, the role and the bidirectional flag of the fiscal meter. The meter
   sits on the utility side of I2 by construction of the layout template.
+* STR-007 compares the array STC power with ``inverters[].pdc_max_w`` (the datasheet "recommended
+  maximum PV power"; the optimizer-only value only when the design declares optimizers on every
+  module) and applies the DC/AC ratio policy of :mod:`pvsld.core.policy` (defaults: warning above
+  1.35, error above 1.50, both owner-configurable).
 * DIS-003 checks the ``manual``, ``lockable`` and ``visible_break`` flags only when the spec
   declares them (``null`` means "not declared" and is not an error).
 """
@@ -22,21 +26,14 @@ from __future__ import annotations
 
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
-from enum import StrEnum
 from typing import Any
 
 from pvsld.core import calc
 from pvsld.core.calc import Derived
 from pvsld.core.model import PvSystemSpec
+from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
+from pvsld.core.severity import Severity
 from pvsld.core.tables import NomTables, get_tables
-
-
-class Severity(StrEnum):
-    """``E`` blocks the drawing, ``W`` a warning a reviewer will likely raise, ``I`` info."""
-
-    ERROR = "E"
-    WARNING = "W"
-    INFO = "I"
 
 
 @dataclass(frozen=True)
@@ -79,6 +76,7 @@ class RuleContext:
     spec: PvSystemSpec
     derived: Derived
     tables: NomTables
+    policy: DcAcPolicy = DEFAULT_DC_AC_POLICY
 
 
 @dataclass(frozen=True)
@@ -183,6 +181,70 @@ def _str_004(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
                 f"El MPPT {key[0]}.{key[1]} recibe {values.n_parallel} rama(s) con "
                 f"{_n(values.isc_input_a)} A de corriente de cortocircuito (1.25 × Isc por "
                 f"rama); el límite del inversor es {_g(mppt.isc_max_a)} A.",
+            )
+
+
+# --- STR-007 -----------------------------------------------------------------------------------
+
+
+def _str_007(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
+    """Array power within the inverter limit (E); DC/AC ratio against the policy (E/W/I).
+
+    One finding per inverter at most: the power-limit error already reports the ratio.
+    ``pdc_max_w`` is the datasheet "recommended maximum PV power" of one inverter; the
+    optimizer-only value belongs there only when the design declares optimizers on every module.
+    """
+    policy = ctx.policy
+    for inverter in ctx.spec.inverters:
+        strings = [v for v in ctx.derived.strings if v.inverter_id == inverter.id]
+        if not strings:
+            continue
+        p_dc_w = sum(v.p_stc_w for v in strings)
+        limit_w = inverter.pdc_max_w * inverter.qty
+        pac_w = inverter.pac_w * inverter.qty
+        ratio = p_dc_w / pac_w
+        where = (
+            f"El arreglo de {sum(v.n_series for v in strings)} módulos del inversor {inverter.id}"
+            f" suma {_n(p_dc_w / 1000, 2)} kWp (STC)"
+        )
+        if p_dc_w > limit_w:
+            modules = {v.module_id for v in strings}
+            hint = ""
+            if len(modules) == 1:
+                pmax_w = p_dc_w / sum(v.n_series for v in strings)
+                hint = f" (como máximo {int(limit_w // pmax_w)} módulos de {_g(pmax_w)} W)"
+            yield (
+                Severity.ERROR,
+                inverter.id,
+                f"{where}; el inversor admite como máximo {_n(limit_w / 1000, 2)} kW de potencia "
+                f"FV (relación CD/CA {_n(ratio, 2)} sobre {_n(pac_w / 1000, 2)} kW CA). "
+                f"Reduzca los módulos{hint} o elija un inversor de mayor potencia.",
+            )
+            continue
+        severity = policy.classify(ratio)
+        if severity is Severity.ERROR:
+            yield (
+                Severity.ERROR,
+                inverter.id,
+                f"{where} sobre un inversor de {_n(pac_w / 1000, 2)} kW CA: la relación CD/CA es "
+                f"{_n(ratio, 2)}, por encima del máximo de diseño {_n(policy.error_above, 2)}. "
+                f"Reduzca los módulos o elija un inversor de mayor potencia.",
+            )
+        elif severity is Severity.WARNING:
+            yield (
+                Severity.WARNING,
+                inverter.id,
+                f"{where} sobre un inversor de {_n(pac_w / 1000, 2)} kW CA: la relación CD/CA es "
+                f"{_n(ratio, 2)}, por encima de {_n(policy.warn_above, 2)}. Se admite (no excede "
+                f"los {_n(limit_w / 1000, 2)} kW del inversor) pero habrá recorte de potencia.",
+            )
+        elif severity is Severity.INFO:
+            yield (
+                Severity.INFO,
+                inverter.id,
+                f"{where} sobre un inversor de {_n(pac_w / 1000, 2)} kW CA: la relación CD/CA es "
+                f"{_n(ratio, 2)}, menor que {_n(policy.info_below, 2)}; el inversor queda "
+                f"sobredimensionado respecto del arreglo.",
             )
 
 
@@ -366,6 +428,15 @@ RULES: tuple[RuleDef, ...] = (
         check=_str_004,
     ),
     RuleDef(
+        id="STR-007",
+        title_es="Potencia CD del arreglo dentro del límite del inversor y relación CD/CA",
+        severity="E/W/I",
+        basis=("MFR", "POL"),
+        cites=(Cite("NOM-001-SEDE-2012", "110-3(b)"),),
+        mx_ids=(),
+        check=_str_007,
+    ),
+    RuleDef(
         id="CON-003",
         title_es="Conductor protegido por su dispositivo de sobrecorriente",
         severity="E",
@@ -431,9 +502,16 @@ def rulepack_catalogue() -> list[dict[str, Any]]:
     return [rule.to_dict() for rule in RULES]
 
 
-def run_rules(spec: PvSystemSpec, derived: Derived) -> list[Finding]:
-    """Run every rule of the pack, in pack order, and return the findings."""
-    ctx = RuleContext(spec=spec, derived=derived, tables=get_tables(spec.standards.nom_edition))
+def run_rules(
+    spec: PvSystemSpec, derived: Derived, policy: DcAcPolicy = DEFAULT_DC_AC_POLICY
+) -> list[Finding]:
+    """Run every rule of the pack, in pack order, and return the findings.
+
+    ``policy`` carries the DC/AC ratio thresholds of STR-007 (project policy, not regulation).
+    """
+    ctx = RuleContext(
+        spec=spec, derived=derived, tables=get_tables(spec.standards.nom_edition), policy=policy
+    )
     findings: list[Finding] = []
     for rule in RULES:
         findings.extend(
