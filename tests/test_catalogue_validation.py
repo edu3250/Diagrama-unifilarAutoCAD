@@ -74,6 +74,7 @@ def _bad_checksum(data: dict[str, Any]) -> None:
 
 def _review_without_date(data: dict[str, Any]) -> None:
     data["source"]["reviewed_by"] = "Someone"
+    data["source"]["review_date"] = None
 
 
 def _mppt_window_above_max_input(data: dict[str, Any]) -> None:
