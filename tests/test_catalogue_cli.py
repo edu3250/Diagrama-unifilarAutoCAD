@@ -10,7 +10,7 @@ from catalogue_helpers import MODULE, RECORDS, copy_records, mark_reviewed, raw,
 from pvsld.cli import main
 
 
-def test_validate_accepts_the_committed_catalogue(capsys: pytest.CaptureFixture[str]) -> None:
+def test_validate_accepts_the_fixture_catalogue(capsys: pytest.CaptureFixture[str]) -> None:
     assert main(["catalogue", "validate", str(RECORDS)]) == 0
     out = capsys.readouterr().out
     assert "OK:" in out
@@ -23,13 +23,6 @@ def test_validate_accepts_the_committed_catalogue(capsys: pytest.CaptureFixture[
 def unreviewed(tmp_path: Path) -> Path:
     """A copy of the catalogue with every review field cleared."""
     return copy_records(tmp_path / "unreviewed", reviewed=False)
-
-
-def test_the_committed_catalogue_is_fully_reviewed(capsys: pytest.CaptureFixture[str]) -> None:
-    assert main(["catalogue", "validate", str(RECORDS), "--require-reviewed"]) == 0
-    out = capsys.readouterr().out
-    assert "34 component(s)" in out
-    assert "0 unreviewed" in out
 
 
 def test_validate_defaults_to_datasheets_records_of_the_working_directory(

@@ -1,4 +1,10 @@
-"""Shared helpers of the catalogue tests: the committed records as raw dicts, copies in tmp_path."""
+"""Shared helpers of the catalogue tests.
+
+Behaviour tests use ``RECORDS``, a frozen snapshot of six reviewed records in
+``tests/fixtures/catalogue`` (facts only, like the real records), so adding a product to
+``datasheets/records`` never changes an expected count. Only ``test_catalogue_real_records.py``
+and ``test_catalogue_review_gate.py`` read ``REAL_RECORDS``.
+"""
 
 from __future__ import annotations
 
@@ -9,20 +15,22 @@ from typing import Any
 
 import yaml
 
-RECORDS = Path(__file__).resolve().parents[1] / "datasheets" / "records"
+REAL_RECORDS = Path(__file__).resolve().parents[1] / "datasheets" / "records"
+RECORDS = Path(__file__).resolve().parent / "fixtures" / "catalogue"
 MODULE = "modules/jinko-jkm-66hl4m-bdv.yaml"
 INVERTER = "inverters/huawei-sun2000-ktl-l1.yaml"
 BREAKER = "protection/schneider-acti9-c60pv-dc.yaml"
 ET_MODULE = "modules/etsolar-et-m672bh.yaml"
 GROWATT = "inverters/growatt-min-tl-x2.yaml"
 SUNTREE = "protection/suntree-sl7n-63.yaml"
+# The frozen snapshot, never the real catalogue.
 ALL_RECORDS = (MODULE, ET_MODULE, INVERTER, GROWATT, BREAKER, SUNTREE)
 
 Mutation = Callable[[dict[str, Any]], None]
 
 
 def raw(relative: str) -> dict[str, Any]:
-    """The committed record as a plain dict (a fresh copy every call)."""
+    """A fixture record as a plain dict (a fresh copy every call)."""
     data = yaml.safe_load((RECORDS / relative).read_text(encoding="utf-8"))
     assert isinstance(data, dict)
     return copy.deepcopy(data)
@@ -51,7 +59,7 @@ def mark_unreviewed(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def copy_records(root: Path, *, reviewed: bool = False) -> Path:
-    """Copy the committed records into ``root`` with every review field set or cleared."""
+    """Copy the fixture records into ``root`` with every review field set or cleared."""
     for relative in ALL_RECORDS:
         data = raw(relative)
         write(root, relative, mark_reviewed(data) if reviewed else mark_unreviewed(data))

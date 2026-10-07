@@ -1,0 +1,51 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per model.
+component_type: hybrid_inverter
+family_id: HUAWEI-SUN2000-KTL-L1
+manufacturer: Huawei
+model_family: SUN2000-2/3/3.68/4/4.6/5/6KTL-L1
+max_input_voltage_v: 600
+startup_voltage_v: 100
+rated_input_voltage_v: 360
+mppt_voltage_range_v: [90, 560]
+mppt_count: 2
+inputs_per_mppt: 1
+max_input_current_per_mppt_a: 12.5
+max_short_circuit_current_per_mppt_a: 18
+grid: single_phase
+rated_ac_voltage_v: [220, 230, 240]
+frequency_hz: [50, 60]
+power_factor_range: [-0.8, 0.8]          # 0.8 leading ... 0.8 lagging
+thd_max_pct: 3
+battery:
+  compatible: LUNA2000-5/10/15-S0
+  voltage_range_v: [350, 560]
+  max_current_a: 15
+  max_charge_power_w: 5000
+protection: {anti_islanding: true, dc_reverse_polarity: true, insulation_monitoring: true, residual_current_monitoring: true, arc_fault: true, dc_spd: "type II (EN/IEC 61643-11)", ac_spd: "type II (EN/IEC 61643-11)"}
+operating_temp_c: [-25, 60]              # derating above 45 °C
+altitude_m: 4000                          # derating above 2,000 m
+ip_rating: IP65
+weight_kg: 12.0
+dimensions_mm: [365, 375, 156]
+variants:
+  - {component_id: HUAWEI-SUN2000-2KTL-L1,    recommended_max_pv_power_wp: 3000, rated_ac_power_w: 2000, max_apparent_power_va: 2200, max_ac_output_current_a: 10.0, max_battery_discharge_w: 2200, max_efficiency_pct: 98.2, euro_efficiency_pct: 96.7}
+  - {component_id: HUAWEI-SUN2000-3KTL-L1,    recommended_max_pv_power_wp: 4500, rated_ac_power_w: 3000, max_apparent_power_va: 3300, max_ac_output_current_a: 15.0, max_battery_discharge_w: 3300, max_efficiency_pct: 98.3, euro_efficiency_pct: 97.3}
+  - {component_id: HUAWEI-SUN2000-3.68KTL-L1, recommended_max_pv_power_wp: 5520, rated_ac_power_w: 3680, max_apparent_power_va: 3680, max_ac_output_current_a: 16.0, max_battery_discharge_w: 3680, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.3}
+  - {component_id: HUAWEI-SUN2000-4KTL-L1,    recommended_max_pv_power_wp: 6000, rated_ac_power_w: 4000, max_apparent_power_va: 4400, max_ac_output_current_a: 20.0, max_battery_discharge_w: 4400, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.5}
+  - {component_id: HUAWEI-SUN2000-4.6KTL-L1,  recommended_max_pv_power_wp: 6900, rated_ac_power_w: 4600, max_apparent_power_va: 5000, max_ac_output_current_a: 23.0, max_battery_discharge_w: 4600, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.7}
+  - {component_id: HUAWEI-SUN2000-5KTL-L1,    recommended_max_pv_power_wp: 7500, rated_ac_power_w: 5000, max_apparent_power_va: 5500, max_ac_output_current_a: 25.0, max_battery_discharge_w: 5000, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.8}
+  # Footnote 1 (10,000 Wp with optimizers) is printed on the 6KTL-L1 column only; see source.notes.
+  - {component_id: HUAWEI-SUN2000-6KTL-L1,    recommended_max_pv_power_wp: 9000, max_pv_power_with_optimizers_wp: 10000, max_pv_power_with_optimizers_ambiguous: true,
+     rated_ac_power_w: 6000, max_apparent_power_va: 6000, max_ac_output_current_a: 27.3, max_battery_discharge_w: 5000, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.8}
+source:
+  filename: HWI-SUN2000-5KTL-L1_FichaTecnica.pdf
+  sha256: 60cdebe2ab5d4896c6058db784fb76359d5574065f70298c8b381fd0c5debcff
+  title: SUN2000-2/3/3.68/4/4.6/5/6KTL-L1 Technical Specification, version 03-202312
+  pages: [2]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: edu3250
+  review_date: 2026-10-07
+  notes: >-
+    Per-model values mapped by column order (2, 3, 3.68, 4, 4.6, 5, 6 kW). Footnote 1 (10,000 Wp with optimizers on long
+    strings) is attached to the 6KTL-L1 column header; whether it also applies to other models must be confirmed by the owner.
