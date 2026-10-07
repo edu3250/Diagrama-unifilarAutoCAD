@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | **Proposed** |
-| Decision date | proposed 2026-10-06 |
+| Status | **Accepted** |
+| Decision date | proposed 2026-10-06, accepted 2026-10-07 |
 | Phase / stage | Phase 3, Stage 3.1 |
 | Deciders | edu3250 (project owner) |
 | Supersedes | none |
@@ -51,141 +51,147 @@
 
 ## Decision
 
-**YAML per component** (`datasheets/records/<type>/<model>.yaml`), loaded at Python startup into an in-memory `ComponentRegistry` (dict-based indexing).
+**One YAML file per datasheet family** (`datasheets/records/<type>/<family-id>.yaml`). Shared facts are written once. **Every power level or model gets its own complete variant entry with its own `component_id`** (owner decision, 2026-10-07). At load time the `ComponentRegistry` expands each variant into a standalone, fully-typed component (family fields + variant fields), so Claude and the sizing engine select e.g. `JINKO-JKM640N-66HL4M-BDV` or `HUAWEI-SUN2000-6KTL-L1` directly.
+
+The schema was checked against the first three real datasheets supplied by the owner on 2026-10-07 (Jinko JKM625-650N-66HL4M-BDV, Huawei SUN2000-2…6KTL-L1, Schneider Acti9 C60PV-DC A9N61652). Those datasheets showed fields the first draft lacked: per-variant values, bifacial (BNPI) values, module max system voltage and max series fuse, the two different per-MPPT inverter currents, the inverter's recommended max PV power, the AC max output current, and voltage-dependent DC breaking capacity.
 
 ### Storage structure
 
 ```
 datasheets/
-├── inbox/                          # git-ignored: raw PDFs from manufacturers
-│   ├── modules/
-│   │   ├── SunPower-SPR-M440.pdf
-│   │   └── CanadianSolar-CS7-630.pdf
-│   ├── inverters/
-│   │   └── SMA-STP-25000-10-US.pdf
-│   ├── conductors/
-│   └── protection/
-│
-├── cache/                          # git-ignored: markitdown markdown caches
-│   ├── modules/
-│   │   ├── SunPower-SPR-M440.md
-│   │   └── ...
-│   └── ...
-│
-└── records/                        # committed: extracted component specs
-    ├── modules/
-    │   ├── sunpower-spr-m440.yaml
-    │   └── canadian-solar-cs7-630.yaml
-    ├── inverters/
-    │   └── sma-stp-25000-10-us.yaml
-    ├── conductors/
-    │   ├── copper-thwn-2-10awg.yaml
-    │   └── ...
-    └── protection/
-        ├── breaker-2p-63a-acti9.yaml
-        └── ...
+├── inbox/        # git-ignored: the owner's PDFs, any file name
+├── cache/        # git-ignored: markitdown text, rendered page images, draft records
+└── records/      # committed: reviewed facts only (no datasheet text)
+    ├── modules/      jinko-jkm-66hl4m-bdv.yaml        (6 variants: 625…650 W)
+    ├── inverters/    huawei-sun2000-ktl-l1.yaml       (7 variants: 2…6 kW)
+    ├── protection/   schneider-acti9-c60pv-dc.yaml    (variants by rating)
+    └── conductors/
 ```
 
-### Record schema (Pydantic)
+### Record schema (Pydantic, family + variants)
 
 ```python
-class ComponentMetadata(BaseModel):
-    """Provenance and review tracking."""
-    source_datasheet_filename: str  # e.g., "SunPower-SPR-M440.pdf"
-    source_datasheet_sha256: str    # SHA-256 of the original PDF for integrity
-    page_references: list[int]      # pages from which facts were extracted
-    extraction_date: date           # when Claude extracted the facts
-    reviewed_by: str                # owner's name or email (e.g., "edu3250")
-    review_date: date               # when the owner approved the record
-    notes: Optional[str]            # any caveats or non-standard aspects
+class Provenance(BaseModel):
+    filename: str
+    sha256: str  # of the owner's PDF; the PDF itself is never committed
+    title: str  # datasheet title, revision/version and date as printed
+    pages: list[int]
+    extraction_method: Literal["markitdown", "rendered_page"]
+    extraction_date: date
+    reviewed_by: str | None  # None until the owner approves; only reviewed records are committed
+    review_date: date | None
+    notes: str | None = None
 
-class PVModuleSpec(BaseModel):
-    """Photovoltaic module specifications."""
-    component_type: str = "pv_module"
-    component_id: str               # e.g., "SUNPOWER-SPR-M440"
+
+class ModuleVariant(BaseModel):  # one per power level, all values at STC
+    component_id: str  # e.g. "JINKO-JKM650N-66HL4M-BDV"
+    pmax_w: float
+    vmp_v: float
+    imp_a: float
+    voc_v: float
+    isc_a: float
+    efficiency_pct: float
+    bnpi: ElectricalPoint | None  # bifacial nameplate irradiance values (Pmax, Vmp, Imp, Voc, Isc)
+
+
+class PVModuleFamily(BaseModel):
+    component_type: Literal["pv_module"]
+    family_id: str
     manufacturer: str
-    model: str
-    rated_power_stc_w: float        # P_STC at STC (1000 W/m², 25 °C)
-    voc_v: float                    # V_oc at STC
-    vmp_v: float                    # V_mp at STC
-    isc_a: float                    # I_sc at STC
-    imp_a: float                    # I_mp at STC
-    temp_coef_voc_v_per_k: float   # ΔV_oc/ΔT, typically negative
-    temp_coef_pmp_pct_per_k: float # ΔP_mp/ΔT / P_mp, typically negative
-    temp_coef_isc_pct_per_k: float # ΔI_sc/ΔT / I_sc, typically positive
-    dimensions_mm: tuple[float, float, float]  # length, width, thickness
+    model_family: str
+    cell_type: str
+    cells: int
+    bifacial: bool
+    bifaciality_pct: dict[str, float] | None
+    dimensions_mm: tuple[float, float, float]
     weight_kg: float
-    frame_type: str                 # e.g., "aluminum", "none"
-    certifications: list[str]       # e.g., ["IEC-61215", "IEC-61730", "UL-1703"]
-    metadata: ComponentMetadata
+    max_system_voltage_v: float  # e.g. 1500 (IEC)
+    max_series_fuse_a: float  # bounds the string OCPD
+    temp_coef_pmax_pct_per_c: float
+    temp_coef_voc_pct_per_c: float
+    temp_coef_isc_pct_per_c: float
+    operating_temp_c: tuple[float, float]
+    certifications: list[str]
+    variants: list[ModuleVariant]
+    source: Provenance
 
-class StringInverterSpec(BaseModel):
-    """String or hybrid inverter specifications."""
-    component_type: str = "string_inverter"
-    component_id: str
+
+class InverterVariant(BaseModel):  # one per model of the family
+    component_id: str  # e.g. "HUAWEI-SUN2000-5KTL-L1"
+    recommended_max_pv_power_wp: float  # what datasheets publish; STR-007 uses it as P_dc,max
+    max_pv_power_with_optimizers_wp: float | None
+    rated_ac_power_w: float
+    max_apparent_power_va: float
+    max_ac_output_current_a: float  # sizes the AC OCPD and conductors
+    max_efficiency_pct: float
+    euro_efficiency_pct: float | None
+
+
+class InverterFamily(BaseModel):  # values common to all models
+    component_type: Literal["string_inverter", "hybrid_inverter"]
+    family_id: str
     manufacturer: str
-    model: str
-    pdc_max_w: float                # Maximum DC input power
-    vdc_max_v: float                # Maximum DC input voltage
-    vdc_min_v: float                # Minimum DC input voltage
-    mppt_count: int                 # Number of MPPT inputs
-    mppt_vmax_v: list[float]        # Per-MPPT max voltage (if different)
-    mppt_isc_max_a: list[float]     # Per-MPPT max SC current
-    vmp_window_v: tuple[float, float]  # Recommended V_mp window (e.g., 400-600 V)
-    pac_nominal_w: float            # Nominal AC power
-    pac_max_w: float                # Maximum AC power
-    pf_range: tuple[float, float]   # Power factor range (e.g., 0.8 to 1.0)
-    thd_max_pct: Optional[float]    # Total harmonic distortion limit
-    certifications: list[str]       # e.g., ["UL-1741-SB", "IEEE-1547", "NMX"]
-    metadata: ComponentMetadata
+    model_family: str
+    max_input_voltage_v: float
+    startup_voltage_v: float
+    rated_input_voltage_v: float
+    mppt_voltage_range_v: tuple[float, float]
+    mppt_count: int
+    inputs_per_mppt: int
+    max_input_current_per_mppt_a: float  # operating limit (current above it is clipped)
+    max_short_circuit_current_per_mppt_a: float  # hard limit for array Isc (incl. bifacial gain)
+    grid: Literal["single_phase", "split_phase", "three_phase"]
+    rated_ac_voltage_v: list[float]
+    frequency_hz: list[float]
+    power_factor_range: tuple[float, float]
+    thd_max_pct: float | None
+    battery: BatteryPort | None
+    certifications_safety: list[str]
+    certifications_grid: list[str]
+    variants: list[InverterVariant]
+    source: Provenance
 
-class ConductorSpec(BaseModel):
-    """Electrical conductor (wire, cable)."""
-    component_type: str = "conductor"
-    component_id: str
-    material: str                   # "copper" or "aluminum"
-    core_cross_section_mm2: float   # or AWG equivalent
-    awg_equivalent: Optional[str]   # for reference
-    insulation_type: str            # "THWN-2", "USE-2", "PV"
-    rated_voltage_v: int            # e.g., 600
-    ampacity_25c_a: float           # Ampacity at 25 °C
-    ampacity_table: dict[float, float]  # Temperature -> ampacity (for derating)
-    dc_voltage_drop_mv_per_a_per_100m: float  # Ohm's law: (rho * L / A) per 100 m
-    metadata: ComponentMetadata
 
-class OvercurrentDeviceSpec(BaseModel):
-    """Fuse, breaker, or SPD."""
-    component_type: str             # "breaker", "fuse", "spd"
-    component_id: str
-    manufacturer: str
-    model: str
+class DcBreakerVariant(BaseModel):
+    component_id: str  # catalogue reference, e.g. "SCHNEIDER-A9N61652"
     rated_current_a: float
-    rated_voltage_v: int
-    interrupting_rating_ka: float   # or KAIC (kA)
-    certifications: list[str]       # e.g., ["UL-1498", "UL-1699", "NMX"]
-    metadata: ComponentMetadata
+    breaking_capacity_dc: list[
+        tuple[float, float]
+    ]  # (voltage V, Icu kA) pairs, e.g. [(650, 3.0), (800, 1.5)]
+
+
+class ProtectionFamily(BaseModel):  # DC/AC breakers, fuses, SPDs, disconnects
+    component_type: Literal["dc_breaker", "ac_breaker", "fuse", "spd", "disconnect"]
+    family_id: str
+    manufacturer: str
+    range_name: str
+    poles: int
+    rated_voltage_v: float
+    trip_curve: str | None
+    polarity_sensitive: bool | None
+    standard: str
+    operating_temp_c: tuple[float, float]
+    variants: list[DcBreakerVariant]
+    source: Provenance
 ```
 
-### Ingestion workflow (Stage 3.2)
+Units are stored as printed on the datasheet (temperature coefficients in %/°C), and the engine converts them where needed. Plausibility validators run on load: per variant Vmp < Voc, Imp < Isc, |Vmp·Imp − Pmax| ≤ 2 %, efficiency consistent with module area ±0.3 points; coefficient signs (Pmax and Voc negative, Isc positive); inverter MPPT window inside the max input voltage, operating current ≤ short-circuit current, rated AC power ≤ apparent power. These rules caught no errors on the three test datasheets.
 
-1. **Owner supplies PDF** → `datasheets/inbox/<type>/<model>.pdf`
-2. **Markitdown conversion** → `datasheets/cache/<type>/<model>.md` (git-ignored)
-3. **Claude reading** (interactive, not in CI): reads markdown, answers schema extraction questions
-4. **Template generation** → JSON form of the schema with blanks for the owner to fill
-5. **Owner review & approval** → Edits the JSON template if any extraction was wrong
-6. **Python validation** (`src/pvsld/ingest.py`):
-   - Pydantic schema validation (correct types, units, ranges)
-   - Plausibility checks: Vmp < Voc, Imp < Isc, temp coefficients have correct sign, conductor ampacity decreases with temperature, etc.
-   - Returns `(valid: bool, warnings: list[str], errors: list[str])`
-7. **Convert to YAML** → `datasheets/records/<type>/<model>.yaml`
-8. **Commit to git** with a message like "feat(catalogue): add PV module SunPower SPR-M440 (datasheet rev 2024-03, reviewed by edu3250)"
+### Ingestion workflow (Stage 3.2), tested on 2026-10-07
+
+1. The owner drops PDFs in `datasheets/inbox/` (any name).
+2. **markitdown** converts each to text in `datasheets/cache/` (≈1.3–1.6 k tokens per datasheet tested).
+3. **Fallback:** when markitdown returns no text (datasheets exported with fonts as outlines, e.g. Adobe Illustrator, as with the Jinko sheet), the pages are rendered to PNG with `pypdfium2` (already a markitdown dependency; no poppler/OCR install) and Claude reads the images.
+4. Claude extracts a draft record (family + one variant per power level/model) into `datasheets/cache/drafts/`, with provenance (SHA-256, pages, method).
+5. Python validation (`pvsld.catalogue`): Pydantic types + the plausibility validators above.
+6. **Owner review** → `reviewed_by`/`review_date` filled → the record moves to `datasheets/records/` and is committed (`feat(catalogue): add … (datasheet rev …, reviewed by …)`).
 
 ### Runtime loading
 
 ```python
 from src.pvsld.catalogue import ComponentRegistry
 
-registry = ComponentRegistry.load_from_yaml("datasheets/records/")
+registry = ComponentRegistry.load_from_yaml("datasheets/records/")  # one component per variant
 # registry.modules: dict[str, PVModuleSpec]
 # registry.inverters: dict[str, StringInverterSpec]
 # registry.conductors: dict[str, ConductorSpec]
@@ -225,4 +231,4 @@ If a new field is added (e.g., `series_fuse_rating_a` for inverters), the schema
 
 ---
 
-**Status:** Proposed (awaiting owner confirmation at the start of Phase 3, Stage 3.1). If approved, this ADR is referenced in the commit that adds Stage 3.1 to `IMPLEMENTATION_PLAN.md` and the first datasheet record to `datasheets/records/`.
+**Status:** Accepted by the project owner on 2026-10-07, together with two decisions: every power level or model keeps its own variant record, and an inverter's optimizer-only PV power (e.g. Huawei's 10,000 Wp footnote) is stored only on the model the datasheet attaches it to, flagged as ambiguous, and used by the engine only when the design declares optimizers on every module; every other model is limited to its recommended max PV power.
