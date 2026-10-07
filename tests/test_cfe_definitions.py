@@ -9,6 +9,7 @@ import pytest
 from pvsld.core import layers
 from pvsld.symbols import SYMBOLS as PHASE2_SYMBOLS
 from pvsld.symbols.cfe import LIBRARY, SYMBOLS, get_symbol
+from pvsld.symbols.cfe.definitions import FAMILIES
 from pvsld.symbols.cfe.model import (
     COMMON_TAGS,
     GRID_MM,
@@ -68,7 +69,7 @@ def test_the_library_also_has_the_symbols_the_generator_needs() -> None:
     ):
         assert name in SYMBOLS
     assert get_symbol("PVSLD_GND").source == SOURCE_CFE_D
-    assert len(SYMBOLS) >= 17
+    assert len(SYMBOLS) == 56
 
 
 def test_get_symbol_rejects_an_unknown_block() -> None:
@@ -133,6 +134,7 @@ def test_only_symbols_without_connections_have_no_ports() -> None:
         "PVSLD_POL_POS",
         "PVSLD_POL_NEG",
         "PVSLD_JUNCTION",
+        "PVSLD_BOUNDARY",
         "PVSLD_TTLB",
     }
 
@@ -183,3 +185,141 @@ def test_to_dict_lists_ports_and_attributes() -> None:
     assert data["source"] == SOURCE_CFE_C
     assert [p["id"] for p in data["ports"]] == ["IN", "OUT"]  # type: ignore[index, union-attr]
     assert any(a["tag"] == "COMP_ID" and not a["visible"] for a in data["attributes"])  # type: ignore[index, union-attr]
+
+
+# --- Round 2: the components of the symbol map (owner decisions of 2026-10-08) ------------
+
+NEW_BLOCKS = {
+    "PVSLD_FUSE": "4.2.21",
+    "PVSLD_DC_DISCONNECT": "Apéndice C",
+    "PVSLD_FUSE_DISC": "4.2.176",
+    "PVSLD_SAFETY_SWITCH": "4.2.128",
+    "PVSLD_SPD_AC": "Apéndice C",
+    "PVSLD_COMBINER": "composición",
+    "PVSLD_GND_BUS": "4.2.130",
+    "PVSLD_NEUTRAL_BUS": "4.2.129",
+    "PVSLD_PE": "4.2.117",
+    "PVSLD_GFDI": "fig. D1",
+    "PVSLD_INS_MONITOR": "fig. D2",
+    "PVSLD_AFCI": "composición",
+    "PVSLD_BUSBAR": "Apéndice D",
+    "PVSLD_TERMINAL": "4.2.140",
+    "PVSLD_CROSSING": "4.2.12",
+    "PVSLD_BOUNDARY": "composición",
+    "PVSLD_METER_M": "4.2.126",
+    "PVSLD_BATTERY": "4.2.280",
+    "PVSLD_INV_HYBRID": "composición",
+    "PVSLD_TRANSFER_SW": "07-71-03",
+    "PVSLD_OPTIMIZER": "composición",
+    "PVSLD_MICROINV": "composición",
+    "PVSLD_CHARGE_CTRL": "composición",
+    "PVSLD_MONITOR": "Apéndice D",
+    "PVSLD_CONTACTOR": "4.2.168",
+    "PVSLD_XFMR": "4.2.123",
+    "PVSLD_CUTOUT": "4.2.122",
+    "PVSLD_ARRESTER_MV": "4.2.178",
+    "PVSLD_DISCONNECT_MV": "4.2.118",
+    "PVSLD_CT_MV": "4.2.124",
+    "PVSLD_VT_MV": "4.2.75",
+    "PVSLD_RELAY": "07-73-01",
+    "PVSLD_RCD": "UNE-EN 60617",
+    "PVSLD_CB_IEC": "UNE-EN 60617",
+}
+
+
+def test_the_library_has_the_thirty_four_blocks_of_round_two() -> None:
+    assert len(NEW_BLOCKS) == 34
+    assert set(NEW_BLOCKS) <= set(SYMBOLS)
+
+
+@pytest.mark.parametrize(("name", "reference"), sorted(NEW_BLOCKS.items()))
+def test_every_new_block_cites_its_reference_in_the_source(name: str, reference: str) -> None:
+    spec = get_symbol(name)
+    assert reference in spec.source, spec.source
+    assert spec.source.startswith(SOURCE_PREFIXES)
+
+
+def test_nmx_blocks_also_record_their_nmx_clause_and_dge_blocks_say_dge() -> None:
+    for name, spec in SYMBOLS.items():
+        if spec.source.startswith("NMX-J-136-ANCE-2019"):
+            assert "4.2." in spec.nmx_ref, name
+        if "DGE" in spec.source:
+            assert spec.source.startswith(("DGE (basada en IEC 60617)", "pvsld (composición)")), (
+                name
+            )
+
+
+def test_compositions_without_an_official_symbol_are_labelled_as_such() -> None:
+    for name in (
+        "PVSLD_AFCI",
+        "PVSLD_BOUNDARY",
+        "PVSLD_INV_HYBRID",
+        "PVSLD_OPTIMIZER",
+        "PVSLD_MICROINV",
+        "PVSLD_CHARGE_CTRL",
+        "PVSLD_COMBINER",
+    ):
+        assert get_symbol(name).source.startswith("pvsld (composición)"), name
+
+
+def test_the_dc_disconnect_reuses_the_cfe_switch_with_dc_ports_and_a_load_break_flag() -> None:
+    switch, dc = get_symbol("PVSLD_SWITCH"), get_symbol("PVSLD_DC_DISCONNECT")
+    assert [g.__class__ for g in dc.geometry] == [g.__class__ for g in switch.geometry]
+    assert dc.layer == layers.DC_EQUIPMENT
+    assert {p.kind for p in dc.ports} == {"DC"}
+    assert "LOAD_BREAK" in dc.tags
+    assert {p.id for p in dc.ports} == {p.id for p in switch.ports}
+
+
+def test_the_two_thermomagnetic_breakers_share_attributes_and_ports() -> None:
+    cfe, iec = get_symbol("PVSLD_CB"), get_symbol("PVSLD_CB_IEC")
+    assert set(cfe.tags) <= set(iec.tags)
+    assert [(p.id, p.kind, p.direction) for p in cfe.ports] == [
+        (p.id, p.kind, p.direction) for p in iec.ports
+    ]
+    assert iec.source != cfe.source
+    assert any(isinstance(g, Label) and g.text == "I>" for g in iec.geometry)
+
+
+def test_the_export_meter_is_the_nmx_m_square_distinct_from_the_cfe_meter() -> None:
+    cfe, nmx = get_symbol("PVSLD_METER"), get_symbol("PVSLD_METER_M")
+    assert nmx.source.startswith("NMX-J-136-ANCE-2019 4.2.126")
+    assert [g.text for g in nmx.geometry if isinstance(g, Label)] == ["M"]
+    assert nmx.name != cfe.name
+
+
+def test_the_protective_relay_carries_the_function_and_the_ansi_number_as_attributes() -> None:
+    relay = get_symbol("PVSLD_RELAY")
+    by_tag = {a.tag: a for a in relay.attdefs}
+    assert by_tag["FUNCTION"].visible
+    assert by_tag["ANSI_NO"].visible
+    assert {p.kind for p in relay.ports} == {"SIG"}
+
+
+def test_the_rcd_has_a_sensitivity_attribute_and_no_nmx_symbol() -> None:
+    rcd = get_symbol("PVSLD_RCD")
+    assert "IDN_MA" in rcd.tags
+    assert "sin símbolo en NMX" in rcd.source
+
+
+def test_every_symbol_belongs_to_a_known_family_and_families_are_contiguous() -> None:
+    assert all(spec.family in FAMILIES for spec in LIBRARY)
+    order = [spec.family for spec in LIBRARY]
+    seen: list[str] = []
+    for family in order:
+        if not seen or seen[-1] != family:
+            seen.append(family)
+    assert seen == list(FAMILIES)
+
+
+def test_port_kinds_are_dc_ac_pe_plus_signal_and_any() -> None:
+    kinds = {p.kind for spec in LIBRARY for p in spec.ports}
+    assert kinds == {"DC", "AC", "PE", "SIG", "ANY"}
+    assert {p.kind for p in get_symbol("PVSLD_TERMINAL").ports} == {"ANY"}
+
+
+def test_the_battery_marks_the_positive_plate_and_the_spd_has_an_ac_variant() -> None:
+    battery = get_symbol("PVSLD_BATTERY")
+    assert battery.port("POS").x > battery.port("NEG").x
+    assert get_symbol("PVSLD_SPD_AC").port("L").kind == "AC"
+    assert get_symbol("PVSLD_SPD").port("L").kind == "DC"

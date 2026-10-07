@@ -6,10 +6,11 @@ Usage::
     pvsld symbols list [--json]
     pvsld symbols validate [PATH] [--no-fresh-check]
 
-``build`` writes the deterministic DXF (and, with ``--png``, a picture of the ``Legend`` sheet for
-visual review). With ``--check`` it writes nothing and exits 1 when the file on disk differs from
-what the definitions render, which is the CI guard against a stale committed library. ``validate``
-audits the DXF and checks it against the definitions; the exit code is 1 on any problem.
+``build`` writes the deterministic DXF (and, with ``--png``, a picture of each ``Legend`` sheet for
+visual review: ``name-1.png``, ``name-2.png``... when there are several). With ``--check`` it
+writes nothing and exits 1 when the file on disk differs from what the definitions render, which is
+the CI guard against a stale committed library. ``validate`` audits the DXF and checks it against
+the definitions; the exit code is 1 on any problem.
 The heavy imports (ezdxf, matplotlib) happen inside the handlers so ``pvsld --version`` stays fast.
 """
 
@@ -48,8 +49,16 @@ def _build(args: argparse.Namespace) -> int:
     if args.png is not None:
         from pvsld.backends.preview import write_png
 
-        png = write_png(build_document(), args.png, dpi=PNG_DPI, layout_name=LEGEND_LAYOUT)
-        print(f"wrote {args.png} ({len(png)} bytes)")
+        doc = build_document()
+        sheets = [n for n in doc.layouts.names() if n.startswith(LEGEND_LAYOUT)]
+        for index, layout in enumerate(sorted(sheets), start=1):
+            target_png = (
+                args.png
+                if len(sheets) == 1
+                else args.png.with_name(f"{args.png.stem}-{index}{args.png.suffix}")
+            )
+            png = write_png(doc, target_png, dpi=PNG_DPI, layout_name=layout)
+            print(f"wrote {target_png} ({len(png)} bytes, layout {layout})")
     return 0
 
 

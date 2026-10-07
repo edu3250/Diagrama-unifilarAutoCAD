@@ -30,10 +30,12 @@ from pvsld.symbols.cfe.build import (
     LEGEND_LAYOUT,
     LEGEND_TITLE,
     build_document,
-    legend_rows,
+    legend_layout_name,
+    legend_pages,
     render_library,
     write_library,
 )
+from pvsld.symbols.cfe.definitions import FAMILIES
 from pvsld.symbols.cfe.loader import import_blocks, load_library
 from pvsld.symbols.cfe.validate import validate_document, validate_file
 from s1_helpers import ROOT
@@ -67,7 +69,7 @@ def test_the_library_passes_audit_with_no_errors_and_no_fixes(document) -> None:
 def test_the_document_holds_exactly_the_defined_blocks(document) -> None:  # type: ignore[no-untyped-def]
     names = {b.name for b in document.blocks if b.name.startswith("PVSLD_")}
     assert names == set(SYMBOLS)
-    assert len(names) >= 17
+    assert len(names) == 56
 
 
 @pytest.mark.parametrize("spec", LIBRARY, ids=lambda s: s.name)
@@ -100,17 +102,45 @@ def test_no_block_entity_is_on_layer_zero(document, spec) -> None:  # type: igno
     assert used <= layers.LAYER_NAMES
 
 
-def test_the_dotted_and_small_dash_dot_linetypes_exist(document) -> None:  # type: ignore[no-untyped-def]
-    assert "DOTTED" in document.linetypes
-    assert "DASHDOT_S" in document.linetypes
+def test_the_symbol_linetypes_exist(document) -> None:  # type: ignore[no-untyped-def]
+    for name in ("DOTTED", "DASHDOT_S", "DASHED_S", "DASHDOT2"):
+        assert name in document.linetypes
+    used = {
+        e.dxf.linetype
+        for spec in LIBRARY
+        for e in document.blocks.get(spec.name)
+        if e.dxf.hasattr("linetype")
+    }
+    assert used <= {"DOTTED", "DASHDOT_S", "DASHED_S", "DASHDOT2", "DASHED", "CONTINUOUS"}
+    assert "DASHDOT2" in used
+
+
+def test_filled_shapes_are_solid_hatches(document) -> None:  # type: ignore[no-untyped-def]
+    assert {e.dxftype() for e in document.blocks.get("PVSLD_ARRESTER_MV")} >= {"HATCH"}
+    assert {e.dxftype() for e in document.blocks.get("PVSLD_JUNCTION")} == {"HATCH", "ATTDEF"}
 
 
 # --- Legend ------------------------------------------------------------------------------------
 
 
-def test_the_legend_layout_inserts_every_block_once_at_most_one_to_one(document) -> None:  # type: ignore[no-untyped-def]
-    legend = document.layouts.get(LEGEND_LAYOUT)
-    inserts = list(legend.query("INSERT"))
+def _sheets(document) -> list[str]:  # type: ignore[no-untyped-def]
+    return [n for n in document.layouts.names() if n.startswith(LEGEND_LAYOUT)]
+
+
+def test_the_legend_has_one_a3_layout_per_page_named_without_spaces(document) -> None:  # type: ignore[no-untyped-def]
+    pages = legend_pages(LIBRARY)
+    assert len(pages) == 3
+    assert sorted(_sheets(document)) == [legend_layout_name(i) for i in (1, 2, 3)]
+    assert legend_layout_name(1) == "Legend"
+    assert legend_layout_name(2) == "Legend2"
+    for name in _sheets(document):
+        legend = document.layouts.get(name)
+        assert (legend.dxf_layout.dxf.paper_width, legend.dxf_layout.dxf.paper_height) == (420, 297)
+        assert [e.dxftype() for e in legend if e.dxf.layer == "0"] == ["VIEWPORT"]
+
+
+def test_the_legend_layouts_insert_every_block_once_at_most_one_to_one(document) -> None:  # type: ignore[no-untyped-def]
+    inserts = [i for n in _sheets(document) for i in document.layouts.get(n).query("INSERT")]
     assert sorted(i.dxf.name for i in inserts) == sorted(SYMBOLS)
     for insert in inserts:
         assert insert.dxf.name in document.blocks
@@ -118,34 +148,53 @@ def test_the_legend_layout_inserts_every_block_once_at_most_one_to_one(document)
         assert insert.dxf.layer != "0"
 
 
-def test_the_legend_has_the_title_the_version_and_the_three_columns(document) -> None:  # type: ignore[no-untyped-def]
-    texts = [t.dxf.text for t in document.layouts.get(LEGEND_LAYOUT).query("TEXT")]
+def test_every_legend_sheet_has_the_title_the_version_and_the_three_columns(document) -> None:  # type: ignore[no-untyped-def]
     assert LEGEND_TITLE == "SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)"
-    assert LEGEND_TITLE in texts
-    assert any(f"v{LIBRARY_VERSION}" in t for t in texts)
-    for column in ("Símbolo", "Designación", "Fuente"):
-        assert column in texts
+    for index, name in enumerate(_sheets(document), start=1):
+        texts = [t.dxf.text for t in document.layouts.get(name).query("TEXT")]
+        assert LEGEND_TITLE in texts
+        assert any(f"v{LIBRARY_VERSION}" in t and f"hoja {index} de 3" in t for t in texts)
+        for column in ("Símbolo", "Designación", "Fuente"):
+            assert column in texts
+
+
+def test_the_legend_lists_each_block_name_and_each_family_heading(document) -> None:  # type: ignore[no-untyped-def]
+    texts = [t.dxf.text for n in _sheets(document) for t in document.layouts.get(n).query("TEXT")]
     for spec in LIBRARY:
         assert spec.name in texts
-        assert spec.source.split(" (")[0][:12] in " ".join(texts)
+    for family in FAMILIES:
+        assert any(t.startswith(family.upper()) for t in texts), family
 
 
-def test_the_legend_is_an_a3_sheet_whose_only_layer_zero_entity_is_the_overall_viewport(  # type: ignore[no-untyped-def]
-    document,
-) -> None:
-    legend = document.layouts.get(LEGEND_LAYOUT)
-    assert (legend.dxf_layout.dxf.paper_width, legend.dxf_layout.dxf.paper_height) == (420, 297)
-    on_zero = [e.dxftype() for e in legend if e.dxf.layer == "0"]
-    assert on_zero == ["VIEWPORT"]
+def test_the_relay_sample_attributes_show_in_the_legend(document) -> None:  # type: ignore[no-untyped-def]
+    attribs = [
+        (a.dxf.tag, a.dxf.text)
+        for n in _sheets(document)
+        for i in document.layouts.get(n).query("INSERT")
+        for a in i.attribs
+    ]
+    assert sorted(attribs) == [("ANSI_NO", "27"), ("FUNCTION", "U<")]
 
 
-def test_legend_rows_split_the_blocks_in_two_groups_that_fit_the_sheet() -> None:
-    rows, height = legend_rows(22)
-    assert rows == 11
-    assert 15 < height <= 21
-    rows, height = legend_rows(5)
-    assert rows == 3
-    assert height == 21
+def test_legend_pages_keep_families_together_and_never_end_a_group_on_a_heading() -> None:
+    pages = legend_pages(LIBRARY)
+    groups = [g for page in pages for g in page]
+    assert len(groups) <= 6
+    placed = [row.spec.name for g in groups for row in g if row.spec is not None]
+    assert placed == [s.name for s in LIBRARY]
+    for group in groups:
+        assert group[0].heading is not None
+        assert group[-1].spec is not None
+        assert sum(row.height for row in group) <= 297 - 20 - 24 - 8 - 22
+
+
+def test_legend_pages_repeat_the_heading_of_a_family_that_continues() -> None:
+    pages = legend_pages(LIBRARY * 1)
+    headings = [r.heading for page in pages for g in page for r in g if r.heading]
+    assert any(h.endswith("(cont.)") for h in headings) or len(headings) == len(FAMILIES)
+    small = legend_pages(LIBRARY[:3])
+    assert len(small) == 1
+    assert [r.heading for r in small[0][0] if r.heading] == [LIBRARY[0].family]
 
 
 # --- Determinism -------------------------------------------------------------------------------
@@ -260,6 +309,14 @@ def test_a_missing_legend_is_reported() -> None:
     assert any("layout 'Legend' is missing" in p for p in validate_document(doc))
 
 
+def test_a_missing_legend_sheet_is_reported() -> None:
+    doc = build_document()
+    doc.layouts.delete("Legend3")
+    problems = validate_document(doc)
+    assert any("Legend layouts are" in p for p in problems)
+    assert any("does not insert every block" in p for p in problems)
+
+
 def test_a_legend_that_loses_an_insert_is_reported() -> None:
     doc = build_document()
     legend = doc.layouts.get(LEGEND_LAYOUT)
@@ -314,17 +371,18 @@ def test_the_library_file_loads_back_with_the_same_blocks() -> None:
 # --- Rendering ---------------------------------------------------------------------------------
 
 
-def test_the_legend_renders_to_a_png_of_the_a3_sheet(document) -> None:  # type: ignore[no-untyped-def]
+@pytest.mark.parametrize("sheet", [1, 2, 3])
+def test_each_legend_sheet_renders_to_a_png_of_the_a3_sheet(document, sheet: int) -> None:  # type: ignore[no-untyped-def]
     from pvsld.backends.preview import write_png
 
-    target = RENDER_DIR / "tests" / "pvsld-symbols-legend.png"
-    data = write_png(document, target, dpi=60, layout_name=LEGEND_LAYOUT)
+    target = RENDER_DIR / "tests" / f"pvsld-symbols-legend-{sheet}.png"
+    data = write_png(document, target, dpi=60, layout_name=legend_layout_name(sheet))
     assert target.read_bytes() == data
     assert data.startswith(b"\x89PNG\r\n\x1a\n")
     width, height = struct.unpack(">II", data[16:24])
     assert width == pytest.approx(420 / 25.4 * 60, abs=1)
     assert height == pytest.approx(297 / 25.4 * 60, abs=1)
-    assert 20_000 < len(data) < 3_000_000  # blank would be a few kB, a busy sheet is far below 3 MB
+    assert 40_000 < len(data) < 3_000_000  # a blank sheet is a few kB, a full one is far below 3 MB
 
 
 # --- Command line ------------------------------------------------------------------------------
@@ -351,10 +409,11 @@ def test_cli_build_check_fails_on_a_missing_or_stale_file(
     assert "stale" in capsys.readouterr().err
 
 
-def test_cli_build_can_write_the_legend_png(tmp_path: Path) -> None:
+def test_cli_build_can_write_one_png_per_legend_sheet(tmp_path: Path) -> None:
     png = tmp_path / "legend.png"
     assert main(["symbols", "build", "-o", str(tmp_path / "lib.dxf"), "--png", str(png)]) == 0
-    assert png.read_bytes().startswith(b"\x89PNG")
+    for index in (1, 2, 3):
+        assert (tmp_path / f"legend-{index}.png").read_bytes().startswith(b"\x89PNG")
 
 
 def test_cli_list_prints_text_and_json(capsys: pytest.CaptureFixture[str]) -> None:

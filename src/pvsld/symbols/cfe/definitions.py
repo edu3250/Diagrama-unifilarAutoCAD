@@ -40,12 +40,15 @@ from pvsld.symbols.cfe.model import (
     AttDef,
     Circle,
     Dot,
+    Fill,
     Label,
     Line,
     Polyline,
     Port,
     Primitive,
     SymbolSpec,
+    bounds_of,
+    rotate90,
 )
 
 _EQ_DC = layers.DC_EQUIPMENT
@@ -53,7 +56,29 @@ _EQ_AC = layers.AC_EQUIPMENT
 _EQ_UT = layers.UTILITY_EQUIPMENT
 _ENCL = layers.ENCLOSURES
 _LABL = layers.LABELS
+F_GEN = "Generación y almacenamiento"
+F_CONV = "Conversión y transformación"
+F_PROT = "Protección"
+F_SWITCH = "Seccionamiento y maniobra"
+F_MEAS = "Medición y monitoreo"
+F_GRID = "Red, cargas y tableros"
+F_EARTH = "Puesta a tierra"
+F_MV = "Media tensión"
+F_ANNOT = "Conductores, límites y anotación"
+FAMILIES: tuple[str, ...] = (
+    F_GEN,
+    F_CONV,
+    F_PROT,
+    F_SWITCH,
+    F_MEAS,
+    F_GRID,
+    F_EARTH,
+    F_MV,
+    F_ANNOT,
+)
 _DOTTED = "DOTTED"
+_DASHED_SMALL = "DASHED_S"
+_DASHDOT2 = "DASHDOT2"
 _DASHDOT_SMALL = "DASHDOT_S"
 _SOLID = "CONTINUOUS"
 
@@ -127,20 +152,27 @@ def _spec(
     *,
     iec_ref: str = NO_IEC_REF,
     nmx_ref: str = NMX_PENDING,
-    tag_xy: tuple[float, float] = (0, 0),
-    desc_xy: tuple[float, float] = (0, 0),
+    tag_xy: tuple[float, float] | None = None,
+    desc_xy: tuple[float, float] | None = None,
     visible: bool = True,
     extra: tuple[AttDef, ...] = (),
     note: str = "",
+    family: str = "",
 ) -> SymbolSpec:
+    if nmx_ref == NMX_PENDING and source.startswith("NMX-J-136-ANCE-2019"):
+        nmx_ref = source
+    if visible:
+        x0, y0, _x1, y1 = bounds_of(geometry)
+        tag_xy = tag_xy or (x0, y1 + 2.5)
+        desc_xy = desc_xy or (x0, y0 - 4.5)
     attdefs = (
         *_common(
             description_es=description_es,
             source=source,
             iec_ref=iec_ref,
             nmx_ref=nmx_ref,
-            tag_xy=tag_xy,
-            desc_xy=desc_xy,
+            tag_xy=tag_xy or (0, 0),
+            desc_xy=desc_xy or (0, 0),
             visible=visible,
         ),
         *extra,
@@ -156,6 +188,7 @@ def _spec(
         attdefs=attdefs,
         ports=ports,
         note=note,
+        family=family,
     )
 
 
@@ -193,6 +226,44 @@ def _bump(
 
 # --- CFE G0100-04, Appendix C ---------------------------------------------------------------------
 
+
+def _cfe_breaker(x0: float, y0: float, layer: str) -> tuple[Primitive, ...]:
+    """The CFE thermomagnetic breaker, 20 mm long, its left end at ``(x0, y0)``."""
+    return (
+        Line(x0, y0, x0 + 3.5, y0, layer),
+        Arc(x0 + 6, y0 - 0.4455, 3.4455, 29.5, 150.5, layer),
+        Line(x0 + 8, y0, x0 + 11, y0, layer),
+        Circle(x0 + 12, y0, 1, layer),
+        Line(x0 + 13, y0, x0 + 15, y0, layer),
+        Polyline(
+            ((x0 + 15, y0), (x0 + 16.5, y0 + 1.5), (x0 + 18.5, y0 - 1.5), (x0 + 20, y0)), layer
+        ),
+    )
+
+
+def _cfe_varistor(layer: str) -> tuple[Primitive, ...]:
+    """The CFE varistor hanging 20 mm below the origin."""
+    return (
+        Line(0, 0, 0, -5, layer),
+        Polyline(_rect(-2.5, -15, 2.5, -5), layer, closed=True),
+        Line(0, -15, 0, -20, layer),
+        Polyline(((-4, -15), (-4, -11.5), (4, -8.5), (4, -5)), layer),
+    )
+
+
+def _cfe_manual_switch(layer: str) -> tuple[Primitive, ...]:
+    """The CFE manual switch, 25 mm long, left lead at the origin."""
+    return (
+        Line(0, 0, 5, 0, layer),
+        Line(5, 0, 12.5, 7.5, layer),
+        Line(12.5, 0, 25, 0, layer),
+        Line(8.75, 3.75, 5, 8.75, layer, linetype=_DOTTED),
+        Line(8.75, 3.75, 8.75, -6.25, layer, linetype=_DOTTED),
+        Line(5, 8.75, 8.75, 8, layer),
+        Line(5, 8.75, 5.25, 4.75, layer),
+    )
+
+
 PV_MODULE = _spec(
     "PVSLD_PV_MODULE",
     "Módulo fotovoltaico",
@@ -217,6 +288,8 @@ PV_MODULE = _spec(
             ("IMP_A", "Imp del módulo (A)"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.265 (IEC S00908)",
+    family=F_GEN,
     note="Rectangle 1:2 with a V from the upper corners to 37 % of the height, as in the crop.",
 )
 
@@ -225,12 +298,7 @@ SPD = _spec(
     "Varistor (dispositivo de protección contra sobretensiones)",
     SOURCE_CFE_C,
     _EQ_DC,
-    (
-        Line(0, 0, 0, -5, _EQ_DC),
-        Polyline(_rect(-2.5, -15, 2.5, -5), _EQ_DC, closed=True),
-        Line(0, -15, 0, -20, _EQ_DC),
-        Polyline(((-4, -15), (-4, -11.5), (4, -8.5), (4, -5)), _EQ_DC),
-    ),
+    _cfe_varistor(_EQ_DC),
     (Port("L", 0, 0, "up", "DC"), Port("PE", 0, -20, "down", "PE")),
     tag_xy=(7, -6),
     desc_xy=(7, -10),
@@ -243,6 +311,8 @@ SPD = _spec(
             ("IN_KA", "Corriente nominal de descarga (kA)"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.308 (SPD, forma distinta)",
+    family=F_PROT,
     note=(
         "Vertical varistor: narrow rectangle with the bent diagonal stroke. The line port is "
         "DC because the block lives on the DC equipment layer; an AC SPD reuses it."
@@ -254,14 +324,7 @@ BREAKER = _spec(
     "Interruptor termomagnético (ITM)",
     SOURCE_CFE_C,
     _EQ_AC,
-    (
-        Line(0, 0, 3.5, 0, _EQ_AC),
-        Arc(6, -0.4455, 3.4455, 29.5, 150.5, _EQ_AC),
-        Line(8, 0, 11, 0, _EQ_AC),
-        Circle(12, 0, 1, _EQ_AC),
-        Line(13, 0, 15, 0, _EQ_AC),
-        Polyline(((15, 0), (16.5, 1.5), (18.5, -1.5), (20, 0)), _EQ_AC),
-    ),
+    _cfe_breaker(0, 0, _EQ_AC),
     (Port("IN", 0, 0, "left", "AC"), Port("OUT", 20, 0, "right", "AC")),
     iec_ref="IEC 60617 S00287",
     tag_xy=(0, 9.5),
@@ -276,6 +339,8 @@ BREAKER = _spec(
             ("BACKFED", "Alimentado en sentido inverso"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.15 (forma distinta)",
+    family=F_PROT,
     note="Magnetic hump over the open contact, winding loop and thermal zigzag, left to right.",
 )
 
@@ -318,6 +383,8 @@ INVERTER = _spec(
             ("DC_SPD", "DPS CD integrado"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.357",
+    family=F_CONV,
     note=(
         "Box with the diagonal from lower left to upper right, '=' upper left, '~' lower right. "
         "Nearly square as in the crop; the former 'CD'/'CA' captions are replaced by the symbols."
@@ -347,6 +414,8 @@ METER = _spec(
         ("OWNER", "Propietario"),
         ("METER_NO", "Número de medidor"),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.126 (forma distinta)",
+    family=F_MEAS,
     note="Two-cell box: double-headed arrow above, 'kWh' below. Ports at the divider line.",
 )
 
@@ -369,6 +438,8 @@ GRID = _spec(
             ("ISC_KA", "Corriente de falla disponible (kA)"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.314",
+    family=F_GRID,
     note="Circle with a sine crest and trough. It replaces the former 'RED' box.",
 )
 
@@ -382,6 +453,7 @@ ENCLOSURE = _spec(
     tag_xy=(0, 18),
     desc_xy=(0, -19),
     extra=_hidden(("ENCL_TYPE", "Tipo de gabinete")),
+    family=F_ANNOT,
     note=(
         "Dash-dot rectangle (layer E-ANNO-ENCL, finer DASHDOT_S pattern so that a small symbol "
         "shows several dashes per side). Nominal 40 x 30 mm; scale the INSERT to enclose a part "
@@ -404,6 +476,8 @@ DIODE = _spec(
     tag_xy=(6, -6),
     desc_xy=(6, -10),
     extra=_hidden(("RATING_A", "Corriente nominal (A)"), ("VRRM_V", "Tensión inversa (V)")),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.96",
+    family=F_GEN,
     note="Cathode bar on top, triangle pointing up (current flows from anode to cathode).",
 )
 
@@ -454,6 +528,8 @@ LOAD_LIGHT = _spec(
     tag_xy=(0, 10),
     desc_xy=(0, -11),
     extra=_hidden(("LOAD_W", "Carga (W)"), ("VOLT_V", "Tensión (V)"), ("CIRCUIT", "Circuito")),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.53",
+    family=F_GRID,
     note="Circle with four diagonal rays outside the circle.",
 )
 
@@ -467,6 +543,8 @@ LOAD_RECEPT = _spec(
     tag_xy=(0, 8),
     desc_xy=(0, -9),
     extra=_hidden(("LOAD_W", "Carga (W)"), ("VOLT_V", "Tensión (V)"), ("CIRCUIT", "Circuito")),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.28 (dos trazos)",
+    family=F_GRID,
     note="Circle crossed by a diagonal band (two parallel chords at 45 degrees).",
 )
 
@@ -495,6 +573,8 @@ CURRENT_SENSOR = _spec(
         AttDef("SPEC", "Relación de transformación", 0, -23),
         *_hidden(("RATIO", "Relación (A/A)"), ("BURDEN_VA", "Carga (VA)"), ("CLASS", "Clase")),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.124 (forma distinta)",
+    family=F_MEAS,
     note=(
         "Stadium (rounded rectangle) crossed by two conductors, as in the crop. The second "
         "conductor (IN2/OUT2) is optional. Port kind is AC; D1 uses it on the DC side."
@@ -506,15 +586,7 @@ SWITCH = _spec(
     "Interruptor manual",
     SOURCE_CFE_C,
     _EQ_AC,
-    (
-        Line(0, 0, 5, 0, _EQ_AC),
-        Line(5, 0, 12.5, 7.5, _EQ_AC),
-        Line(12.5, 0, 25, 0, _EQ_AC),
-        Line(8.75, 3.75, 5, 8.75, _EQ_AC, linetype=_DOTTED),
-        Line(8.75, 3.75, 8.75, -6.25, _EQ_AC, linetype=_DOTTED),
-        Line(5, 8.75, 8.75, 8, _EQ_AC),
-        Line(5, 8.75, 5.25, 4.75, _EQ_AC),
-    ),
+    _cfe_manual_switch(_EQ_AC),
     (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
     tag_xy=(15, 5),
     desc_xy=(0, -10),
@@ -524,6 +596,8 @@ SWITCH = _spec(
             ("POLES", "Polos"), ("RATING_A", "Corriente nominal (A)"), ("VOLT_V", "Tensión (V)")
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.94 y 4.2.121",
+    family=F_SWITCH,
     note="Open blade at 45 degrees, dotted operating line and the manual-actuation arrow.",
 )
 
@@ -559,6 +633,8 @@ ISOLATION_TRANSFORMER = _spec(
             ("FREQ_HZ", "Frecuencia (Hz)"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.69 (sin núcleo)",
+    family=F_CONV,
     note="Two windings of four shallow bumps facing each other, two core lines between them.",
 )
 
@@ -587,6 +663,8 @@ GROUND = _spec(
             ("GEC_SIZE", "Calibre del conductor al electrodo"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.13 (IEC S00200)",
+    family=F_EARTH,
     note=(
         "Stem and three bars that shorten, as drawn under the inverter and the arrays in D1. "
         "Strokes are continuous (the layer linetype is dashed) so the bars read as a symbol."
@@ -602,6 +680,8 @@ CONDUCTOR_MARK = _spec(
     (),
     visible=False,
     extra=(AttDef("N_COND", "Número de conductores", -1.5, 4),),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.131 (IEC S00002)",
+    family=F_ANNOT,
     note=(
         "Two slanted ticks '//' centred on the insertion point, laid over a conductor; "
         "N_COND is the printed count."
@@ -616,6 +696,8 @@ POLARITY_POSITIVE = _spec(
     (Line(-2, 0, 2, 0, _LABL), Line(0, -2, 0, 2, _LABL)),
     (),
     visible=False,
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.320",
+    family=F_ANNOT,
     note="Plus sign centred on the insertion point, next to the DC terminal of the inverter.",
 )
 
@@ -627,6 +709,8 @@ POLARITY_NEGATIVE = _spec(
     (Line(-2, 0, 2, 0, _LABL),),
     (),
     visible=False,
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.321",
+    family=F_ANNOT,
     note="Minus sign centred on the insertion point.",
 )
 
@@ -638,6 +722,8 @@ JUNCTION = _spec(
     (Dot(0, 0, 1, layers.DC_CONDUCTORS),),
     (),
     visible=False,
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.11",
+    family=F_ANNOT,
     note="Filled dot of 2 mm where conductors are joined, centred on the insertion point.",
 )
 
@@ -675,6 +761,7 @@ PV_STRING = _spec(
             ("IMP_A", "Imp del módulo (A)"),
         ),
     ),
+    family=F_GEN,
     note=(
         "Built from the CFE module symbol: first and last module of the series, three dots for "
         "the modules in between. The single output port keeps its Phase 2 id and side."
@@ -695,6 +782,7 @@ POINT_OF_INTERCONNECTION = _spec(
         ("PANEL", "Tablero de conexión"),
         ("BREAKER", "Interruptor de conexión"),
     ),
+    family=F_GRID,
     note="CFE marks no interconnection point; kept from Phase 2 (ring with an inner circle).",
 )
 
@@ -729,6 +817,8 @@ LOAD_CENTER = _spec(
             ("KAIC_KA", "Capacidad interruptiva (kA)"),
         ),
     ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.90 (plano)",
+    family=F_GRID,
     note=(
         "'Centro de carga' of figures D1 and D2: the CFE enclosure (dash-dot) around a bus and "
         "a ground bar. Geometry and ports are those of Phase 2."
@@ -818,35 +908,1052 @@ def _title_block() -> SymbolSpec:
         attdefs=attdefs,
         ports=(),
         note="Mexican title block with 23 attribute fields; the layout is the Phase 2 one.",
+        family=F_ANNOT,
     )
 
 
 TITLE_BLOCK = _title_block()
 
-# Order of the legend: the Appendix C symbols in the order of the specification (left column, then
-# right column), then what Appendix D adds, then what only the generator needs.
+# --- Round 2: the components the generator will need next (map of 2026-10-08) ---------------------
+#
+# Source priority: CFE G0100-04, then NMX-J-136-ANCE-2019, then IEC 60617 (through the Peruvian DGE
+# norm and the owner's UNE-EN 60617 sheet). Devices drawn vertically in their source are rotated so
+# that power flows to the right; the origin is then the upstream connection. Shunt devices
+# (arrester,
+# earth) keep hanging below the origin.
+
+_DC_COND = layers.DC_CONDUCTORS
+_AC_COND = layers.AC_CONDUCTORS
+_UT = layers.UTILITY_EQUIPMENT
+_COMM = layers.COMMUNICATIONS
+_NMX = "NMX-J-136-ANCE-2019"
+_COMPOSITION = "pvsld (composición)"
+
+
+def _nmx(ref: str) -> str:
+    return f"{_NMX} {ref}"
+
+
+def _dashed(x1: float, y1: float, x2: float, y2: float, layer: str) -> Line:
+    return Line(x1, y1, x2, y2, layer, linetype=_DASHED_SMALL)
+
+
+def _ellipse(cx: float, cy: float, rx: float, ry: float, layer: str) -> Polyline:
+    points = tuple(
+        (
+            _r(cx + rx * math.cos(2 * math.pi * i / 24)),
+            _r(cy + ry * math.sin(2 * math.pi * i / 24)),
+        )
+        for i in range(24)
+    )
+    return Polyline(points, layer, closed=True)
+
+
+def _blade_with_fuse(layer: str, *, bar: bool) -> tuple[Primitive, ...]:
+    """Vertical fuse-switch: fixed contact on top, the blade is a fuse tilted to the left."""
+    pivot, tip = (0.0, -17.5), (-5.5, -5.0)
+    dx, dy = tip[0] - pivot[0], tip[1] - pivot[1]
+    length = math.hypot(dx, dy)
+    ux, uy = dx / length, dy / length  # along the blade
+    nx, ny = -uy, ux  # across the blade
+    p0, p1, half = 0.3 * length, 0.72 * length, 1.25
+    body = tuple(
+        (_r(pivot[0] + ux * t + nx * w), _r(pivot[1] + uy * t + ny * w))
+        for t, w in ((p0, half), (p1, half), (p1, -half), (p0, -half))
+    )
+    items: list[Primitive] = [
+        Line(0, 0, 0, -5, layer),
+        Line(pivot[0], pivot[1], tip[0], tip[1], layer),
+        Polyline(body, layer, closed=True),
+        Line(0, -17.5, 0, -25, layer),
+    ]
+    if bar:
+        items.append(Line(-2.5, -5, 2.5, -5, layer))
+    return rotate90(items)
+
+
+def _converter_box(layer: str, caption: str, *, inverter: bool) -> tuple[Primitive, ...]:
+    """A 15 mm converter square: diagonal and the sign of the input and output current."""
+    items: list[Primitive] = [
+        Polyline(_rect(0, -7.5, 15, 7.5), layer, closed=True),
+        Line(0, -7.5, 15, 7.5, layer),
+        Line(2, 4.5, 6.5, 4.5, layer),
+        Line(2, 3, 6.5, 3, layer),
+    ]
+    if inverter:
+        items.append(Polyline(_sine(11, -3.8, 4.5, 1.2, steps=12), layer))
+    else:  # DC sign: a solid and a dashed line
+        items += [
+            Line(8.5, -3, 13, -3, layer),
+            Line(8.5, -4.5, 10.2, -4.5, layer),
+            Line(11.3, -4.5, 13, -4.5, layer),
+        ]
+    items.append(Label(2.5, -12.5, TEXT_HEIGHT_MM, caption))
+    return tuple(items)
+
+
+def _labelled_box(
+    layer: str, lines: tuple[str, ...], width: float, height: float
+) -> tuple[Primitive, ...]:
+    """The CFE labelled block (figure D1): a rectangle with the name written inside."""
+    items: list[Primitive] = [Polyline(_rect(0, -height, width, 0), layer, closed=True)]
+    top = -(height - TEXT_HEIGHT_MM * len(lines) - 1.5 * (len(lines) - 1)) / 2 - TEXT_HEIGHT_MM
+    for index, text in enumerate(lines):
+        items.append(Label(2.5, _r(top - index * 4), TEXT_HEIGHT_MM, text))
+    return tuple(items)
+
+
+_SIGNAL_PORTS = (
+    Port("SENS", 0, -7.5, "left", "SIG", required=False),
+    Port("TRIP", 30, -7.5, "right", "SIG", required=False),
+)
+
+# --- Generation and storage -----------------------------------------------------------------------
+
+COMBINER_BOX = _spec(
+    "PVSLD_COMBINER",
+    "Caja combinadora de ramas (combiner)",
+    "pvsld (composición) según CFE G0100-04 Apéndice D, figs. D1 y D2",
+    layers.DC_EQUIPMENT,
+    (
+        Polyline(_rect(0, -25, 60, 15), _ENCL, closed=True, linetype="DASHED"),
+        Line(0, 7.5, 5, 7.5, _EQ_DC),
+        *_cfe_breaker(5, 7.5, _EQ_DC),
+        Line(25, 7.5, 35, 7.5, _EQ_DC),
+        Line(0, -7.5, 5, -7.5, _EQ_DC),
+        *_cfe_breaker(5, -7.5, _EQ_DC),
+        Line(25, -7.5, 35, -7.5, _EQ_DC),
+        Line(35, 7.5, 35, -7.5, _EQ_DC),
+        Line(35, 0, 60, 0, _EQ_DC),
+        Dot(35, 7.5, 0.8, _DC_COND),
+        Dot(35, 0, 0.8, _DC_COND),
+        Dot(35, -7.5, 0.8, _DC_COND),
+        Dot(45, 0, 0.8, _DC_COND),
+        Line(45, 0, 45, -5, _EQ_DC),
+        Polyline(_rect(42.5, -15, 47.5, -5), _EQ_DC, closed=True),
+        Polyline(((41, -15), (41, -11.5), (49, -8.5), (49, -5)), _EQ_DC),
+        Line(45, -15, 45, -25, _EQ_DC),
+    ),
+    (
+        Port("IN1", 0, 7.5, "left", "DC"),
+        Port("IN2", 0, -7.5, "left", "DC", required=False),
+        Port("OUT", 60, 0, "right", "DC"),
+        Port("PE", 45, -25, "down", "PE"),
+    ),
+    extra=_hidden(
+        ("N_STRINGS", "Ramas conectadas"),
+        ("RATING_A", "Corriente nominal de cada interruptor (A)"),
+        ("VOLT_V", "Tensión máxima CD (V)"),
+        ("SPD_TYPE", "Tipo de DPS"),
+    ),
+    family=F_GEN,
+    note=(
+        "Composition from the figure D1 combiner: a dashed enclosure with one CFE breaker per "
+        "string (two drawn, the second is optional), a bus with junction dots and a varistor to "
+        "earth. Single-polarity (single-line) form."
+    ),
+)
+
+BATTERY = _spec(
+    "PVSLD_BATTERY",
+    "Batería o banco de baterías",
+    _nmx("4.2.280 (batería de celdas, forma 1)"),
+    layers.BATTERY_EQUIPMENT,
+    (
+        Line(0, 0, 5, 0, layers.BATTERY_EQUIPMENT),
+        *(
+            Line(
+                5 + 2.5 * i,
+                -(6.25 if i % 2 else 3.5),
+                5 + 2.5 * i,
+                6.25 if i % 2 else 3.5,
+                layers.BATTERY_EQUIPMENT,
+                lineweight=50,
+            )
+            for i in range(8)
+        ),
+        Line(22.5, 0, 27.5, 0, layers.BATTERY_EQUIPMENT),
+        Line(23.5, 9.5, 26.5, 9.5, layers.BATTERY_EQUIPMENT),
+        Line(25, 8, 25, 11, layers.BATTERY_EQUIPMENT),
+    ),
+    (Port("NEG", 0, 0, "left", "DC"), Port("POS", 27.5, 0, "right", "DC")),
+    nmx_ref=_nmx("4.2.280 (IEC S01365)"),
+    extra=_hidden(
+        ("CHEMISTRY", "Tecnología"),
+        ("CAPACITY_KWH", "Capacidad (kWh)"),
+        ("VOLT_V", "Tensión nominal (V)"),
+        ("CELLS", "Celdas o módulos en serie"),
+    ),
+    family=F_GEN,
+    note=(
+        "Four cells: alternating short and long plates; the long plate is positive, marked "
+        "with a plus sign as NMX recommends."
+    ),
+)
+
+# --- Conversion and transformation ----------------------------------------------------------------
+
+HYBRID_INVERTER = _spec(
+    "PVSLD_INV_HYBRID",
+    "Inversor híbrido (con puerto de batería)",
+    "pvsld (composición) sobre CFE G0100-04 Apéndice C (inversor); ref. DGE 06-63-06",
+    _EQ_AC,
+    (
+        Polyline(_rect(0, -22.5, 50, 22.5), _EQ_AC, closed=True),
+        Line(0, -22.5, 50, 22.5, _EQ_AC),
+        Line(8, 15, 18, 15, _EQ_AC),
+        Line(8, 12, 18, 12, _EQ_AC),
+        Polyline(_sine(38, -13, 10, 2.5), _EQ_AC),
+        Label(1.5, 11.5, TEXT_HEIGHT_MM, "FV"),
+        Label(1.5, -14, TEXT_HEIGHT_MM, "BAT"),
+    ),
+    (
+        Port("A", 0, 10, "left", "DC"),
+        Port("BAT", 0, -10, "left", "DC"),
+        Port("AC", 50, 0, "right", "AC"),
+        Port("PE", 25, -22.5, "down", "PE"),
+    ),
+    tag_xy=(0, 36.5),
+    desc_xy=(0, 32.5),
+    extra=(
+        AttDef("MFR", "Fabricante", 0, 28.5),
+        AttDef("MODEL", "Modelo", 0, 24.5),
+        *_hidden(
+            ("PAC_W", "Potencia CA nominal (W)"),
+            ("VAC_V", "Tensión CA nominal (V)"),
+            ("PHASES", "Conductores energizados"),
+            ("IAC_MAX_A", "Corriente CA máxima (A)"),
+            ("VDC_MAX_V", "Tensión CD máxima (V)"),
+            ("MPPT_N", "Número de MPPT"),
+            ("BAT_VOLT_V", "Tensión de batería (V)"),
+            ("BAT_PCHARGE_W", "Potencia de carga (W)"),
+            ("OCPD_MAX_A", "Protección máxima CA (A)"),
+            ("ISOLATION", "Aislamiento"),
+        ),
+    ),
+    family=F_CONV,
+    note=(
+        "No official symbol exists. The CFE inverter square with the second DC terminal used as "
+        "the battery port (BAT). DGE 06-63-06 draws a bidirectional converter instead."
+    ),
+)
+
+MICROINVERTER = _spec(
+    "PVSLD_MICROINV",
+    "Microinversor (por módulo)",
+    "pvsld (composición) sobre CFE G0100-04 Apéndice C (inversor)",
+    _EQ_AC,
+    _converter_box(_EQ_AC, "uINV", inverter=True),
+    (Port("DC", 0, 0, "left", "DC"), Port("AC", 15, 0, "right", "AC")),
+    extra=_hidden(
+        ("MFR", "Fabricante"),
+        ("MODEL", "Modelo"),
+        ("PAC_W", "Potencia CA nominal (W)"),
+        ("VAC_V", "Tensión CA nominal (V)"),
+        ("MODULES_N", "Módulos conectados"),
+    ),
+    family=F_CONV,
+    note="No official symbol. The CFE inverter square at 15 mm with the caption uINV.",
+)
+
+OPTIMIZER = _spec(
+    "PVSLD_OPTIMIZER",
+    "Optimizador de potencia (convertidor CD/CD)",
+    "pvsld (composición); convertidor CD/CD de DGE (basada en IEC 60617) 06-63-02",
+    _EQ_DC,
+    _converter_box(_EQ_DC, "OPT", inverter=False),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 15, 0, "right", "DC")),
+    extra=_hidden(
+        ("MFR", "Fabricante"),
+        ("MODEL", "Modelo"),
+        ("PMAX_W", "Potencia (W)"),
+        ("VOUT_MAX_V", "Tensión de salida máxima (V)"),
+    ),
+    family=F_CONV,
+    note=(
+        "No official symbol. DC/DC converter (square, diagonal, DC "
+        "sign on both sides), caption OPT."
+    ),
+)
+
+CHARGE_CONTROLLER = _spec(
+    "PVSLD_CHARGE_CTRL",
+    "Controlador de carga (MPPT)",
+    "pvsld (composición); convertidor CD/CD de DGE (basada en IEC 60617) 06-63-02",
+    _EQ_DC,
+    _converter_box(_EQ_DC, "MPPT", inverter=False),
+    (Port("PV", 0, 0, "left", "DC"), Port("BAT", 15, 0, "right", "DC")),
+    extra=_hidden(
+        ("MFR", "Fabricante"),
+        ("MODEL", "Modelo"),
+        ("IOUT_A", "Corriente de carga (A)"),
+        ("VOC_MAX_V", "Voc máxima de entrada (V)"),
+        ("BAT_VOLT_V", "Tensión de batería (V)"),
+    ),
+    family=F_CONV,
+    note="No official symbol. DC/DC converter square with the caption MPPT; battery on the output.",
+)
+
+# --- Protection -----------------------------------------------------------------------------------
+
+
+def _iec_breaker() -> tuple[Primitive, ...]:
+    """Vertical IEC/UNE thermomagnetic breaker (owner's sheet, page 4), turned to run rightwards."""
+    return rotate90(
+        (
+            Line(0, 0, 0, -2.75, _EQ_AC),
+            Circle(0, -3.33, 0.58, _EQ_AC),
+            Line(0, -8.67, -2.7, -3.33, _EQ_AC),
+            Line(0, -8.67, 0, -11.55, _EQ_AC),
+            Polyline(_rect(-2.7, -22.75, 2.75, -11.55), _EQ_AC, closed=True),
+            Line(-2.7, -17.1, 2.75, -17.1, _EQ_AC),
+            Polyline(
+                ((0, -11.55), (0, -13.1), (-1.7, -13.1), (-1.7, -15.55), (0, -15.55), (0, -17.1)),
+                _EQ_AC,
+            ),
+            Label(-1.4, -20.9, 2.2, "I>"),
+            Line(0, -22.75, 0, -25, _EQ_AC),
+            Line(-8.6, -4.9, -8.6, -7.1, _EQ_AC),
+            Line(-8.6, -6, -6.35, -6, _EQ_AC),
+            Polyline(_rect(-6.35, -7.1, -4.1, -4.9), _EQ_AC, closed=True),
+            Line(-6.35, -6, -4.1, -6, _EQ_AC),
+            Line(-5.225, -4.9, -5.225, -7.1, _EQ_AC),
+            _dashed(-4.1, -6, -1.35, -6, _EQ_AC),
+            _dashed(-5.2, -7.1, -5.2, -19.9, _EQ_AC),
+            _dashed(-5.2, -14.3, -2.7, -14.3, _EQ_AC),
+            _dashed(-5.2, -19.9, -2.7, -19.9, _EQ_AC),
+        )
+    )
+
+
+BREAKER_IEC = _spec(
+    "PVSLD_CB_IEC",
+    "Interruptor termomagnético (forma IEC/UNE)",
+    "UNE-EN 60617 (hoja del propietario, p. 4); cf. NMX-J-136-ANCE-2019 4.2.169 (IEC S00287)",
+    _EQ_AC,
+    _iec_breaker(),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
+    iec_ref="IEC 60617 S00287",
+    nmx_ref=_nmx("4.2.15 y 4.2.169"),
+    extra=(
+        AttDef("ROLE", "Función (I1, I2)", 0, 9.5),
+        *_hidden(
+            ("POLES", "Polos"),
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión (V)"),
+            ("KAIC_KA", "Capacidad interruptiva (kA)"),
+            ("CURVE", "Curva de disparo"),
+            ("BACKFED", "Alimentado en sentido inverso"),
+        ),
+    ),
+    family=F_PROT,
+    note=(
+        "Single-line form of the owner's sheet: open contact, thermal step and magnetic I> cell, "
+        "operator mark and dashed links. Alternative to PVSLD_CB "
+        "(CFE); same attributes and port ids."
+    ),
+)
+
+
+def _rcd() -> tuple[Primitive, ...]:
+    layer = _EQ_AC
+    return rotate90(
+        (
+            Line(0, 0, 0, -1.5, layer),
+            Circle(0, -2.17, 0.67, layer),
+            Line(0, -8.83, -3.27, -2.17, layer),
+            Line(0, -8.83, 0, -20, layer),
+            Line(-10.4, -12.2, 3.15, -12.2, layer),
+            Arc(3.15, -14.95, 2.75, 270, 90, layer),
+            Line(3.15, -17.7, -10.4, -17.7, layer),
+            Line(-10.4, -17.7, -10.4, -12.2, layer),
+            _ellipse(-4.45, -14.95, 1.4, 2.7, layer),
+            Polyline(_rect(-13.1, -16.3, -7.8, -13.5), layer, closed=True),
+            Line(-10.4, -4.2, -10.4, -6.8, layer),
+            Line(-10.4, -5.5, -7.77, -5.5, layer),
+            Polyline(_rect(-7.77, -6.83, -5.1, -4.17), layer, closed=True),
+            Line(-7.77, -5.5, -5.1, -5.5, layer),
+            Line(-6.43, -4.17, -6.43, -6.83, layer),
+            _dashed(-5.1, -5.5, -1.63, -5.5, layer),
+            _dashed(-6.43, -6.83, -6.43, -15, layer),
+            Line(-6.43, -15, -7.8, -15, layer),
+        )
+    )
+
+
+RESIDUAL_CURRENT_DEVICE = _spec(
+    "PVSLD_RCD",
+    "Interruptor diferencial (protección de corriente residual)",
+    "UNE-EN 60617 (hoja del propietario, p. 4, interruptor "
+    "diferencial); sin símbolo en NMX-J-136-ANCE-2019",
+    _EQ_AC,
+    _rcd(),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 20, 0, "right", "AC")),
+    extra=(
+        AttDef("ROLE", "Función", 0, 9.5),
+        *_hidden(
+            ("POLES", "Polos"),
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión (V)"),
+            ("IDN_MA", "Sensibilidad (mA)"),
+            ("RCD_TYPE", "Tipo (AC, A, B)"),
+        ),
+    ),
+    family=F_PROT,
+    note=(
+        "Single-line form of the owner's sheet: open contact with its operator mark, the "
+        "conductor through a toroid and the trip coil, dashed link to the operator. NMX has "
+        "no symbol; its Table 2 only lists device numbers."
+    ),
+)
+
+FUSE = _spec(
+    "PVSLD_FUSE",
+    "Fusible",
+    _nmx("4.2.21 (FUS, forma nacional 1)"),
+    _EQ_DC,
+    (
+        Line(0, 0, 5, 0, _EQ_DC),
+        Polyline(_rect(5, -3.75, 17.5, 3.75), _EQ_DC, closed=True),
+        Line(7.5, -3.75, 7.5, 3.75, _EQ_DC),
+        Line(15, -3.75, 15, 3.75, _EQ_DC),
+        Line(17.5, 0, 22.5, 0, _EQ_DC),
+    ),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 22.5, 0, "right", "DC")),
+    nmx_ref=_nmx("4.2.21 (alt. 4.2.174, IEC S00362)"),
+    extra=_hidden(
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_V", "Tensión (V)"),
+        ("FUSE_CLASS", "Clase (gPV, gG)"),
+        ("KAIC_KA", "Capacidad interruptiva (kA)"),
+    ),
+    family=F_PROT,
+    note=(
+        "Rectangle with an end cap line at each end; the leads stop at the body. Turned to run "
+        "rightwards. Port kind DC (string fuses); an AC fuse needs its own variant."
+    ),
+)
+
+SPD_AC = _spec(
+    "PVSLD_SPD_AC",
+    "Varistor en CA (dispositivo de protección contra sobretensiones)",
+    "CFE G0100-04 Apéndice C (varistor), usado en CA en Apéndice D",
+    _EQ_AC,
+    _cfe_varistor(_EQ_AC),
+    (Port("L", 0, 0, "up", "AC"), Port("PE", 0, -20, "down", "PE")),
+    nmx_ref=_nmx("4.2.308 (SPD, forma distinta)"),
+    tag_xy=(7, -6),
+    desc_xy=(7, -10),
+    extra=(
+        AttDef("SPEC", "Datos del varistor", 7, -14),
+        *_hidden(
+            ("SPD_TYPE", "Tipo (1, 2, 3)"),
+            ("UC_V", "Tensión máxima de operación continua (V)"),
+            ("UP_KV", "Nivel de protección (kV)"),
+            ("IN_KA", "Corriente nominal de descarga (kA)"),
+        ),
+    ),
+    family=F_PROT,
+    note=(
+        "The CFE varistor on the AC equipment layer with an AC line port "
+        "(figures D1/D2 draw it on both sides)."
+    ),
+)
+
+GROUND_FAULT_DETECTOR = _spec(
+    "PVSLD_GFDI",
+    "Detector de falla a tierra",
+    "CFE G0100-04 Apéndice D, fig. D1 (detector de falla a tierra)",
+    _EQ_DC,
+    _labelled_box(_EQ_DC, ("Detector", "de falla a", "tierra"), 30, 15),
+    _SIGNAL_PORTS,
+    extra=_hidden(("TRIP_MA", "Umbral de disparo (mA)"), ("GFDI_TYPE", "Tipo")),
+    family=F_PROT,
+    note=(
+        "The labelled block of figure D1. SENS takes the dashed link from the current sensor, "
+        "TRIP leaves for the DC switch. Signal ports (kind SIG)."
+    ),
+)
+
+INSULATION_MONITOR = _spec(
+    "PVSLD_INS_MONITOR",
+    "Monitor de aislamiento",
+    "CFE G0100-04 Apéndice D, fig. D2 (monitor de aislamiento)",
+    _EQ_DC,
+    _labelled_box(_EQ_DC, ("Monitor", "de", "aislamiento"), 30, 15),
+    _SIGNAL_PORTS,
+    extra=_hidden(("TRIP_KOHM", "Umbral de alarma (kΩ)")),
+    family=F_PROT,
+    note="The labelled block of figure D2 (floating arrays). Signal ports (kind SIG).",
+)
+
+AFCI = _spec(
+    "PVSLD_AFCI",
+    "Detector de falla por arco (AFCI)",
+    "pvsld (composición); bloque rotulado al estilo de CFE G0100-04 Apéndice D",
+    _EQ_DC,
+    _labelled_box(_EQ_DC, ("AFCI", "Detector de", "falla por arco"), 30, 15),
+    _SIGNAL_PORTS,
+    extra=_hidden(("AFCI_TYPE", "Tipo (integrado, externo)")),
+    family=F_PROT,
+    note="No official symbol in CFE, NMX or DGE. A labelled block in the style of figure D1.",
+)
+
+PROTECTIVE_RELAY = _spec(
+    "PVSLD_RELAY",
+    "Relevador de protección",
+    "DGE (basada en IEC 60617) 07-73-01; números ANSI de NMX-J-136-ANCE-2019, Tabla 2",
+    _EQ_UT,
+    (Polyline(_rect(0, -15, 25, 0), _EQ_UT, closed=True),),
+    (
+        Port("SENS", 0, -7.5, "left", "SIG", required=False),
+        Port("TRIP", 25, -7.5, "right", "SIG", required=False),
+    ),
+    nmx_ref=_nmx("Tabla 2 (números de dispositivo, solo texto)"),
+    tag_xy=(0, 3),
+    desc_xy=(0, -19),
+    extra=(
+        AttDef("FUNCTION", "Función medida (U<, U>, f<, f>)", 3, -7, height=4, legend_sample="U<"),
+        AttDef("ANSI_NO", "Número de dispositivo ANSI (27, 59, 81)", 3, -12.5, legend_sample="27"),
+        *_hidden(("SETTING", "Ajuste"), ("DELAY_S", "Retardo (s)")),
+    ),
+    family=F_PROT,
+    note=(
+        "Measuring-relay rectangle; the quantity and condition are the visible attribute FUNCTION "
+        "(for example U<), the ANSI number is ANSI_NO. NMX gives numbers only, no drawing."
+    ),
+)
+
+# --- Switching and control ------------------------------------------------------------------------
+
+DC_DISCONNECT = _spec(
+    "PVSLD_DC_DISCONNECT",
+    "Desconectador de CD (interruptor manual con carga)",
+    "CFE G0100-04 Apéndice C (interruptor manual), usado como "
+    "desconectador de CD en Apéndice D, fig. D1",
+    _EQ_DC,
+    _cfe_manual_switch(_EQ_DC),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 25, 0, "right", "DC")),
+    nmx_ref=_nmx("4.2.94 y 4.2.119 (con carga)"),
+    tag_xy=(15, 5),
+    desc_xy=(0, -10),
+    extra=(
+        AttDef("ROLE", "Función", 15, 9),
+        *_hidden(
+            ("POLES", "Polos"),
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión (V)"),
+            ("LOAD_BREAK", "Con capacidad de corte con carga"),
+        ),
+    ),
+    family=F_SWITCH,
+    note=(
+        "The CFE manual switch on the DC equipment layer with DC ports (owner decision "
+        "2026-10-08); LOAD_BREAK records whether it may open under load."
+    ),
+)
+
+FUSE_SWITCH = _spec(
+    "PVSLD_FUSE_DISC",
+    "Fusible-seccionador",
+    _nmx("4.2.176 (FUS-SECC, IEC S00369)"),
+    _EQ_AC,
+    _blade_with_fuse(_EQ_AC, bar=True),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
+    iec_ref="IEC 60617 S00369",
+    nmx_ref=_nmx("4.2.176 (alt. 4.2.177, S00370)"),
+    extra=_hidden(
+        ("POLES", "Polos"),
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_V", "Tensión (V)"),
+        ("FUSE_A", "Fusible (A)"),
+    ),
+    family=F_SWITCH,
+    note=(
+        "The blade is the fuse, tilted off the fixed contact whose bar marks the isolator. "
+        "Turned to run rightwards."
+    ),
+)
+
+SAFETY_SWITCH = _spec(
+    "PVSLD_SAFETY_SWITCH",
+    "Interruptor de seguridad con fusibles (CA)",
+    _nmx("4.2.128 (IS, forma unifilar)"),
+    _EQ_AC,
+    (
+        Polyline(_rect(3.75, -5, 26.25, 5), _EQ_AC, closed=True),
+        Line(0, 0, 7.5, 0, _EQ_AC),
+        Dot(7.5, 0, 0.8, _EQ_AC),
+        Dot(11.25, 0, 0.8, _EQ_AC),
+        Line(11.25, 0, 8.5, 3.25, _EQ_AC),
+        Line(11.25, 0, 15, 0, _EQ_AC),
+        Arc(16.25, 0, 1.25, 0, 180, _EQ_AC),
+        Arc(18.75, 0, 1.25, 180, 360, _EQ_AC),
+        Line(20, 0, 30, 0, _EQ_AC),
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 30, 0, "right", "AC")),
+    extra=_hidden(
+        ("POLES", "Polos"),
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_V", "Tensión (V)"),
+        ("FUSE_A", "Fusibles (A)"),
+    ),
+    family=F_SWITCH,
+    note=(
+        "Box with the visible-blade switch and the fuse in series. The "
+        "fuse is drawn as a simple S-wave."
+    ),
+)
+
+TRANSFER_SWITCH = _spec(
+    "PVSLD_TRANSFER_SW",
+    "Interruptor de transferencia",
+    "DGE (basada en IEC 60617) 07-71-03; dispositivos 43 y 83 de NMX-J-136-ANCE-2019, Tabla 2",
+    _EQ_AC,
+    (
+        Line(-5, 0, -5, -7.5, _EQ_AC),
+        Line(-5, -7.5, -2.5, -7.5, _EQ_AC),
+        Line(0, 0, 0, -7.5, _EQ_AC),
+        Line(0, -15, -3.75, -7.5, _EQ_AC),
+        Line(0, -15, 0, -22.5, _EQ_AC),
+    ),
+    (
+        Port("A", -5, 0, "up", "AC"),
+        Port("B", 0, 0, "up", "AC"),
+        Port("COM", 0, -22.5, "down", "AC"),
+    ),
+    nmx_ref=_nmx("Tabla 2, dispositivos 43 y 83 (solo texto)"),
+    tag_xy=(3, -12),
+    desc_xy=(3, -16),
+    extra=(
+        AttDef("ROLE", "Función (ATS, 43)", 3, -20),
+        *_hidden(
+            ("POLES", "Polos"), ("RATING_A", "Corriente nominal (A)"), ("VOLT_V", "Tensión (V)")
+        ),
+    ),
+    family=F_SWITCH,
+    note=(
+        "Break-before-make changeover contact: the common lead COM at the bottom rests on contact "
+        "A; contact B is the other source. Vertical, not turned."
+    ),
+)
+
+CONTACTOR = _spec(
+    "PVSLD_CONTACTOR",
+    "Contactor",
+    _nmx("4.2.168 (contacto, IEC S00284)"),
+    _EQ_AC,
+    rotate90(
+        (
+            Line(0, 0, 0, -7.5, _EQ_AC),
+            Arc(0, -5.75, 1.75, 90, 270, _EQ_AC),
+            Line(0, -15, -5, -7.5, _EQ_AC),
+            Line(0, -15, 0, -22.5, _EQ_AC),
+        )
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 22.5, 0, "right", "AC")),
+    iec_ref="IEC 60617 S00284",
+    extra=_hidden(
+        ("POLES", "Polos"),
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_V", "Tensión (V)"),
+        ("COIL_V", "Tensión de bobina (V)"),
+    ),
+    family=F_SWITCH,
+    note=(
+        "Make contact with the contactor qualifier (small semicircle on the fixed contact). NMX "
+        "titles it only 'Contacto'. Turned to run rightwards."
+    ),
+)
+
+# --- Measurement and monitoring -------------------------------------------------------------------
+
+METER_M = _spec(
+    "PVSLD_METER_M",
+    "Medidor de consumo o límite de exportación",
+    _nmx("4.2.126 (equipo de medición, M)"),
+    _UT,
+    (
+        Polyline(_rect(0, -7.5, 15, 7.5), _UT, closed=True),
+        Label(4.9, -2.4, 6.5, "M"),
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 15, 0, "right", "AC")),
+    extra=_hidden(
+        ("METER_TYPE", "Tipo"),
+        ("FUNCTION", "Función (consumo, límite de exportación)"),
+        ("OWNER", "Propietario"),
+        ("METER_NO", "Número de medidor"),
+    ),
+    family=F_MEAS,
+    note=(
+        "NMX measuring-equipment square with the letter M (owner decision), distinct from the "
+        "CFE bidirectional revenue meter."
+    ),
+)
+
+MONITORING = _spec(
+    "PVSLD_MONITOR",
+    "Subsistema de control y monitoreo",
+    "CFE G0100-04 Apéndice D, figs. D1 y D2 (subsistema de control y monitoreo)",
+    _COMM,
+    (
+        Polyline(_rect(0, -7.5, 60, 7.5), _COMM, closed=True),
+        Label(4, -1.2, TEXT_HEIGHT_MM, "Subsistema de control y monitoreo"),
+    ),
+    (Port("LINK", 0, 0, "left", "SIG", required=False),),
+    extra=_hidden(("PROTOCOL", "Protocolo"), ("MODEL", "Modelo")),
+    family=F_MEAS,
+    note="Wide dashed block (layer E-COMM-COND, dashed) with the name written inside, as in D1/D2.",
+)
+
+# --- Earthing -------------------------------------------------------------------------------------
+
+PROTECTIVE_EARTH = _spec(
+    "PVSLD_PE",
+    "Tierra de protección (conductor de puesta a tierra de equipos)",
+    _nmx("4.2.117 (TPT, IEC S00202)"),
+    layers.GROUNDING,
+    (
+        Circle(0, -5, 5, layers.GROUNDING),
+        Line(0, 0, 0, -5.5, layers.GROUNDING, linetype=_SOLID),
+        Line(-3.7, -5.5, 3.7, -5.5, layers.GROUNDING, linetype=_SOLID),
+        Line(-2.6, -7, 2.6, -7, layers.GROUNDING, linetype=_SOLID),
+        Line(-1.3, -8.5, 1.3, -8.5, layers.GROUNDING, linetype=_SOLID),
+    ),
+    (Port("PE", 0, 0, "up", "PE"),),
+    iec_ref="IEC 60617 S00202",
+    tag_xy=(7, -4),
+    desc_xy=(7, -8),
+    extra=_hidden(("EGC_SIZE", "Calibre del conductor de puesta a tierra")),
+    family=F_EARTH,
+    note="Earth symbol inside a circle: protective earth, as opposed to the electrode PVSLD_GND.",
+)
+
+GROUND_BUS = _spec(
+    "PVSLD_GND_BUS",
+    "Barra de puesta a tierra",
+    _nmx("4.2.130 (BPT)"),
+    layers.GROUNDING,
+    (
+        Line(0, 0, 30, 0, layers.GROUNDING, lineweight=50, linetype=_SOLID),
+        Label(27, 1.5, TAG_HEIGHT_MM, "T"),
+    ),
+    (Port("L", 0, 0, "left", "PE"), Port("R", 30, 0, "right", "PE", required=False)),
+    extra=_hidden(("BUS_A", "Barra (A)"), ("MATERIAL", "Material")),
+    family=F_EARTH,
+    note="Heavy straight line with the letter T above its right end.",
+)
+
+NEUTRAL_BUS = _spec(
+    "PVSLD_NEUTRAL_BUS",
+    "Barra de neutro",
+    _nmx("4.2.129"),
+    _AC_COND,
+    (
+        Line(0, 0, 30, 0, _AC_COND, lineweight=50),
+        Label(27, 1.5, TAG_HEIGHT_MM, "N"),
+    ),
+    (Port("L", 0, 0, "left", "AC"), Port("R", 30, 0, "right", "AC", required=False)),
+    extra=_hidden(("BUS_A", "Barra (A)"), ("MATERIAL", "Material")),
+    family=F_EARTH,
+    note="Same line as the ground bus with the letter N. Kept with the earthing family.",
+)
+
+# --- Medium voltage -------------------------------------------------------------------------------
+
+TRANSFORMER_MV = _spec(
+    "PVSLD_XFMR",
+    "Transformador de potencia MT/BT",
+    _nmx("4.2.123 (TR)"),
+    _UT,
+    (
+        Line(0, 0, 7.5, 0, _UT),
+        *(_bump(7.5, cy, 2.5, 2.5, _UT, right=True) for cy in (7.5, 2.5, -2.5, -7.5)),
+        *(_bump(17.5, cy, 2.5, 2.5, _UT, right=False) for cy in (7.5, 2.5, -2.5, -7.5)),
+        Line(17.5, 0, 25, 0, _UT),
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
+    nmx_ref=_nmx("4.2.123 (alt. 4.2.69, IEC S00841)"),
+    tag_xy=(0, 12),
+    desc_xy=(0, -14),
+    extra=(
+        AttDef("SPEC", "Potencia y relación", 0, -18),
+        *_hidden(
+            ("KVA", "Potencia (kVA)"),
+            ("VOLT_PRI_V", "Tensión primaria (V)"),
+            ("VOLT_SEC_V", "Tensión secundaria (V)"),
+            ("VECTOR_GROUP", "Grupo de conexión"),
+            ("IMPEDANCE_PCT", "Impedancia (%)"),
+        ),
+    ),
+    family=F_MV,
+    note=(
+        "Two facing coils of four bumps without core lines, a lead at "
+        "the middle of each (owner decision)."
+    ),
+)
+
+FUSE_CUTOUT = _spec(
+    "PVSLD_CUTOUT",
+    "Cortacircuito fusible (CCF)",
+    _nmx("4.2.122 (FUS-DES, IEC S00368)"),
+    _UT,
+    _blade_with_fuse(_UT, bar=False),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
+    iec_ref="IEC 60617 S00368",
+    extra=_hidden(
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_KV", "Tensión (kV)"),
+        ("FUSE_A", "Fusible (A)"),
+        ("KAIC_KA", "Capacidad interruptiva (kA)"),
+    ),
+    family=F_MV,
+    note=(
+        "The fuse is the open blade, as in the fuse-switch without the "
+        "isolator bar. Turned rightwards."
+    ),
+)
+
+MV_ARRESTER = _spec(
+    "PVSLD_ARRESTER_MV",
+    "Apartarrayos de media tensión",
+    _nmx("4.2.178 (AR, IEC S00373)"),
+    _UT,
+    (
+        Line(0, 0, 0, -12, _UT),
+        Polyline(_rect(-2.5, -20, 2.5, -5), _UT, closed=True),
+        Fill(((-1.5, -8), (1.5, -8), (0, -10.5)), _UT),
+        Line(0, -20, 0, -25, _UT),
+    ),
+    (Port("L", 0, 0, "up", "AC"), Port("PE", 0, -25, "down", "PE")),
+    iec_ref="IEC 60617 S00373",
+    nmx_ref=_nmx("4.2.178 (alt. 4.2.120)"),
+    tag_xy=(6, -8),
+    desc_xy=(6, -12),
+    extra=_hidden(
+        ("VOLT_KV", "Tensión nominal (kV)"),
+        ("MCOV_KV", "Tensión máxima de operación continua (kV)"),
+        ("IN_KA", "Corriente de descarga (kA)"),
+    ),
+    family=F_MV,
+    note=(
+        "Slim rectangle on the line with a filled arrowhead; the lower lead "
+        "goes to earth. Hangs below the origin."
+    ),
+)
+
+MV_DISCONNECT = _spec(
+    "PVSLD_DISCONNECT_MV",
+    "Cuchillas desconectadoras de media tensión",
+    _nmx("4.2.118 (DSSC)"),
+    _UT,
+    (
+        Line(0, 0, 7.5, 0, _UT),
+        Dot(7.5, 0, 0.8, _UT),
+        Dot(15, 0, 0.8, _UT),
+        Line(15, 0, 9.5, 5.5, _UT),
+        Line(15, 0, 25, 0, _UT),
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
+    nmx_ref=_nmx("4.2.118 (alt. 4.2.119 con carga, 4.2.170 IEC S00288)"),
+    extra=_hidden(
+        ("POLES", "Polos"),
+        ("RATING_A", "Corriente nominal (A)"),
+        ("VOLT_KV", "Tensión (kV)"),
+        ("LOAD_BREAK", "Con capacidad de corte con carga"),
+    ),
+    family=F_MV,
+    note=(
+        "Safety disconnect without load break: filled dot on each "
+        "contact, blade open at 45 degrees."
+    ),
+)
+
+CT_MV = _spec(
+    "PVSLD_CT_MV",
+    "Transformador de corriente (TC)",
+    _nmx("4.2.124 (TC)"),
+    _UT,
+    rotate90(
+        (
+            Line(0, 0, 0, -15, _UT, lineweight=50),
+            Polyline(((1.5, -2.5), (-5, -5), (1.5, -7.5), (-5, -10), (1.5, -12.5)), _UT),
+        )
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 15, 0, "right", "AC")),
+    extra=(
+        AttDef("SPEC", "Relación de transformación", 0, -10),
+        *_hidden(("RATIO", "Relación (A/A)"), ("BURDEN_VA", "Carga (VA)"), ("CLASS", "Clase")),
+    ),
+    family=F_MV,
+    note=(
+        "Heavy conductor crossed by a two-chevron zigzag. Distinct "
+        "from the CFE current sensor PVSLD_CT."
+    ),
+)
+
+VT_MV = _spec(
+    "PVSLD_VT_MV",
+    "Transformador de potencial (TP)",
+    _nmx("4.2.75 (TP)"),
+    _UT,
+    (
+        Line(0, 0, 2.5, 0, _UT, lineweight=50),
+        Polyline(((2.5, 4.5), (7.5, 2.25), (2.5, 0), (7.5, -2.25), (2.5, -4.5)), _UT),
+        Polyline(((13, 4.5), (8, 2.25), (13, 0), (8, -2.25), (13, -4.5)), _UT),
+        Line(13, 0, 15, 0, _UT, lineweight=50),
+    ),
+    (Port("IN", 0, 0, "left", "AC"), Port("OUT", 15, 0, "right", "AC")),
+    extra=(
+        AttDef("SPEC", "Relación de transformación", 0, -10),
+        *_hidden(("RATIO", "Relación (V/V)"), ("BURDEN_VA", "Carga (VA)"), ("CLASS", "Clase")),
+    ),
+    family=F_MV,
+    note="Two opposed zigzag windings with a lead at the middle of each.",
+)
+
+# --- Conductors, boundaries and annotation --------------------------------------------------------
+
+BUSBAR = _spec(
+    "PVSLD_BUSBAR",
+    "Barra colectora con puntos de unión",
+    "CFE G0100-04 Apéndice D, figs. D1 y D2 (barra de ramas)",
+    _DC_COND,
+    (
+        Line(0, 0, 30, 0, _DC_COND, lineweight=70),
+        Dot(7.5, 0, 0.8, _DC_COND),
+        Dot(15, 0, 0.8, _DC_COND),
+        Dot(22.5, 0, 0.8, _DC_COND),
+    ),
+    (Port("L", 0, 0, "left", "DC"), Port("R", 30, 0, "right", "DC", required=False)),
+    extra=_hidden(("RATING_A", "Corriente nominal (A)"), ("VOLT_V", "Tensión (V)")),
+    family=F_ANNOT,
+    note=(
+        "The string bus of the combiner: a heavy line with a filled "
+        "dot at each tee. DC layer and ports."
+    ),
+)
+
+TERMINAL = _spec(
+    "PVSLD_TERMINAL",
+    "Terminal o borne",
+    _nmx("4.2.140 (IEC S00017)"),
+    _AC_COND,
+    (Circle(1.25, 0, 1.25, _AC_COND),),
+    (Port("L", 0, 0, "left", "ANY"), Port("R", 2.5, 0, "right", "ANY", required=False)),
+    iec_ref="IEC 60617 S00017",
+    extra=_hidden(("TERMINAL_NO", "Número de borne")),
+    family=F_ANNOT,
+    note="Small open circle on the conductor.",
+)
+
+CROSSING = _spec(
+    "PVSLD_CROSSING",
+    "Cruce de conductores sin conexión",
+    _nmx("4.2.12"),
+    _AC_COND,
+    (Line(0, 0, 10, 0, _AC_COND), Line(5, 5, 5, -5, _AC_COND)),
+    (
+        Port("W", 0, 0, "left", "ANY"),
+        Port("E", 10, 0, "right", "ANY"),
+        Port("N", 5, 5, "up", "ANY"),
+        Port("S", 5, -5, "down", "ANY"),
+    ),
+    visible=False,
+    family=F_ANNOT,
+    note=(
+        "Two lines crossing at 90 degrees and no dot; the connection "
+        "is the junction dot PVSLD_JUNCTION."
+    ),
+)
+
+BOUNDARY = _spec(
+    "PVSLD_BOUNDARY",
+    "Límite de responsabilidad CFE / usuario",
+    "pvsld (composición); línea punto-punto-raya con los rótulos CFE y USUARIO",
+    _ENCL,
+    (
+        Line(0, 15, 0, -15, _ENCL, linetype=_DASHDOT2),
+        Label(-9.5, 11, 3, "CFE"),
+        Label(2, 11, 3, "USUARIO"),
+    ),
+    (),
+    visible=False,
+    family=F_ANNOT,
+    note=(
+        "No boundary symbol exists in CFE, NMX or DGE. A vertical dash-dot-dot line between the "
+        "utility side and the user side, as the captions of D1/D2 describe."
+    ),
+)
+
+# Order of the legend: families as the owner asked (generation, conversion, protection, switching,
+# measurement, grid and loads, earthing, medium voltage, annotation); inside each, the CFE symbols
+# first (Appendix C in the order of the specification), then NMX, then the compositions.
 LIBRARY: tuple[SymbolSpec, ...] = (
+    # generation and storage
     PV_MODULE,
-    SPD,
-    BREAKER,
-    INVERTER,
-    METER,
-    GRID,
-    ENCLOSURE,
+    PV_STRING,
     DIODE,
-    LOAD_LIGHT,
-    CURRENT_SENSOR,
-    SWITCH,
+    COMBINER_BOX,
+    BATTERY,
+    # conversion and transformation
+    INVERTER,
+    HYBRID_INVERTER,
+    MICROINVERTER,
+    OPTIMIZER,
+    CHARGE_CONTROLLER,
     ISOLATION_TRANSFORMER,
+    # protection
+    BREAKER,
+    BREAKER_IEC,
+    RESIDUAL_CURRENT_DEVICE,
+    FUSE,
+    SPD,
+    SPD_AC,
+    GROUND_FAULT_DETECTOR,
+    INSULATION_MONITOR,
+    AFCI,
+    PROTECTIVE_RELAY,
+    # switching and control
+    SWITCH,
+    DC_DISCONNECT,
+    FUSE_SWITCH,
+    SAFETY_SWITCH,
+    TRANSFER_SWITCH,
+    CONTACTOR,
+    # measurement and monitoring
+    METER,
+    METER_M,
+    CURRENT_SENSOR,
+    MONITORING,
+    # grid, loads and boards
+    GRID,
+    POINT_OF_INTERCONNECTION,
+    LOAD_CENTER,
+    LOAD_LIGHT,
     LOAD_RECEPT,
+    # earthing
     GROUND,
+    PROTECTIVE_EARTH,
+    GROUND_BUS,
+    NEUTRAL_BUS,
+    # medium voltage
+    TRANSFORMER_MV,
+    FUSE_CUTOUT,
+    MV_ARRESTER,
+    MV_DISCONNECT,
+    CT_MV,
+    VT_MV,
+    # conductors, boundaries and annotation
+    BUSBAR,
+    TERMINAL,
+    CROSSING,
+    JUNCTION,
     CONDUCTOR_MARK,
     POLARITY_POSITIVE,
     POLARITY_NEGATIVE,
-    JUNCTION,
-    PV_STRING,
-    LOAD_CENTER,
-    POINT_OF_INTERCONNECTION,
+    ENCLOSURE,
+    BOUNDARY,
     TITLE_BLOCK,
 )
 

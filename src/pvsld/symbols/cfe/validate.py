@@ -25,7 +25,15 @@ from ezdxf.lldxf.const import DXFError
 
 from pvsld.backends.dxf import BLOCK_FORMAT
 from pvsld.core import layers
-from pvsld.symbols.cfe.build import LEGEND_LAYOUT, LEGEND_TITLE, block_xdata, render_library
+from pvsld.symbols.cfe.build import (
+    LEGEND_COLUMNS,
+    LEGEND_LAYOUT,
+    LEGEND_TITLE,
+    block_xdata,
+    legend_layout_name,
+    legend_pages,
+    render_library,
+)
 from pvsld.symbols.cfe.definitions import LIBRARY
 from pvsld.symbols.cfe.model import (
     APP_ID,
@@ -118,24 +126,30 @@ def _check_block(doc: Drawing, spec: SymbolSpec) -> Iterable[str]:
 
 
 def _check_legend(doc: Drawing, specs: tuple[SymbolSpec, ...]) -> Iterable[str]:
-    if LEGEND_LAYOUT not in doc.layouts.names():
+    names = [n for n in doc.layouts.names() if n.startswith(LEGEND_LAYOUT)]
+    if LEGEND_LAYOUT not in names:
         yield f"layout {LEGEND_LAYOUT!r} is missing"
         return
-    legend = doc.layouts.get(LEGEND_LAYOUT)
-    inserted = sorted(e.dxf.name for e in legend.query("INSERT"))
-    if inserted != sorted(spec.name for spec in specs):
+    expected = [legend_layout_name(i) for i in range(1, len(legend_pages(specs)) + 1)]
+    if sorted(names) != sorted(expected):
+        yield f"the Legend layouts are {sorted(names)}, expected {sorted(expected)}"
+    inserted: list[str] = []
+    for name in names:
+        legend = doc.layouts.get(name)
+        inserted += [e.dxf.name for e in legend.query("INSERT")]
+        texts = [e.dxf.text for e in legend.query("TEXT")]
+        if LEGEND_TITLE not in texts:
+            yield f"{name}: the Legend has no title"
+        if not any(f"v{LIBRARY_VERSION}" in text for text in texts):
+            yield f"{name}: the Legend does not state the library version v{LIBRARY_VERSION}"
+        for column in LEGEND_COLUMNS:
+            if column not in texts:
+                yield f"{name}: the Legend has no column {column!r}"
+    if sorted(inserted) != sorted(spec.name for spec in specs):
         yield "the Legend does not insert every block exactly once"
     for name in inserted:
         if name not in doc.blocks:
             yield f"the Legend inserts the unknown block {name}"
-    texts = [e.dxf.text for e in legend.query("TEXT")]
-    if LEGEND_TITLE not in texts:
-        yield "the Legend has no title"
-    if not any(f"v{LIBRARY_VERSION}" in text for text in texts):
-        yield f"the Legend does not state the library version v{LIBRARY_VERSION}"
-    for column in ("Símbolo", "Designación", "Fuente"):
-        if column not in texts:
-            yield f"the Legend has no column {column!r}"
 
 
 def validate_document(doc: Drawing, specs: Iterable[SymbolSpec] = LIBRARY) -> list[str]:
