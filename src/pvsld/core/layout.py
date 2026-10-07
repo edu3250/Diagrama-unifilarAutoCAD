@@ -15,6 +15,7 @@ instead of drawing something wrong.
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Sequence
 
 from pvsld.core import calc, layers
@@ -340,6 +341,60 @@ def _check_fit(table: Table, max_width: float) -> Table:
     return table
 
 
+_BREAKS = re.compile(r"[^ ;\-]+[ ;\-]*")
+
+
+def _chunks(text: str, limit_mm: float, text_height: float) -> list[str]:
+    """Split ``text`` after spaces, semicolons and hyphens into pieces that fit ``limit_mm``."""
+    lines: list[str] = []
+    current = ""
+    for token in _BREAKS.findall(text):
+        if current and text_width_mm((current + token).rstrip(), text_height) > limit_mm:
+            lines.append(current.rstrip())
+            current = ""
+        current += token
+    lines.append(current.rstrip())
+    return lines
+
+
+def _wrap_rows(
+    table_id: str,
+    title: str,
+    header: tuple[str, ...],
+    rows: tuple[tuple[str, ...], ...],
+    max_width: float,
+    text_height: float = 2.5,
+) -> tuple[tuple[str, ...], ...]:
+    """Wrap the widest column onto continuation rows when the table is wider than its band.
+
+    The widest column gets the width that makes the table fit; a cell longer than that continues in
+    extra rows (other cells blank). Short tables come back unchanged, so their drawing is too.
+
+    Raises:
+        LayoutError: a single word of the widest column is wider than the room left for it.
+    """
+    widths = _fit_widths(title, header, rows)
+    excess = sum(widths) - max_width
+    if excess <= 0:
+        return rows
+    column = max(range(len(widths)), key=lambda i: widths[i])
+    limit = widths[column] - excess - 2 * CELL_PADDING_MM
+    wrapped: list[tuple[str, ...]] = []
+    for row in rows:
+        pieces = _chunks(row[column], limit, text_height)
+        for piece in pieces:
+            if text_width_mm(piece, text_height) > limit:
+                raise LayoutError(
+                    f"{table_id}: {piece!r} (column {header[column]!r}) cannot be wrapped into "
+                    f"{limit:.1f} mm; shorten the text or use a larger sheet"
+                )
+        wrapped.append((*row[:column], pieces[0], *row[column + 1 :]))
+        wrapped += [
+            tuple(piece if i == column else "" for i in range(len(row))) for piece in pieces[1:]
+        ]
+    return tuple(wrapped)
+
+
 def _auto(
     *,
     id: str,
@@ -350,8 +405,11 @@ def _auto(
     header: tuple[str, ...],
     rows: tuple[tuple[str, ...], ...],
     row_height: float = 5.0,
+    max_width: float | None = LEFT_BAND_WIDTH_MM,
 ) -> Table:
-    """A table whose column widths are fitted to its content."""
+    """A table whose column widths are fitted to its content (wrapped to ``max_width``)."""
+    if max_width is not None:
+        rows = _wrap_rows(id, title, header, rows, max_width)
     return Table(
         id=id,
         layer=layer,
@@ -598,6 +656,7 @@ def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
         title="CUADRO DE SIMBOLOGÍA (IEC 60617; abreviaturas NMX-J-136-ANCE)",
         header=("Bloque", "Descripción", "Referencia"),
         rows=tuple(rows),
+        max_width=None,
         row_height=4.2,
     )
 
