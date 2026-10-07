@@ -117,7 +117,7 @@ A Python script (`scripts/regenerate_symbol_library.py`) rebuilds the master DXF
 
 - **Block import:** `src/pvsld/backends/ezdxf_backend.py` loads the master DXF:
   ```python
-  import_dwg = ezdxf.readfile('symbols/pvsld-symbols-cfe.dxf')
+  import_dwg = ezdxf.readfile("symbols/pvsld-symbols-cfe.dxf")
   diagram_dwg.blocks.import_blocks(import_dwg)
   ```
 - **Symbol insertion:** Generator inserts blocks by name (e.g., `diagram_dwg.modelspace().add_blockref('PVSLD_INV', insert=(x, y))`)
