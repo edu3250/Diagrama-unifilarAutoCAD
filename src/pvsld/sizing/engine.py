@@ -16,6 +16,7 @@ Pipeline of :func:`size_pv_system` (deterministic Python, no LLM):
 from __future__ import annotations
 
 import copy
+import re
 from collections.abc import Sequence
 from typing import Any
 
@@ -220,6 +221,28 @@ def _ac_current_carrying(phases: int) -> int:
     return phases + (1 if phases == 1 else 0)
 
 
+_KWP = re.compile(r"\d+(?:\.\d+)?(\s*kWp)")
+_KWAC = re.compile(r"\d+(?:\.\d+)?(\s*kWac)")
+
+
+def _restate_size(node: Any, kwp: float, kwac: float) -> Any:
+    """Rewrite the system size quoted in template text (``7.70 kWp``, ``{kwp}``, ``6.00 kWac``).
+
+    A template written for another design (the sample says "7.70 kWp") must not leak its size into
+    the sized specification: every string under ``project`` and ``title_block`` is regenerated from
+    the designed power.
+    """
+    if isinstance(node, str):
+        text = node.replace("{kwp}", f"{kwp:.2f}").replace("{kwac}", f"{kwac:.2f}")
+        text = _KWP.sub(lambda m: f"{kwp:.2f}{m.group(1)}", text)
+        return _KWAC.sub(lambda m: f"{kwac:.2f}{m.group(1)}", text)
+    if isinstance(node, dict):
+        return {key: _restate_size(value, kwp, kwac) for key, value in node.items()}
+    if isinstance(node, list):
+        return [_restate_size(value, kwp, kwac) for value in node]
+    return node
+
+
 def _build_spec(
     *,
     request: SizingRequest,
@@ -248,9 +271,12 @@ def _build_spec(
     spec["standards"] = standards.model_dump(mode="json")
     spec["modules"] = [spec_module.model_dump(mode="json")]
     spec["inverters"] = [spec_inverter.model_dump(mode="json")]
-    name = spec["project"].get("name")
-    if isinstance(name, str):
-        spec["project"]["name"] = name.replace("{kwp}", f"{metrics.p_dc_w / 1000:.2f}")
+    spec["project"] = _restate_size(
+        spec["project"], metrics.p_dc_w / 1000, inverter.rated_ac_power_w / 1000
+    )
+    spec["title_block"] = _restate_size(
+        spec["title_block"], metrics.p_dc_w / 1000, inverter.rated_ac_power_w / 1000
+    )
 
     strings = []
     for index in range(config.n_strings):

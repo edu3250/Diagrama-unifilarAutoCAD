@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
+import ezdxf
 import pytest
 
 from pvsld.core.layout import LayoutError, _wrap_rows
@@ -13,6 +16,7 @@ from sizing_helpers import (
     GROWATT_5K,
     HUAWEI_5K,
     JINKO_650,
+    registry,
     size,
 )
 
@@ -68,3 +72,53 @@ def test_an_unbreakable_word_that_cannot_fit_names_the_cell() -> None:
     rows = (("Módulo", "X" * 80),)
     with pytest.raises(LayoutError, match=r"TBL-X.*'Datos'"):
         _wrap_rows("TBL-X", "T", ("Equipo", "Datos"), rows, max_width=40)
+
+
+# --- The size quoted anywhere must be the designed one ------------------------------------------
+
+_SIZE = re.compile(r"(\d+(?:\.\d+)?)\s*(kWp|kWac)")
+
+
+def _dxf_texts(path: Path) -> list[str]:
+    document = ezdxf.readfile(path)
+    texts: list[str] = []
+    for layout in document.layouts:
+        for entity in layout:
+            kind = entity.dxftype()
+            if kind == "TEXT":
+                texts.append(entity.dxf.text)
+            elif kind == "MTEXT":
+                texts.append(entity.text)
+            elif kind == "INSERT":
+                texts += [attrib.dxf.text for attrib in entity.attribs]
+    return texts
+
+
+@pytest.mark.parametrize(("module", "inverter"), [(ET_550, GROWATT_5K), (JINKO_650, GROWATT_5K)])
+def test_every_size_in_the_spec_and_the_drawing_is_the_designed_one(
+    tmp_path: Path, module: str, inverter: str
+) -> None:
+    result = size(module, [inverter], target_dc_power_w=9000)
+    selected = result.selected
+    assert selected is not None
+    kwp = f"{selected.metrics.p_dc_w / 1000:.2f}"
+    kwac = f"{registry().get(inverter).rated_ac_power_w / 1000:.2f}"  # type: ignore[union-attr]
+    assert kwp != "7.70"  # the template's own size must not survive by coincidence
+
+    spec_text = json.dumps(selected.spec, default=str, ensure_ascii=False)
+    quoted = {(m.group(1), m.group(2)) for m in _SIZE.finditer(spec_text)}
+    assert quoted <= {(kwp, "kWp"), (kwac, "kWac")}
+    assert "7.70" not in spec_text
+    assert selected.spec["project"]["name"].endswith(f"{kwp} kWp")
+
+    generated = generate_single_line_diagram(selected.spec, tmp_path / "sld.dxf")
+    assert generated.ok
+    texts = _dxf_texts(tmp_path / "sld.dxf")
+    found = {(m.group(1), m.group(2)) for text in texts for m in _SIZE.finditer(text)}
+    assert (kwp, "kWp") in found
+    assert found <= {(kwp, "kWp"), (kwac, "kWac")} | {
+        (f"{n * selected.config.n_series * registry().get(module).pmax_w / 1000:.2f}", "kWp")  # type: ignore[union-attr]
+        for n in (1, 2)
+    }
+    assert any(f"{kwp} kWp / {kwac} kWac" in text for text in texts)
+    assert not any("7.70" in text for text in texts)
