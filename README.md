@@ -12,7 +12,7 @@ The input is a set of solar installation parameters: capacity, inverters, string
 
 ## Current Status
 
-**Phase 2: MCP Server Prototype & Connectivity Spike:** Complete (2026-10-06), pending the `v0.2.0-spike` release tag. The spikes S1–S4 confirmed [ADR-0001](docs/decisions/ADR-0001-claude-autocad-integration.md): the exit gate passed and no reversal trigger fired. See the [Phase 2 spike review](docs/spikes/phase-2-review.md).
+**Phase 2: MCP Server Prototype & Connectivity Spike:** Complete, released as `v0.2.0-spike` (2026-10-06). The spikes S1–S4 confirmed [ADR-0001](docs/decisions/ADR-0001-claude-autocad-integration.md): the exit gate passed and no reversal trigger fired. See the [Phase 2 spike review](docs/spikes/phase-2-review.md).
 
 Phase 2 delivered:
 - **S1:** an ezdxf DXF R2018 single-line diagram of a 7.70 kWp residential sample. It is byte-identical on Windows and Linux and audits 0/0 in ezdxf and in AutoCAD 2027.
@@ -39,7 +39,7 @@ The full research (252 notes with cited sources) lives in the author's local Obs
 | Phase | Name | Status | Target |
 |-------|------|--------|--------|
 | 1 | Documentation & Regulatory Research | Complete | v0.1.0-docs |
-| 2 | MCP Server Prototype & Connectivity Spike | Complete; release pending | v0.2.0-spike |
+| 2 | MCP Server Prototype & Connectivity Spike | Complete | v0.2.0-spike |
 | 3 | Parametric PV Sizing Engine (complete rule pack, sizing engine) | To be defined (tentative scope in the plan) | v0.3.0-engine |
 | 4 | Diagram Generation & Symbol Library | To be defined (tentative scope in the plan) | — |
 | 5 | Validation & Packaging | To be defined (tentative scope in the plan) | v1.0.0 |

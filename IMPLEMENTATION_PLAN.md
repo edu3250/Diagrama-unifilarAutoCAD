@@ -204,7 +204,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Target Release:** `v0.2.0-spike`
 
-**Status:** Complete, pending release (`v0.2.0-spike` is tagged after the Stage 2.5 review merges)
+**Status:** Complete (released as `v0.2.0-spike`, 2026-10-06)
 
 ---
 
@@ -333,9 +333,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - All CI tests green on Windows and Linux
 - Vault lint passes for the new notes
 
-> Review 2026-10-06 (`docs/spikes/phase-2-review.md`): the exit gate is passed and ADR-0001 is confirmed, with no superseding ADR. Reversal triggers T1–T9 were not fired. A "Phase 2 validation" section is appended to ADR-0001 (repository mirror and vault original), and the vault note "Phase 2 Spike Review 2026-10" records the review. `CHANGELOG.md` is updated. Remaining: the orchestrator tags `v0.2.0-spike` per GitFlow after this review merges.
+> Review 2026-10-06 (`docs/spikes/phase-2-review.md`): the exit gate is passed and ADR-0001 is confirmed, with no superseding ADR. Reversal triggers T1–T9 were not fired. A "Phase 2 validation" section is appended to ADR-0001 (repository mirror and vault original), and the vault note "Phase 2 Spike Review 2026-10" records the review. `CHANGELOG.md` is updated. Released as `v0.2.0-spike` (GitFlow release branch, tag on `main`, GitHub release).
 
-**Status:** Complete (except the `v0.2.0-spike` tag, which follows the merge)
+**Status:** Complete
 
 ---
 
