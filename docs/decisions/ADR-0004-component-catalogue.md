@@ -2,8 +2,8 @@
 
 | Field | Value |
 |---|---|
-| Status | **Proposed** |
-| Decision date | proposed 2026-10-06 |
+| Status | **Accepted** |
+| Decision date | proposed 2026-10-06, accepted 2026-10-07 |
 | Phase / stage | Phase 3, Stage 3.1 |
 | Deciders | edu3250 (project owner) |
 | Supersedes | none |
@@ -197,4 +197,4 @@ If a new field is added (e.g., `series_fuse_rating_a` for inverters), the schema
 
 ---
 
-**Status:** Proposed (awaiting owner confirmation at the start of Phase 3, Stage 3.1). If approved, this ADR is referenced in the commit that adds Stage 3.1 to `IMPLEMENTATION_PLAN.md` and the first datasheet record to `datasheets/records/`.
+**Status:** Accepted by the project owner on 2026-10-07, together with two decisions: every power level or model keeps its own variant record, and an inverter's optimizer-only PV power (e.g. Huawei's 10,000 Wp footnote) is stored only on the model the datasheet attaches it to, flagged as ambiguous, and used by the engine only when the design declares optimizers on every module; every other model is limited to its recommended max PV power.
