@@ -543,27 +543,210 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-**Phase 3 Status Summary:** In progress (owner confirmed 2026-10-06: Claude Code plugin as the short-term goal; component catalogue from the owner's datasheets via markitdown; parametric sizing in Python)
+**Phase 3 Status Summary:** Paused (owner, 2026-10-07). Open items:
+- PR #12 (catalogue batch: Jinko 60HL4, pending owner review, CI intentionally red due to missing staged implementation)
+- PR #13 (STR-007 + sizing engine v1, pending owner decisions on scope)
+- Stages 3.1–3.6 remain Not Started; do not merge or rebase these branches until Phase 4 is kicked off.
 
 ---
 
-## Phase 4: Diagram Generation & Symbol Library
+## Phase 4: Symbol Library Versioning & Deterministic DXF Regeneration
 
-**Tentative Intent:** Grow the symbol library to Mexican standards and develop layout templates for diverse PV topologies. Extend the B1 (ezdxf DXF) and B2 (AutoCAD .NET plug-in) diagram rendering, and implement the Core Console finisher for DWG and PDF export.
+**Goal:** Create a versioned CFE-compliant symbol library in DXF master file format, replace code-defined symbols with library imports, and establish a deterministic regeneration pipeline. This forms the foundation for diagram generation and layout templates in Phase 5.
 
-**Note (ADR-0001):** Topology and layout are deterministic; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf, B1), with native DWG and AutoCAD PDF coming from the plug-in (B2) or Core Console finisher (optional). 
+**Target Release:** `v0.4.0-symbols`
 
-**Proposed scope (Phase 2 review, tentative, pending Phase 3 completion):**
+**Key Decision:** The symbol library is a versioned DXF master file (`symbols/pvsld-symbols-cfe.dxf`) that is the single source of truth. The generator imports blocks from it instead of code-defined geometry. A legend sheet documents each symbol's CFE G0100-04 source. A regeneration script ensures the library is deterministic and CI-testable.
 
-- **Symbol library expansion:** Grow beyond the Phase 2 minimal set to the NMX-J-136-ANCE figures (purchase the standard, P1) with approved Mexican SLDs as references and golden files (P12). Support ANSI variants (layout.symbol_style: ANSI) as a separate block set.
-- **Layout templates:** Beyond `bt_string_residential_v1`, add templates for 2–4 strings, multiple MPPTs, several inverters, three-phase configurations, and later microinverters and optimizers.
-- **B2 production methods:** `render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, and `zoom_to` on the diagram model. B1/B2 parity test (golden ezdxf files). A signed `.bundle` for the .NET plug-in (removes the "Load once" prompt).
-- **Core Console finisher:** `export_drawing` with batching (multiple sheets per session), non-ASCII path support, and DWGPROPS privacy (clear "last saved by" field). Validation that the output is TrustedDWG 2018 and error-free under AutoCAD AUDIT.
-- **Diagram summary tool:** `get_diagram_summary` (name, kWp, inverter, string count, BOS details) for annotation.
+---
 
-**Status:** To be defined (depends on Phase 3; owner confirmation pending)
+### Stage 4.1: Symbol Library Specification & ADR-0005
 
-**Estimated Stages:** 4.1–4.4
+**Goal:** Document the design of the CFE-compliant symbol library and the code-to-file transition. Record the decision, library format, block naming, attributes, metadata, and regeneration strategy in ADR-0005.
+
+**Success Criteria:**
+
+- ADR-0005 (proposed) documents:
+  - **Library as DXF master:** `symbols/pvsld-symbols-cfe.dxf` is the single source of truth; blocks are imported by the generator, not code-defined
+  - **Block naming and attributes:** Comply with ADR-0003 (PVSLD_<FUNCTION>, standard attributes TAG/DESC/COMP_ID/IEC_REF/NMX_REF, function-specific attributes with units)
+  - **Symbol sourcing:** Each block records its source in XDATA or hidden attributes:
+    - **CFE G0100-04 Appendix C symbols (13 source symbols):** Módulo fotovoltaico, Varistor, Interruptor termomagnético, Inversor, Medidor de energía, Red eléctrica de distribución, Gabinete, Diodo de paso, Cargas de iluminación, Sensor de corriente, Interruptor manual, Transformador de aislamiento, Carga de contactos
+    - **Supplementary (CFE diagrams D1/D2 and NMX-J-136-ANCE / IEC 60617):** Earth/ground symbol, conductor-count marks (//), polarity (+/−), Detector de falla a tierra, fuse (IEC 60617-2), DC disconnect (IEC), battery (IEC), SPD (IEC or varistor variant)
+  - **Legend sheet (layout):** Símbolo | Designación | Fuente, listing all blocks with CFE/IEC/NMX reference
+  - **Regeneration:** A deterministic Python script (`scripts/regenerate_symbol_library.py`) that can rebuild the DXF from a canonical definition (YAML or Python), with bit-for-bit reproducibility across runs and platforms
+  - **DWG export:** Core Console finishes the library DXF to DWG 2018 (produced once, committed, CI validates it exists and audits 0)
+  - **Golden tests:** How the golden DXF test changes when the library regenerates (validation hook in CI, reviewed by owner)
+
+- ADR-0005 is written in vault and mirrored to `docs/decisions/ADR-0005-cfe-symbol-library.md`
+- Appendix C source crop images placed in `datasheets/cache/cfe_appendix_c/` with attribution notes (git-ignored)
+- A decision summary page in the vault notes the 13 CFE symbols and which IEC/NMX standards back the gaps
+
+**Tests:**
+
+- ADR document is well-formed markdown with clear rationale for the library-as-file approach
+- Comparison: code-defined (current) vs. file-based (proposed) shows the trade-offs (single source of truth, version control, visual review)
+- References to CFE G0100-04 Appendix C and IEC 60617 are correct
+- Owner approves the decision before Stage 4.2 begins
+
+**Status:** Not Started
+
+---
+
+### Stage 4.2: Build CFE Symbol Set as Blocks in DXF + Legend Sheet
+
+**Goal:** Create the master DXF file with all required symbols as blocks, a legend layout, and metadata. All symbols are drawn from CFE G0100-04 Appendix C first, then NMX-J-136-ANCE and IEC 60617 for gaps. The file is deterministic and passes `doc.audit()` with 0 errors.
+
+**Success Criteria:**
+
+- **Master DXF created:** `symbols/pvsld-symbols-cfe.dxf` (R2018 format, UTF-8)
+- **Blocks implemented (≥17):**
+  - **CFE G0100-04 Appendix C (13):** PVSLD_PV_STRING, PVSLD_VARISTOR, PVSLD_CB (inverter-side and string-side variants if needed), PVSLD_INV (box + diagonal, "=" upper-left, "~" lower-right per Appendix C figure), PVSLD_METER (box with ↔ over kWh), PVSLD_GRID (circle with ~), PVSLD_STRUCTURE (dash-dot rectangle), PVSLD_DIODE_BYPASS, PVSLD_LOAD_LIGHT, PVSLD_CT (current sensor), PVSLD_SW_MANUAL, PVSLD_TRAFO_ISO, PVSLD_LOAD_CONTACT
+  - **Supplementary (≥4):** PVSLD_GND (earth/ground symbol, IEC 60617), PVSLD_SPD (surge protector / varistor variant, IEC 60617 or CFE if defined), PVSLD_DC_DISCONNECT (IEC 60617), PVSLD_FUSE (IEC 60617)
+  - **Existing (redrawn to match CFE aesthetics):** PVSLD_TTLB (title block, Mexican fields), PVSLD_PANEL (conductor or panel placeholder), others as required
+- **Block attributes:**
+  - Visible: TAG, DESC (Spanish)
+  - Hidden: COMP_ID, IEC_REF, NMX_REF
+  - Function-specific with units: RATING_A, VOLT_V, PMAX_W, etc. (per device type)
+  - Hidden attribute `SOURCE_STANDARD` (e.g., "CFE G0100-04 Appendix C", "IEC 60617-2", "NMX-J-136-ANCE") or XDATA app `pvsld` record format 3 with source metadata
+- **XDATA per ADR-0003:** Block record, INSERT, and conductor formats; library version semantic version (e.g., `0.4.0`)
+- **Legend layout:** Paper-space layout named `Legend` with:
+  - Table / structured list: Símbolo (block thumbnail or INSERT), Designación (DESC), Fuente (SOURCE_STANDARD)
+  - Title block or header: "pvsld Symbol Library v0.4.0 – CFE G0100-04 Appendix C & IEC 60617"
+  - Suitable for A3 or A4 printout
+- **Audit result:** `doc.audit()` returns (0 errors, 0 fixes)
+- **Regeneration script:** `scripts/regenerate_symbol_library.py`
+  - Input: canonical definition (YAML file `symbols/cfe_symbols_0.4.0.yaml` or inline Python dataclass)
+  - Output: deterministic DXF (same bytes across runs, Windows/Linux/macOS)
+  - Validation: script is idempotent; regenerating the library produces the same file hash
+  - Test: CI runs the regeneration, compares file hash, and confirms 0 changes (or detects intentional edits)
+
+**Tests:**
+
+- `test_library_audit_clean`: `doc.audit()` returns (0, 0)
+- `test_all_blocks_have_required_attributes`: every block has TAG, DESC, COMP_ID, IEC_REF, NMX_REF (hidden), and at least one function-specific attribute (if applicable)
+- `test_block_ports_defined`: each block has ports in XDATA format per ADR-0003
+- `test_legend_layout_renders`: legend layout exists and all block references are valid
+- `test_regeneration_idempotent`: running the regeneration script twice produces identical file hashes
+- `test_library_cross_platform`: CI runs regeneration on Windows and Linux; hashes match
+- Manual inspection (owner): Open the DXF in AutoCAD, visually verify each symbol matches Appendix C or IEC standard, audit 0/0
+
+**Status:** Not Started
+
+---
+
+### Stage 4.3: Generator Transition – Import from Library DXF
+
+**Goal:** Modify the diagram generator to import blocks from the library DXF instead of code-defined symbols. Remove code-defined symbol geometry. Validate that diagrams render identically. Regenerate and review the golden test DXF.
+
+**Success Criteria:**
+
+- **Generator code changes:**
+  - `src/pvsld/backends/ezdxf_backend.py` refactored to:
+    - Load the library DXF (`symbols/pvsld-symbols-cfe.dxf`)
+    - Import block definitions via `dwg.blocks.import_blocks(library_dwg)` or equivalent
+    - Insert blocks by reference, no code-defined geometry
+  - Remove `src/pvsld/symbols/catalogue.py` or refactor to a library loader; remove old block definitions
+  - Remove the CERT hidden attribute from PVSLD_INV (owner requirement; certification scope is out of Phase 4)
+- **Golden test regeneration:**
+  - Run `tests/test_spike_s1.py` with the new generator
+  - The output DXF will differ from the old golden (block definitions now imported, possibly slight geometric differences from CFE-based redraw)
+  - Owner visually reviews the new DXF in AutoCAD; confirms it renders correctly and passes AUDIT 0/0
+  - Commit the new golden DXF with a reviewed flag in the commit message (e.g., "Approved by owner, 2026-10-07")
+  - Update the test to use the new golden file
+- **Rendering parity:** 
+  - `test_diagram_renders_same`: the same parametric spec (`examples/residential_7p7kwp.yaml`) rendered with the new library produces a valid, audit-clean DXF
+  - Attribute round-trip: all COMP_ID and function-specific attributes match the model
+  - Port connectivity: 0 dangling ports, all conductors reach their intended ports
+- **CI integration:** Golden test passes on Windows and Linux; artifact upload of the new golden for owner review (optional)
+
+**Tests:**
+
+- `test_ezdxf_backend_imports_library`: library DXF is successfully loaded and blocks are imported
+- `test_golden_regeneration_audit_clean`: regenerated golden passes AUDIT 0/0
+- `test_golden_attribute_round_trip`: all 147+ attributes in the example round-trip correctly
+- `test_no_dangling_ports`: 0 dangling ports in regenerated golden
+- `test_no_code_defined_symbols`: grep confirms no references to old symbol definitions in the backend code
+- Manual (owner): Open regenerated golden in AutoCAD, visually confirm it looks correct, run AUDIT
+
+**Status:** Not Started
+
+---
+
+### Stage 4.4: DWG Export & Library Finalization via Core Console
+
+**Goal:** Convert the library DXF to a DWG 2018 using Core Console, finalize the library, and prepare for diagram generation in Phase 5.
+
+**Success Criteria:**
+
+- **Core Console finisher output:**
+  - `symbols/pvsld-symbols-cfe.dwg` (TrustedDWG 2018, produced via `pvsld finish` on owner's licensed workstation)
+  - Audit result (automated headless check): 0 errors, 0 fixes
+  - File metadata: "last saved by" field cleared (privacy per owner request)
+- **Library committed:**
+  - `symbols/pvsld-symbols-cfe.dxf` (source, R2018)
+  - `symbols/pvsld-symbols-cfe.dwg` (finalized, TrustedDWG 2018)
+  - Both files committed to the repository with README pointing to each
+- **CI validation:**
+  - Script checks that the DWG exists and is TrustedDWG 2018 format
+  - Automated headless AUDIT against the DWG (if Core Console is available in CI; if not, manual check by owner)
+  - Warning if DWG is stale (commits to DXF without updating DWG)
+- **Phase 4 version & release:**
+  - `CHANGELOG.md` updated with Phase 4 summary (library sourced from CFE, blocks imported, deterministic regeneration)
+  - Tag `v0.4.0-symbols` on main (via GitFlow release branch)
+
+**Tests:**
+
+- `test_library_dwg_exists`: file `symbols/pvsld-symbols-cfe.dwg` exists
+- `test_library_dwg_is_trustedacad`: DWG header confirms TrustedDWG and AC1032 (2018)
+- `test_library_dwg_audit_clean`: if headless AUDIT available, (0, 0); otherwise manual check recorded
+- Manual (owner): Open DWG in AutoCAD, AUDIT, confirm 0/0; review metadata privacy
+
+**Status:** Not Started
+
+---
+
+### Stage 4.5: Extend Symbol Library – Battery, Transformer, Fuse, SPD, DC Disconnect
+
+**Goal:** Extend the CFE symbol set with additional symbols needed for diverse topologies (hybrid/battery systems, transformer configurations, advanced protection). Maintain the CFE-first approach and deterministic regeneration.
+
+**Success Criteria:**
+
+- **New symbols added (≥5):**
+  - PVSLD_BATTERY (NMX or IEC, if CFE does not define)
+  - PVSLD_TRAFO (isolation transformer, distinct from PVSLD_TRAFO_ISO if both are needed; determine from topologies in Phase 5)
+  - PVSLD_FUSE (DC-rated fuse, class gPV per NMX-J-136-ANCE; PVSLD_FUSE_DC or variant)
+  - PVSLD_SPD (surge protection device, distinct from varistor; determine from Phase 3 rule PROT-NNN requirements)
+  - PVSLD_DC_DISCONNECT (if not complete in Stage 4.2)
+  - Conductor markers (// for multi-conductor, +/− for polarity) as block symbols or documented as text/line styles
+- **Library regeneration updated:** `scripts/regenerate_symbol_library.py` includes new symbols; canonical definition (`symbols/cfe_symbols_0.4.0.yaml`) is extended
+- **Audit and test:** New blocks pass the same AUDIT, attribute, and port tests as Stage 4.2
+- **Owner review:** Each new symbol visually verified in AutoCAD and traced to its source (NMX, IEC, or CFE)
+
+**Tests:**
+
+- `test_library_audit_clean` (rerun): extended library still audits 0/0
+- `test_new_symbol_attributes`: each new block has required attributes
+- `test_new_symbol_ports`: new blocks have sensible port definitions (if applicable)
+- Manual (owner): Inspect each new symbol in AutoCAD
+
+**Status:** Not Started
+
+---
+
+## Phase 5: Layout Templates & Diagram Rendering for Diverse Topologies
+
+**Goal:** Implement layout templates for common PV configurations (single string, multi-string, multi-inverter, three-phase, battery), integrate with Phase 3's parametric sizing engine, and produce PDF/DWG exports via Core Console.
+
+**Proposed scope (Phase 4 completion triggers Phase 5 planning):**
+
+- **Layout templates:** Beyond `bt_string_residential_v1`, add templates for 2–4 strings, multiple MPPTs, several inverters, three-phase, hybrid/battery, and later microinverters
+- **Deterministic diagram generation:** Generator selects layout template based on parametric spec; Claude elicits trade-offs and approves
+- **DWG & PDF finalization:** Core Console export with batching, non-ASCII path support, and metadata privacy
+- **Diagram annotations:** Integration of Phase 3's `get_diagram_summary` for system kWp, inverter, string configuration labels
+
+**Status:** To be defined (depends on Phase 4 completion; owner confirmation pending)
+
+**Estimated Stages:** 5.1–5.4
 
 ---
 
@@ -588,5 +771,5 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-**Last updated:** 2026-10-06 (Stage 2.5 spike review)
+**Last updated:** 2026-10-07 (Phase 4 kickoff: symbol library versioning & deterministic DXF regeneration)
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD
