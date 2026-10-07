@@ -1,5 +1,4 @@
 # Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rating.
-# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
 component_type: dc_breaker
 family_id: SCHNEIDER-ACTI9-C60PV-DC
 manufacturer: Schneider Electric
@@ -34,8 +33,8 @@ source:
   pages: [1, 2]
   extraction_method: markitdown
   extraction_date: 2026-10-07
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-07
   notes: >-
     Single-reference datasheet: the family holds one variant (A9N61652, 20 A). Rotated sidebar text of
     the PDF was discarded as noise.
