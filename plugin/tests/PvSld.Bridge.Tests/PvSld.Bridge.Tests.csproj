@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Unit and named-pipe integration tests for PvSld.Bridge; no AutoCAD needed. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!--
+      Test names follow Method_Condition_Result; async tests take no CancellationToken; ACL tests guard
+      with OperatingSystem.IsWindows() at run time (CA1416 cannot follow that guard into lambdas);
+      xUnit's IAsyncLifetime disposes fixtures (CA1001).
+    -->
+    <NoWarn>$(NoWarn);CA1707;CA2007;CA1416;CA1001;xUnit1051</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\PvSld.Bridge\PvSld.Bridge.csproj" />
+  </ItemGroup>
+</Project>

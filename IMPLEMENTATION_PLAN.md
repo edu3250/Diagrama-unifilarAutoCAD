@@ -192,7 +192,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - GitHub release created for `v0.1.0-docs` with release notes (once the public repository is published)
 - Tag `v0.1.0-docs` exists on main branch
 
-> Closed 2026-10-05: vault lint 0 errors after fixes (`Lint Report 2026-10-05`), tag `v0.1.0-docs` on main. The GitHub release is deferred until the owner publishes the public repository.
+> Closed 2026-10-05: vault lint 0 errors after fixes (`Lint Report 2026-10-05`), tag `v0.1.0-docs` on main. Public repository published the same day (https://github.com/edu3250/Diagrama-unifilarAutoCAD) with GitHub release `v0.1.0-docs`.
 
 **Status:** Complete
 
@@ -200,15 +200,39 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ## Phase 2: MCP Server Prototype & Connectivity Spike
 
-> **Tentative: to be confirmed by the user before Phase 2 starts.** The stages below turn the validation plan of ADR-0001 into trial-and-error spikes. All numeric thresholds are proposed targets from the ADR.
-
-**Goal:** Prove ADR-0001 before committing to production code. Four spikes cover the ezdxf rendering path, AutoCAD 2027 connectivity (.NET 10 plug-in vs COM), the MCP round trip from Claude Code, and the Core Console finisher.
+**Goal:** Prove ADR-0001 before committing to production code. Five stages cover the Python project scaffold (2.0), the ezdxf rendering path (2.1), AutoCAD 2027 connectivity (.NET 10 plug-in vs COM, 2.2), the MCP round trip from Claude Code (2.3), the Core Console finisher (2.4), and spike review + ADR confirmation (2.5). All numeric thresholds are proposed targets from the ADR.
 
 **Target Release:** `v0.2.0-spike`
 
-> Tentative: stages to be confirmed by the user.
+**Status:** Complete (released as `v0.2.0-spike`, 2026-10-06)
 
-**Status:** Not Started
+---
+
+### Stage 2.0: Foundation – Python Project Scaffold & CI
+
+**Goal:** Establish the Python project structure, development environment, testing framework and continuous integration pipeline to support Stages 2.1–2.5.
+
+**Success Criteria:**
+
+- Project layout: `src/pvsld/` (package), `tests/`, `examples/`, `.github/workflows/`, `pyproject.toml`
+- `pyproject.toml` with src layout, package name `pvsld`, runtime dependencies (ezdxf, mcp, pydantic, PyYAML), a `dev` extra (pytest, pytest-cov, ruff), an `autocad` extra (pywin32, Windows only), build backend (hatchling), and CLI entry point
+- Tooling: ruff (lint + format), pytest (with `autocad` marker excluded by default in CI), coverage ≥60% for changed code
+- CI matrix: `windows-latest` and `ubuntu-latest`, Python 3.11+
+- `.mcp.json` is created in Stage 2.3 together with a working server (a placeholder would make Claude Code try to start a non-existent server)
+- Sample input file `examples/residential_7p7kwp.yaml` from the vault's worked example (PV SLD Parameter Model)
+- `venv` instructions in `README.md` and `CONTRIBUTING.md` updated
+
+**Tests:**
+
+- Verify `pyproject.toml` is valid, can be parsed and build succeeds
+- Confirm toolchain (ruff, pytest) runs without errors on a clean checkout
+- Check that AutoCAD-marked tests are skipped in CI (marked tests report "skipped", not failures)
+- Verify sample parameter file is valid YAML and matches the schema stub
+- GitHub Actions workflow passes on both Windows and Ubuntu for Python 3.11
+
+> Merged 2026-10-06 (PR #1): CI green on Ubuntu and Windows, Python 3.11 and 3.12.
+
+**Status:** Complete
 
 ---
 
@@ -228,7 +252,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Semantic ezdxf query tests (blocks, attributes, layers, port connectivity)
 - Rule-subset tests (VOLT-001, STR-001, STR-004, CON-003, PCC-002, MET-001, DIS-003/004) pass on the sample and fail as expected on 3 mutated specs
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #3): audit 0/0; byte-identical output across runs, processes and the Windows/Linux CI matrix; 9 blocks / 11 inserts; 147/147 attributes round-trip by `COMP_ID`; 0 dangling ports; 0 entities on layer 0; build + write 97 ms; PNG preview ~1.1 s. The AutoCAD AUDIT check is measured headlessly in Stage 2.4. Symbol naming: ADR-0003 (accepted).
+
+**Status:** Complete
 
 ---
 
@@ -236,19 +262,23 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Goal:** Prove the AutoCAD backend transport. A `net10.0` plug-in listens on a current-user named pipe (newline-delimited JSON-RPC plus a secret generated at each start). It answers a ping, inserts an attributed block and reads attributes back. A throwaway Python COM spike against `AutoCAD.Application.26` serves as the baseline.
 
+> .NET 10 SDK 10.0.401 installed with the owner's approval on 2026-10-05. Attended run on AutoCAD 2027 (2026-10-06): 22/22 tests; ping p95 2.25 ms; 200 + 200 batch 47 ms (71 ms worst); 100/100 runs; busy errors in 0.001–1.89 s; 5/5 injected failures rolled back; unauthenticated client refused. COM was 37–186× slower for drawing work. See `docs/spikes/s2-autocad-connectivity.md` (PR #2).
+
 **Success Criteria:**
-- Plug-in ping p95 < 50 ms; a batch of 200 attributed inserts + 200 lines takes < 2 s; the COM/plug-in latency ratio is recorded
+- COM baseline: pywin32 spike against `AutoCAD.Application.26` with message-filter retries; operations (ping, insert attributed block, read attributes, batch of 200 inserts + 200 lines); reliability metrics and latency recorded
+- .NET 10 plug-in: named pipe with newline JSON-RPC and secret; plug-in ping p95 < 50 ms; 200-insert batch < 2 s; COM/plug-in latency ratio recorded
 - 100/100 consecutive runs without unhandled errors
 - With a modal dialog or an active command, the plug-in returns an actionable "busy" error within 5 s, and AutoCAD never hangs
 - An injected mid-transaction failure leaves the drawing unchanged
 - A client without the secret is refused; the pipe ACL is current-user only
 
 **Tests:**
-- Scripted benchmark harness, marked `autocad` and run manually on the licensed workstation
-- Protocol tests of the pipe client against a fake server (CI)
+- COM spike: pywin32 benchmark harness (marked `autocad`, run manually on the licensed workstation)
+- .NET 10 plug-in benchmark: marked `autocad` and run manually
+- Protocol tests of the pipe client against a fake server (CI, SDK-independent)
 - Benchmark results recorded in the vault
 
-**Status:** Not Started
+**Status:** Complete
 
 ---
 
@@ -266,7 +296,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - MCP Inspector session
 - Optional: the same flow in Claude Desktop within 240 s
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #5): `mcp` 2.3.0 stdio server with `validate_pv_design`, `generate_single_line_diagram` and three resources. It starts and lists tools in 2.0–2.6 s, and a result with the preview is about 20.9k tokens (estimate). In the owner's manual Claude Code run, validate → generate took 2 calls, and Claude corrected the 12-module VOLT-001 spec in 4. Claude also spotted an inverter DC overload that no implemented rule caught (STR-007, Phase 3). MCP Inspector was not run (no Node.js) and Claude Desktop was not tested. See `docs/spikes/s3-mcp-round-trip.md`.
+
+**Status:** Complete
 
 ---
 
@@ -282,7 +314,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 **Tests:**
 - Scripted finisher run (marked `autocad`) that checks the exit code, the existence of the output files and a timeout
 
-**Status:** Not Started
+> Merged 2026-10-06 (PR #6): `pvsld finish` gives DWG `AC1032` (TrustedDWG) and a 1-page A3 PDF in 4.2–10.8 s per sheet, and 4/4 failure modes are reported. It also found that AutoCAD AUDIT rejects the S1 overall paper-space viewport off layer 0; PR #7 fixed this, and AUDIT now reports 0/0 (12.2 s cold). See `docs/spikes/s4-core-console.md`.
+
+**Status:** Complete
 
 ---
 
@@ -299,15 +333,23 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - All CI tests green on Windows and Linux
 - Vault lint passes for the new notes
 
-**Status:** Not Started
+> Review 2026-10-06 (`docs/spikes/phase-2-review.md`): the exit gate is passed and ADR-0001 is confirmed, with no superseding ADR. Reversal triggers T1–T9 were not fired. A "Phase 2 validation" section is appended to ADR-0001 (repository mirror and vault original), and the vault note "Phase 2 Spike Review 2026-10" records the review. `CHANGELOG.md` is updated. Released as `v0.2.0-spike` (GitFlow release branch, tag on `main`, GitHub release).
+
+**Status:** Complete
 
 ---
 
 ## Phase 3: Parametric PV Sizing Engine
 
-**Tentative Intent:** Implement a Python module (per ADR-0001) that accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes optimal string/inverter configuration.
+**Tentative Intent:** Implement the deterministic sizing engine and complete the rule pack (per ADR-0001 and the Phase 2 review). It accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes the string/inverter configuration. Tentative stages, owner to confirm:
+- 3.1 Parameter model schema v1 (ADR-0002): the fields that 7 catalogue rules still need, equipment catalogue entries from datasheets, versioning
+- 3.2 Complete rule pack `mx-gd-2026.10`: all 98 rules, starting with STR-007 (inverter DC power and DC/AC ratio, the gap found in the owner's Claude test); NOM tables re-read against the published text; coverage tests per MX item
+- 3.3 Sizing engine: string configuration proposals, inverter matching, DC/AC ratio, conductor, OCPD and voltage-drop sizing
+- 3.4 MCP surface: a sizing tool and the full rule-catalogue resource; confirm the preview token budget; close the MCP Inspector check
 
-**Status:** To be defined
+**Target Release:** `v0.3.0-engine`
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 3.1–3.4
 
@@ -319,7 +361,13 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Note (ADR-0001):** Topology and layout are assigned to deterministic code, not to Claude; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf), with DWG coming from the AutoCAD backend or a finisher. Revise this description when Phase 4 is planned.
 
-**Status:** To be defined
+**Proposed scope (Phase 2 review, tentative):**
+- Layout templates beyond `bt_string_residential_v1`: more strings and MPPTs, several inverters, three-phase, microinverters and optimizers
+- The symbol library grown to the NMX-J-136-ANCE figures, with approved Mexican SLDs as references
+- B2 production methods (`render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, `zoom_to`), the B1/B2 parity test, and a signed `.bundle` that loads without the per-session prompt
+- `export_drawing` (Core Console finisher with batching, non-ASCII paths and DWGPROPS "last saved by" privacy) and `get_diagram_summary`
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 4.1–4.5
 
@@ -329,11 +377,17 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE), create integration test suite, package as standalone tool, and release `v1.0.0`.
 
-**Status:** To be defined
+**Proposed scope (Phase 2 review, tentative):**
+- Reviewer acceptance of DXF and PDF output (UVIE and CFE feedback; ADR-0001 trigger T3)
+- A package validator for MX-I01…I07, post-drawing TOP and DRW rules, and end-to-end tests
+- An MCPB bundle and a Claude Desktop run
+- A commercial-seat check of the Education-licence question
+
+**Status:** To be defined (tentative, owner confirmation pending)
 
 **Estimated Stages:** 5.1–5.4
 
 ---
 
-**Last updated:** 2026-10-05  
+**Last updated:** 2026-10-06 (Stage 2.5 spike review)
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD

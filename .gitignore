@@ -6,6 +6,7 @@ __pycache__/
 .Python
 env/
 venv/
+.venv/
 ENV/
 build/
 develop-eggs/
@@ -26,6 +27,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 .tox/
@@ -69,6 +71,13 @@ plot.log
 *.log
 acad.err
 *.plt
+
+# .NET plug-in build output (Autodesk assemblies are never committed: AutoCAD supplies them)
+bin/
+obj/
+*.user
+.vs/
+TestResults/
 
 # Temporary files
 *.tmp

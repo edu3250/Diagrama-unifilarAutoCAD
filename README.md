@@ -12,7 +12,15 @@ The input is a set of solar installation parameters: capacity, inverters, string
 
 ## Current Status
 
-**Phase 1: Documentation & Research:** Complete, released as `v0.1.0-docs` (2026-10-05). Phase 2 (trial-and-error spikes S1–S4 from ADR-0001) is drafted and awaits the owner's confirmation.
+**Phase 2: MCP Server Prototype & Connectivity Spike:** Complete, released as `v0.2.0-spike` (2026-10-06). The spikes S1–S4 confirmed [ADR-0001](docs/decisions/ADR-0001-claude-autocad-integration.md): the exit gate passed and no reversal trigger fired. See the [Phase 2 spike review](docs/spikes/phase-2-review.md).
+
+Phase 2 delivered:
+- **S1:** an ezdxf DXF R2018 single-line diagram of a 7.70 kWp residential sample. It is byte-identical on Windows and Linux and audits 0/0 in ezdxf and in AutoCAD 2027.
+- **S2:** an AutoCAD 2027 .NET 10 plug-in on a current-user named pipe, 186× faster than COM for drawing work.
+- **S3:** a stdio MCP server that Claude Code drives (validate → generate in 2 tool calls).
+- **S4:** a Core Console finisher for TrustedDWG 2018 and an AutoCAD-plotted PDF in ≤ 15 s per sheet.
+
+**Phase 1: Documentation & Research:** Complete, released as `v0.1.0-docs` (2026-10-05).
 
 Phase 1 researched:
 - Official Autodesk APIs and MCP connectivity patterns
@@ -31,25 +39,25 @@ The full research (252 notes with cited sources) lives in the author's local Obs
 | Phase | Name | Status | Target |
 |-------|------|--------|--------|
 | 1 | Documentation & Regulatory Research | Complete | v0.1.0-docs |
-| 2 | MCP Server Prototype & Connectivity Spike | Tentative: spikes S1–S4 from ADR-0001, to be confirmed | v0.2.0-spike |
-| 3 | Parametric PV Sizing Engine | To be defined | — |
-| 4 | Diagram Generation & Symbol Library | To be defined | — |
-| 5 | Validation & Packaging | To be defined | — |
+| 2 | MCP Server Prototype & Connectivity Spike | Complete | v0.2.0-spike |
+| 3 | Parametric PV Sizing Engine (complete rule pack, sizing engine) | To be defined (tentative scope in the plan) | v0.3.0-engine |
+| 4 | Diagram Generation & Symbol Library | To be defined (tentative scope in the plan) | — |
+| 5 | Validation & Packaging | To be defined (tentative scope in the plan) | v1.0.0 |
 
 ## Getting Started
 
 ### Prerequisites
 
-Planned, per ADR-0001; no code has been released yet.
+The project is a Phase 2 prototype. The `pvsld` package validates a PV design, renders it to DXF with a PNG preview, and serves both steps to Claude over MCP. No package has been published yet.
 
-- Python 3.10+ (for the MCP server and the deterministic core)
+- Python 3.11+ (for the MCP server and the deterministic core)
 - Optional: AutoCAD 2027 on Windows, needed only for native DWG output, AutoCAD PDF plotting and live editing
 - Git (GitFlow compatible)
 
-### Development
+### Development setup
 
 ```bash
-# Clone and set up
+# Clone and start from the integration branch
 git clone https://github.com/edu3250/Diagrama-unifilarAutoCAD.git
 cd Diagrama-unifilarAutoCAD
 git checkout develop
@@ -59,6 +67,53 @@ git flow feature start <name>
 # or manually: git checkout -b feature/<name>
 ```
 
+Create a virtual environment in the repository and activate it:
+
+```bash
+python -m venv .venv
+```
+
+| Shell | Activate |
+|-------|----------|
+| Windows PowerShell | `.venv\Scripts\Activate.ps1` |
+| Windows cmd | `.venv\Scripts\activate.bat` |
+| Git Bash on Windows | `source .venv/Scripts/activate` |
+| Linux / macOS | `source .venv/bin/activate` |
+
+> If PowerShell refuses to run `Activate.ps1`, allow scripts for the current session only: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned`.
+
+Install the package in editable mode with the development tools, then run the checks that CI runs:
+
+```bash
+pip install -e ".[dev]"
+
+ruff check .             # lint
+ruff format --check .    # formatting (run `ruff format .` to fix)
+pytest --cov             # tests with coverage (floor: 60 %)
+
+pvsld --version
+pvsld validate examples/residential_7p7kwp.yaml
+pvsld generate examples/residential_7p7kwp.yaml -o out/residential.dxf --png
+```
+
+**MCP server for Claude Code.** The repository's `.mcp.json` registers the stdio server `pvsld` (`pvsld-mcp`, tools `validate_pv_design` and `generate_single_line_diagram`). Start Claude Code in the repository root and approve the project server once; `claude mcp list` should show `pvsld ... Connected`. The committed command only finds `pvsld-mcp` when the virtual environment is active in the shell that starts Claude Code. Otherwise, point the `PVSLD_MCP_COMMAND` variable at the venv executable before starting it:
+
+```powershell
+$env:PVSLD_MCP_COMMAND = "$PWD\.venv\Scripts\pvsld-mcp.exe"   # Linux/macOS: export PVSLD_MCP_COMMAND="$PWD/.venv/bin/pvsld-mcp"
+claude
+```
+
+Output files go to `out/` (or `PVSLD_OUTPUT_DIR`). Claude Desktop set-up and details: [`docs/spikes/s3-mcp-round-trip.md`](docs/spikes/s3-mcp-round-trip.md).
+
+**DWG and PDF (optional, licensed AutoCAD 2027 on Windows).** `pvsld finish out/residential.dxf` converts a DXF to DWG 2018 and an A3 PDF through the AutoCAD Core Console ([`docs/spikes/s4-core-console.md`](docs/spikes/s4-core-console.md)). Output paths must be ASCII for now. A DWG records the Windows login as "last saved by", so check it before sharing.
+
+**AutoCAD tests.** Tests marked `autocad` drive a licensed local AutoCAD 2027 and only run on Windows. A plain `pytest` (and CI) reports them as *skipped*, with the reason shown. On the licensed workstation, with AutoCAD 2027 installed, run them explicitly and add the optional `autocad` extra (`pywin32`):
+
+```bash
+pip install -e ".[dev,autocad]"
+pytest --run-autocad -m autocad
+```
+
 See `CONTRIBUTING.md` for detailed GitFlow instructions and `IMPLEMENTATION_PLAN.md` for current stage details.
 
 ## Documentation
@@ -66,6 +121,7 @@ See `CONTRIBUTING.md` for detailed GitFlow instructions and `IMPLEMENTATION_PLAN
 - **`IMPLEMENTATION_PLAN.md`** — Staged breakdown of work for each phase
 - **[`docs/decisions/`](docs/decisions/)** — Architecture Decision Records, starting with [ADR-0001](docs/decisions/ADR-0001-claude-autocad-integration.md)
 - **[`docs/research/`](docs/research/)** — Research summaries, starting with the [Phase 1 summary](docs/research/phase-1-summary.md)
+- **[`docs/spikes/`](docs/spikes/)** — Phase 2 spike reports (S2–S4) and the [Phase 2 spike review](docs/spikes/phase-2-review.md)
 - **`docs/README.md`** — Technical documentation structure
 - **`CONTRIBUTING.md`** — GitFlow workflow and commit conventions
 - **`CHANGELOG.md`** — Version history (Keep a Changelog format)
@@ -83,4 +139,4 @@ Contributions welcome! Please follow `CONTRIBUTING.md` before submitting pull re
 
 ---
 
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06

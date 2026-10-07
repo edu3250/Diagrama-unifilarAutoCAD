@@ -1,0 +1,118 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pvsld"
+version = "0.2.0"
+description = "Claude <-> MCP <-> AutoCAD generator of Mexican photovoltaic single-line diagrams."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "edu3250", email = "edu3250@gmail.com" }]
+keywords = ["autocad", "dxf", "mcp", "photovoltaic", "single-line-diagram", "nom-001-sede"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Typing :: Typed",
+]
+dependencies = [
+    # The golden DXF of Stage 2.1 is byte-exact for one ezdxf minor series; raise the cap together
+    # with a reviewed regeneration of tests/golden/residential_7p7kwp.dxf.
+    "ezdxf>=1.4.4,<1.5",
+    "matplotlib>=3.9,<4",  # PNG preview through the ezdxf drawing add-on
+    "mcp>=2.3,<3",
+    "pillow>=10,<13",  # imported directly to shrink the MCP preview PNG (pvsld.mcp.preview)
+    "pydantic>=2.7,<3",
+    "PyYAML>=6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "ruff>=0.6",
+]
+# Only needed for the S2 COM spike and tests marked "autocad"; AutoCAD itself is Windows-only.
+autocad = [
+    "pywin32; sys_platform == 'win32'",
+]
+
+[project.scripts]
+pvsld = "pvsld.cli:main"
+pvsld-mcp = "pvsld.mcp.server:main"
+
+[project.urls]
+Homepage = "https://github.com/edu3250/Diagrama-unifilarAutoCAD"
+Issues = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/issues"
+Changelog = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/blob/develop/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pvsld"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/examples",
+    "/CHANGELOG.md",
+    "/LICENSE",
+    "/README.md",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "PTH",  # prefer pathlib
+    "PT",   # flake8-pytest-style
+    "N",    # pep8-naming
+    "RUF",  # ruff-specific rules
+]
+# Spanish drawing text uses the multiplication sign and Greek symbols (1.25 × Isc, γ Pmax).
+allowed-confusables = ["×", "γ"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["pvsld"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+markers = [
+    "autocad: needs a licensed local AutoCAD 2027 (skipped unless --run-autocad)",
+]
+
+[tool.coverage.run]
+source = ["pvsld"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 60
+show_missing = true
+skip_empty = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

@@ -1,0 +1,127 @@
+# Source: "PV SLD Parameter Model" (research vault note, schema_version 0.1.0), YAML example.
+# This is the residential low-voltage worked example of "PV String Sizing":
+# 2 strings x 7 modules x 550 W = 7.70 kWp, one 6 kW inverter at 220 V (2F-3H).
+#
+# This file is an illustrative sample, not an engineering deliverable: every name, identifier,
+# phone number, RPU, service/meter number, cedula and equipment value below is a placeholder.
+# A responsible engineer must verify any real design.
+schema_version: "0.1.0"
+project:
+  id: "PV-2026-0001"
+  name: "Sistema fotovoltaico interconectado 7.70 kWp"
+  client: {name: "Juan Pérez", phone: "+52 33 0000 0000", email: "cliente@example.com"}
+  site:
+    address: {street: "Av. Ejemplo", number: "123", colonia: "Centro", municipio: "Zapopan", estado: "Jalisco", cp: "45000"}
+    lat: 20.7215
+    lon: -103.3918
+    occupancy: vivienda_unifamiliar     # vivienda_unifamiliar|vivienda_bifamiliar|comercial|industrial|lugar_concentracion_publica
+    array_on_building: true
+    t_min_c: -3                         # lowest expected ambient (design)
+    t_min_source: "ASHRAE extreme annual mean minimum, estación más cercana"
+    t_amb_max_c: 38
+    ground_flash_density_ng: 3.0        # flashes/km2/yr, for SPD risk method
+standards:
+  nom_edition: "NOM-001-SEDE-2012"
+  rulepack: "mx-gd-2026.10"
+  voc_method: coefficient               # coefficient|table_690_7|iec_default_1_2
+  vd_limits_pct: {dc: 1.5, ac: 2.0, total: 3.0}
+utility:
+  supplier: CFE
+  rpu: "000000000000"
+  service_number: "000000000000"
+  meter_number: "A00000"
+  tariff: "1C"
+  voltage_level: BT                     # BT|MT
+  system: "2F-3H"                       # 1F-2H|2F-3H|3F-4H|MT-3F-3H|MT-3F-4H
+  nominal_voltage_v: 220                # L-L (127 L-N)
+  available_fault_current_ka: 10
+  regime: medicion_neta                 # medicion_neta|facturacion_neta|venta_total
+  interconnection_scheme: 1             # Manual Anexo 1 scheme 1-9 (R4)
+  service_main: {rating_a: 100, poles: 2, kaic_ka: 10}
+modules:
+  - id: MOD1
+    manufacturer: "Fabricante X"
+    model: "XM-550"
+    pmax_w: 550
+    voc_v: 49.60
+    isc_a: 14.00
+    vmp_v: 41.60
+    imp_a: 13.22
+    beta_voc_pct_c: -0.27
+    gamma_pmax_pct_c: -0.35
+    alpha_isc_pct_c: 0.05
+    max_series_fuse_a: 25
+    max_system_voltage_v: 1500
+    bifacial: false
+    certifications: ["IEC 61215", "IEC 61730"]
+inverters:
+  - id: INV1
+    manufacturer: "Fabricante Y"
+    model: "YI-6000"
+    type: string                        # string|central|micro|hybrid|optimizer_string
+    qty: 1
+    pac_w: 6000
+    vac_v: 220
+    phases: 2                           # conductors energized: 1 (127 V L-N), 2 (220 V L-L), 3
+    iac_max_a: 27.3
+    ocpd_max_a: 40
+    vdc_max_v: 600
+    vdc_start_v: 120
+    pdc_max_w: 9000
+    mppt:
+      - {id: A, vmin_v: 90, vmax_v: 560, vmin_full_power_v: 200, vmax_full_power_v: 480, imax_a: 16, isc_max_a: 22, inputs: 1}
+      - {id: B, vmin_v: 90, vmax_v: 560, vmin_full_power_v: 200, vmax_full_power_v: 480, imax_a: 16, isc_max_a: 22, inputs: 1}
+    isolation: transformerless
+    gfp: true
+    afci: true
+    dc_switch_integrated: true
+    dc_spd_integrated: "Tipo 2"
+    certifications: ["UL 1741 SB", "IEEE 1547-2018"]
+strings:
+  - {id: S1, module: MOD1, n_series: 7, inverter: INV1, mppt: A, tilt_deg: 20, azimuth_deg: 180}
+  - {id: S2, module: MOD1, n_series: 7, inverter: INV1, mppt: B, tilt_deg: 20, azimuth_deg: 180}
+dc_bos:
+  combiners: []
+  disconnects: [{id: DCD-1, integrated_in: INV1, poles: 2, ue_v: 600, ie_a: 25}]
+  spds: [{id: DPS-CD1, at: INV1.dc, spd_type: "T2", ucpv_v: 600, in_ka: 20, iscpv_a: 1000}]
+ac_bos:
+  ocpds:
+    - {id: ITM-1, role: I1, poles: 2, rating_a: 35, voltage_v: 240, kaic_ka: 10, backfed: true, at: CC-1}
+  disconnects: []
+  spds: [{id: DPS-CA1, at: CC-1, spd_type: "T2", uc_v: 175, in_ka: 20}]
+  panels:
+    - {id: CC-1, name: "Centro de carga principal", bus_a: 125, main_ocpd: ITM-P, system: "2F-3H", kaic_ka: 10}
+  main_breakers:
+    - {id: ITM-P, role: I2, poles: 2, rating_a: 100, bidirectional: true}
+  point_of_connection: {id: PI-1, type: load_side, panel: CC-1, breaker: ITM-1, position: opposite_end}
+  meters:
+    - {id: M-1, role: MF, bidirectional: true, owner: CFE, meter_no: "A00000"}
+circuits:
+  - {id: C-S1, kind: pv_source, from: S1, to: INV1.A, conductors: {qty: 2, size: "10 AWG", material: Cu, insulation: "PV / THW-2"}, egc: {size: "10 AWG", type: desnudo}, raceway: {type: "PVC", trade_size_mm: 21, rooftop_clearance_mm: 25, ccc_count: 4}, length_m: 25, ambient_c: 38}
+  - {id: C-S2, kind: pv_source, from: S2, to: INV1.B, conductors: {qty: 2, size: "10 AWG", material: Cu, insulation: "PV / THW-2"}, egc: {size: "10 AWG", type: desnudo}, raceway: {ref: C-S1}, length_m: 25, ambient_c: 38}
+  - {id: C-INV, kind: inverter_output, from: INV1.ac, to: ITM-1, conductors: {qty: 2, size: "8 AWG", material: Cu, insulation: "THW-2"}, neutral: {size: "8 AWG"}, egc: {size: "10 AWG", type: desnudo}, raceway: {type: "PVC", trade_size_mm: 21}, length_m: 30, ambient_c: 35}
+grounding:
+  dc_system: ungrounded_690_35          # grounded|ungrounded_690_35
+  electrodes: [{type: "varilla copperweld", length_m: 3.05, qty: 1}]
+  design_resistance_ohm: 25
+  gec_ac: "8 AWG"
+  gec_dc: "8 AWG"
+  dc_ac_bond_method: "690-47(c)(3)"
+storage: {coupling: none}
+monitoring: {gateway: "Wi-Fi integrado", consumption_ct: false}
+title_block:
+  drawing_no: "IE-01"
+  sheet: "1 de 1"
+  revision: "A"
+  date: 2026-10-05
+  responsible: {name: "Ing. Nombre Apellido", cedula_profesional: "00000000", company: "Integrador S.A. de C.V."}
+  uvie: null
+  drawn_by: "ABC"
+  checked_by: "DEF"
+  revisions: [{rev: "A", date: 2026-10-05, description: "Emisión para solicitud de interconexión", by: "ABC"}]
+layout:
+  template: "bt_string_residential_v1"
+  sheet: A3
+  flow: left_to_right
+  symbol_style: IEC                     # IEC|ANSI
+  language: es

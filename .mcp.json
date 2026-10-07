@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "pvsld": {
+      "type": "stdio",
+      "command": "${PVSLD_MCP_COMMAND:-pvsld-mcp}",
+      "args": [],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": "${PVSLD_OUTPUT_DIR:-out}"
+      }
+    }
+  }
+}
