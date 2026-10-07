@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Phase 4, Stage 4.2 (ADR-0005): the CFE G0100-04 symbol set as a block library. `src/pvsld/symbols/cfe/` defines 22 blocks (the 13 Appendix C symbols redrawn as vector geometry, earth, conductor-count tick, polarity, junction dot, PV string, point of interconnection, load center, title block) with ports, attributes (inverter `CERT` dropped, hidden `SOURCE_STANDARD` added) and a source per block; `symbols/pvsld-symbols-cfe.dxf` (R2018, byte-reproducible) holds them with a `Legend` layout (Símbolo | Designación | Fuente). `pvsld symbols build|list|validate` and `scripts/build_symbol_library.py`; `pvsld.symbols.cfe.loader.import_blocks` copies blocks with their port XDATA (ezdxf's `Importer` does not)
+
 ## [0.2.0-spike] - 2026-10-06
 
 Phase 2 (MCP Server Prototype & Connectivity Spike) complete; ADR-0001 confirmed.
