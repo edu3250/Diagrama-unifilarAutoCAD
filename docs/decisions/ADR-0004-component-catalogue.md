@@ -132,22 +132,23 @@ class InverterFamily(BaseModel):  # values common to all models
     family_id: str
     manufacturer: str
     model_family: str
-    max_input_voltage_v: float
+    max_input_voltage_v: float | None  # family or variant level, exactly one
     startup_voltage_v: float
     rated_input_voltage_v: float
-    mppt_voltage_range_v: tuple[float, float]
+    mppt_voltage_range_v: tuple[float, float] | None  # family or variant level, exactly one
     mppt_count: int
     inputs_per_mppt: int
     max_input_current_per_mppt_a: float  # operating limit (current above it is clipped)
     max_short_circuit_current_per_mppt_a: float  # hard limit for array Isc (incl. bifacial gain)
     grid: Literal["single_phase", "split_phase", "three_phase"]
     rated_ac_voltage_v: list[float]
+    max_ac_current_reference_voltage_v: (
+        float | None
+    )  # voltage at which the max AC current is specified
     frequency_hz: list[float]
     power_factor_range: tuple[float, float]
     thd_max_pct: float | None
     battery: BatteryPort | None
-    certifications_safety: list[str]
-    certifications_grid: list[str]
     variants: list[InverterVariant]
     source: Provenance
 
@@ -232,3 +233,5 @@ If a new field is added (e.g., `series_fuse_rating_a` for inverters), the schema
 ---
 
 **Status:** Accepted by the project owner on 2026-10-07, together with two decisions: every power level or model keeps its own variant record, and an inverter's optimizer-only PV power (e.g. Huawei's 10,000 Wp footnote) is stored only on the model the datasheet attaches it to, flagged as ambiguous, and used by the engine only when the design declares optimizers on every module; every other model is limited to its recommended max PV power.
+
+**Owner decisions 2026-10-07 (PR #11):** inverter maximum AC currents are checked at the datasheet's reference voltage when it differs from the nominal one (Growatt: 220 V); module power tolerance carries its unit in the field name (`power_tolerance_pct`, `power_tolerance_w`); the 2 kA fallback breaking capacity of the Suntree breaker is accepted (it matters mainly for battery circuits); inverter certifications are not tracked, so `certifications_safety` and `certifications_grid` were removed.

@@ -15,7 +15,7 @@ max_system_voltage_v: 1500
 max_series_fuse_a: 25
 operating_temp_c: [-40, 85]
 noct_c: 45                         # ±2 °C
-power_tolerance_w: [0, 5]            # 0 ~ +5 W
+power_tolerance_w: [0, 5]            # 0 ~ +5 W (watts, not percent)
 temp_coef_pmax_pct_per_c: -0.35
 temp_coef_voc_pct_per_c: -0.28
 temp_coef_isc_pct_per_c: 0.048

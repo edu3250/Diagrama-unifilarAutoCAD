@@ -58,5 +58,5 @@ source:
     No text layer; pages rendered with pypdfium2. Ue per pole count is a list of options, so the pole/voltage
     configuration is chosen at design time (e.g. 2P 550 V or 2P 800 V). Product images also show "2P 550V" and "4P 1000V"
     labels. The breaking capacity row is ambiguous outside 2P 800 V / 4P 1200 V (2 kA assumed conservatively); confirm with
-    the manufacturer. The model-code example (S S7N 63/1-10 OF) differs from the "SL7N-63" marking. The instantaneous
+    the manufacturer. The 2 kA fallback is kept (owner accepted it 2026-10-07): it matters mainly for battery circuits, since PV string fault currents are far below it. The model-code example (S S7N 63/1-10 OF) differs from the "SL7N-63" marking. The instantaneous
     trip "10 x In" comes from a marking on the product images.

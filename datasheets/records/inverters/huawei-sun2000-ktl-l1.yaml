@@ -28,8 +28,6 @@ altitude_m: 4000                          # derating above 2,000 m
 ip_rating: IP65
 weight_kg: 12.0
 dimensions_mm: [365, 375, 156]
-certifications_safety: [EN/IEC 62109-1, EN/IEC 62109-2]
-certifications_grid: [G98, G99, EN 50549-1, CEI 0-21, VDE-AR-N 4105, AS 4777.2, C10/11, ABNT, UTE C15-712, RD1699, TOR D4, IEC 61727, IEC 62116]
 variants:
   - {component_id: HUAWEI-SUN2000-2KTL-L1,    recommended_max_pv_power_wp: 3000, rated_ac_power_w: 2000, max_apparent_power_va: 2200, max_ac_output_current_a: 10.0, max_battery_discharge_w: 2200, max_efficiency_pct: 98.2, euro_efficiency_pct: 96.7}
   - {component_id: HUAWEI-SUN2000-3KTL-L1,    recommended_max_pv_power_wp: 4500, rated_ac_power_w: 3000, max_apparent_power_va: 3300, max_ac_output_current_a: 15.0, max_battery_discharge_w: 3300, max_efficiency_pct: 98.3, euro_efficiency_pct: 97.3}
@@ -52,4 +50,3 @@ source:
   notes: >-
     Per-model values mapped by column order (2, 3, 3.68, 4, 4.6, 5, 6 kW). Footnote 1 (10,000 Wp with optimizers on long
     strings) is attached to the 6KTL-L1 column header; whether it also applies to other models must be confirmed by the owner.
-    No UL 1741 / IEEE 1547 listed: Mexican GD interconnection may need the Mexico-market certification evidence.

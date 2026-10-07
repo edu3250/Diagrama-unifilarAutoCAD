@@ -1,4 +1,4 @@
-"""NOCT values, per-model inverter voltages, certifications and configurable DC breakers."""
+"""NOCT values, per-model inverter voltages, AC reference voltage and configurable DC breakers."""
 
 from __future__ import annotations
 
@@ -41,6 +41,7 @@ def test_monofacial_module_keeps_noct_values(registry: ComponentRegistry) -> Non
     assert module.noct is not None
     assert (module.noct.pmax_w, module.noct.vmp_v, module.noct.isc_a) == (410, 38.25, 11.35)
     assert module.power_tolerance_w == (0, 5)
+    assert module.power_tolerance_pct is None
 
 
 def test_noct_point_is_checked_like_the_stc_point(tmp_path: Path) -> None:
@@ -69,7 +70,7 @@ def test_bnpi_is_rejected_on_a_monofacial_module(tmp_path: Path) -> None:
     _fails(tmp_path, ET_MODULE, data, "bnpi is only valid for a bifacial module")
 
 
-# --- Growatt inverter: per-model voltage limits and certifications ------------------------------
+# --- Growatt inverter: per-model voltage limits and AC reference voltage ---------------------
 
 
 def test_inverter_voltage_limits_resolve_per_variant(registry: ComponentRegistry) -> None:
@@ -113,34 +114,34 @@ def test_family_level_voltage_applies_to_every_variant(tmp_path: Path) -> None:
     _fails(tmp_path, INVERTER, data, "defined on the family and on the variant")
 
 
-def test_mexican_interconnection_certifications(registry: ComponentRegistry) -> None:
+def test_ac_current_is_checked_at_the_reference_voltage(registry: ComponentRegistry) -> None:
     growatt = registry.get("GROWATT-MIN-5000TL-X2")
-    huawei = registry.get("HUAWEI-SUN2000-5KTL-L1")
     assert isinstance(growatt, Inverter)
+    assert growatt.rated_ac_voltage_v == [230]
+    assert growatt.max_ac_current_reference_voltage_v == 220
+    huawei = registry.get("HUAWEI-SUN2000-5KTL-L1")
     assert isinstance(huawei, Inverter)
-    assert growatt.has_certification("UL 1741")
-    assert growatt.has_certification("IEEE 1547")
-    assert not huawei.has_certification("UL 1741")
-    assert not huawei.has_certification("IEEE 1547")
-    assert huawei.has_certification("EN/IEC 62109-1")  # safety list
-    assert huawei.has_certification("iec  62116")  # grid list; case and spacing ignored
+    assert huawei.max_ac_current_reference_voltage_v is None
 
 
-@pytest.mark.parametrize(
-    ("query", "expected"),
-    [
-        ("EN 50549", True),  # entry is "EN 50549-1"
-        ("IEC 617", False),  # not a prefix at a separator of "IEC 61727"
-        ("VD", False),
-        ("", False),
-    ],
-)
-def test_certification_matching_rules(
-    registry: ComponentRegistry, query: str, expected: bool
+def test_without_the_reference_voltage_the_growatt_currents_do_not_fit_230_v(
+    tmp_path: Path,
 ) -> None:
-    inverter = registry.get("GROWATT-MIN-5000TL-X2")
-    assert isinstance(inverter, Inverter)
-    assert inverter.has_certification(query) is expected
+    data = raw(GROWATT)
+    del data["max_ac_current_reference_voltage_v"]
+    _fails(tmp_path, GROWATT, data, r"variant GROWATT-MIN-\d+TL-X2: max_ac_output_current_a")
+
+
+def test_a_wrong_reference_voltage_is_reported_with_its_value(tmp_path: Path) -> None:
+    data = raw(GROWATT)
+    data["max_ac_current_reference_voltage_v"] = 120
+    _fails(tmp_path, GROWATT, data, r"at max_ac_current_reference_voltage_v \(120\) within 3%")
+
+
+def test_inverters_have_no_certification_fields(tmp_path: Path) -> None:
+    data = raw(INVERTER)
+    data["certifications_grid"] = ["G99"]
+    _fails(tmp_path, INVERTER, data, "certifications_grid: Extra inputs are not permitted")
 
 
 # --- Suntree DC breaker: configurable poles and voltage -----------------------------------------

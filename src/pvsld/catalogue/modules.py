@@ -114,8 +114,12 @@ class ModuleSpec(Strict):
     max_series_fuse_a: PositiveFloat = Field(description="Bounds the string overcurrent device")
     operating_temp_c: Range
     noct_c: PositiveFloat | None = Field(default=None, description="Nominal operating cell temp")
-    power_tolerance_w_pct: Range | None = None
-    power_tolerance_w: Range | None = None
+    power_tolerance_pct: Range | None = Field(
+        default=None, description="Positive power tolerance as (min, max) percent of Pmax"
+    )
+    power_tolerance_w: Range | None = Field(
+        default=None, description="Positive power tolerance as (min, max) watts"
+    )
     temp_coef_pmax_pct_per_c: float
     temp_coef_voc_pct_per_c: float
     temp_coef_isc_pct_per_c: float
@@ -123,7 +127,7 @@ class ModuleSpec(Strict):
     cable_mm2: PositiveFloat | None = None
     certifications: list[str]
 
-    @field_validator("operating_temp_c", "power_tolerance_w_pct", "power_tolerance_w")
+    @field_validator("operating_temp_c", "power_tolerance_pct", "power_tolerance_w")
     @classmethod
     def _ordered(cls, value: Range | None, info: ValidationInfo) -> Range | None:
         if value is not None:

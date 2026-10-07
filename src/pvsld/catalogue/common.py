@@ -7,7 +7,6 @@ where needed (for example temperature coefficients stay in %/degC).
 
 from __future__ import annotations
 
-from collections.abc import Iterable
 from datetime import date
 from typing import Annotated, Literal
 
@@ -89,22 +88,3 @@ def duplicates(values: list[str]) -> list[str]:
             repeated[value] = None
         seen.add(value)
     return list(repeated)
-
-
-def _normalise(text: str) -> str:
-    return " ".join(text.casefold().split())
-
-
-def has_certification(name: str, certifications: Iterable[str]) -> bool:
-    """True when ``name`` matches one of ``certifications`` (case and spacing ignored).
-
-    The match is the whole entry or a prefix that ends at a separator, so ``"UL 1741"`` matches
-    ``"UL 1741-SB"`` and ``"UL 1741 SA"`` but ``"IEC 617"`` does not match ``"IEC 61727"``.
-    """
-    wanted = _normalise(name)
-    if not wanted:
-        return False
-    for entry in map(_normalise, certifications):
-        if entry == wanted or (entry.startswith(wanted) and not entry[len(wanted)].isalnum()):
-            return True
-    return False

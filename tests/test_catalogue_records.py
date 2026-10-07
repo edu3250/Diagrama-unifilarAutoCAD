@@ -48,6 +48,7 @@ def test_expanded_module_merges_family_and_variant_values(registry: ComponentReg
     assert module.bnpi.isc_a == 18.03
     assert module.area_m2 == pytest.approx(2.382 * 1.134)
     assert module.source.extraction_method == "rendered_page"
+    assert module.power_tolerance_pct == (0, 3)
 
 
 def test_every_power_level_is_its_own_module(registry: ComponentRegistry) -> None:
@@ -116,7 +117,6 @@ def test_records_keep_their_provenance_and_notes() -> None:
     huawei = read_record(RECORDS / INVERTER)
     assert "column order" in (huawei.source.notes or "")
     assert "Footnote 1" in (huawei.source.notes or "")
-    assert "UL 1741" in (huawei.source.notes or "")
     for relative in ALL_RECORDS:
         source = read_record(RECORDS / relative).source
         assert len(source.sha256) == 64

@@ -1,7 +1,7 @@
 """Inverter records: one family (values common to the models) with one variant per model.
 
 Datasheets of an inverter series print one column per model. The columns that do not change (MPPT
-count and currents, grid, certifications) live once on the family; every model keeps its own power
+count and currents, grid) live once on the family; every model keeps its own power
 ratings and gets its own ``component_id``. The input voltage limits (``max_input_voltage_v`` and
 ``mppt_voltage_range_v``) differ by model on some series (Growatt MIN: 500 V on the 2500 and 3000,
 550 V on the rest), so a record defines each of them at exactly one level, family or variant; the
@@ -31,13 +31,12 @@ from pvsld.catalogue.common import (
     Strict,
     check_range,
     duplicates,
-    has_certification,
     raise_problems,
 )
 
-# S = V x I (x sqrt 3) must hold within this tolerance at one of the rated AC voltages. Growatt
-# prints its maximum current for 220 V while listing 230 V as nominal, hence 5 % and not less.
-AC_CURRENT_TOLERANCE = 0.05
+# S = V x I (x sqrt 3) must hold within this tolerance, at the reference voltage of the maximum
+# current when the datasheet states one, otherwise at one of the rated AC voltages.
+AC_CURRENT_TOLERANCE = 0.03
 Grid = Literal["single_phase", "split_phase", "three_phase"]
 
 
@@ -186,6 +185,11 @@ class InverterSpec(Strict):
     mppt_efficiency_pct: Percent | None = None
     grid: Grid
     rated_ac_voltage_v: list[PositiveFloat] = Field(min_length=1)
+    max_ac_current_reference_voltage_v: PositiveFloat | None = Field(
+        default=None,
+        description="AC voltage at which max_ac_output_current_a is specified, when it is not "
+        "one of the rated voltages (Growatt: 220 V)",
+    )
     frequency_hz: list[PositiveFloat] = Field(min_length=1)
     power_factor_range: PowerFactorRange
     thd_max_pct: PositiveFloat | None = None
@@ -199,8 +203,6 @@ class InverterSpec(Strict):
     ip_rating: str | None = None
     weight_kg: PositiveFloat | None = None
     dimensions_mm: tuple[PositiveFloat, PositiveFloat, PositiveFloat] | None = None
-    certifications_safety: list[str]
-    certifications_grid: list[str]
 
     @model_validator(mode="after")
     def _plausible_currents(self) -> InverterSpec:
@@ -211,15 +213,6 @@ class InverterSpec(Strict):
                 f"({self.max_short_circuit_current_per_mppt_a:g})"
             )
         return self
-
-    def has_certification(self, name: str) -> bool:
-        """True when a safety or grid certification matches ``name`` (``"UL 1741"``).
-
-        Case and spacing are ignored and a suffix after a separator is tolerated: ``"UL 1741"``
-        matches ``"UL 1741-SB"`` but ``"IEC 617"`` does not match ``"IEC 61727"``. The Mexican
-        interconnection rules use it to ask for UL 1741 / IEEE 1547 evidence.
-        """
-        return has_certification(name, [*self.certifications_safety, *self.certifications_grid])
 
 
 def _voltage_problems(
@@ -284,6 +277,29 @@ class InverterFamily(InverterSpec):
             return None
         return at_variant if at_variant is not None else at_family
 
+    def _ac_current_problem(self, variant: InverterVariant) -> str | None:
+        """S = V x I (x sqrt 3) at the reference voltage, or at some rated voltage if none."""
+        reference = self.max_ac_current_reference_voltage_v
+        voltages = [reference] if reference is not None else self.rated_ac_voltage_v
+        phases = math.sqrt(3) if self.grid == "three_phase" else 1.0
+        apparent = variant.max_apparent_power_va
+        best = min(
+            abs(volts * variant.max_ac_output_current_a * phases - apparent) / apparent
+            for volts in voltages
+        )
+        if best <= AC_CURRENT_TOLERANCE:
+            return None
+        where = (
+            f"max_ac_current_reference_voltage_v ({reference:g})"
+            if reference is not None
+            else f"any rated_ac_voltage_v {self.rated_ac_voltage_v}"
+        )
+        return (
+            f"variant {variant.component_id}: max_ac_output_current_a "
+            f"({variant.max_ac_output_current_a:g}) does not match max_apparent_power_va "
+            f"({apparent:g}) at {where} within {AC_CURRENT_TOLERANCE:.0%}"
+        )
+
     @model_validator(mode="after")
     def _plausible_variants(self) -> InverterFamily:
         problems = [
@@ -294,26 +310,14 @@ class InverterFamily(InverterSpec):
             problems.append("a hybrid_inverter needs a battery port (battery is missing)")
         if self.component_type == "string_inverter" and self.battery is not None:
             problems.append("a string_inverter cannot have a battery port; use hybrid_inverter")
-        phases = math.sqrt(3) if self.grid == "three_phase" else 1.0
         for variant in self.variants:
             who = f"variant {variant.component_id}"
             limits = self._resolve(variant, problems)
             if limits is not None:
                 problems += _voltage_problems(who, self, *limits)
-            best = min(
-                abs(
-                    volts * variant.max_ac_output_current_a * phases - variant.max_apparent_power_va
-                )
-                / variant.max_apparent_power_va
-                for volts in self.rated_ac_voltage_v
-            )
-            if best > AC_CURRENT_TOLERANCE:
-                problems.append(
-                    f"{who}: max_ac_output_current_a ({variant.max_ac_output_current_a:g}) does "
-                    f"not match max_apparent_power_va ({variant.max_apparent_power_va:g}) at any "
-                    f"rated_ac_voltage_v {self.rated_ac_voltage_v} within "
-                    f"{AC_CURRENT_TOLERANCE:.0%}"
-                )
+            problem = self._ac_current_problem(variant)
+            if problem:
+                problems.append(problem)
             if self.battery is None and variant.max_battery_discharge_w is not None:
                 problems.append(f"{who}: max_battery_discharge_w is set but there is no battery")
         raise_problems(problems)

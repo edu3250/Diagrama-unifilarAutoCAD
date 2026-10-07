@@ -14,7 +14,7 @@ frame: anodized aluminium alloy
 max_system_voltage_v: 1500                       # IEC
 max_series_fuse_a: 35
 operating_temp_c: [-40, 70]
-power_tolerance_w_pct: [0, 3]
+power_tolerance_pct: [0, 3]                 # 0 ~ +3 % (owner confirmed 2026-10-07)
 temp_coef_pmax_pct_per_c: -0.29
 temp_coef_voc_pct_per_c: -0.25
 temp_coef_isc_pct_per_c: 0.045
