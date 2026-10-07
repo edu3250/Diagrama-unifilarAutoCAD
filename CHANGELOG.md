@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Phase 3, Stage 3.3: rule STR-007 (`pvsld.core.rules`): array STC power per inverter against the inverter PV power limit (`pdc_max_w`, error) and a DC/AC ratio policy (`pvsld.core.policy`: warning above 1.35, error above 1.50, information below 1.0; project policy, owner decision pending). `validate_pv_design(..., dc_ac_policy=...)` and `pvsld validate --dc-ac-warn/--dc-ac-error` configure it. The Phase 2 owner test (2 x 11 x 550 W = 12.1 kWp on a 9 kW inverter) is now rejected
+- Phase 3, Stage 3.4 (v1): `pvsld.sizing`, the deterministic sizing engine. It enumerates string configurations per catalogue inverter, rejects each one that breaks VOLT-001/002/003, STR-001/002/004/007 (rule and numbers in Spanish), warns on STR-003/STR-005 (clipping estimate), ranks by deliverable power against the target, sizes the string breaker (catalogue, only where NOM 690-9(a) needs it or on request), the inverter-output breaker and the copper conductors with voltage drop, builds a full parameter specification and runs the rule pack on it before returning it. Bifacial modules use the BNPI short-circuit current. `pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC] [--json]` and `examples/sizing_jinko_growatt.yaml`
+- Tests: fixture catalogue `tests/fixtures/sizing/` (copies of the owner's datasheet records and the sample 550 W / 6 kW pair) and scenario tests for the Jinko 650 W, ET Solar 550 W, Huawei SUN2000 L1, Growatt MIN TL-X2, Schneider and Suntree components
+
+### Changed
+- `pvsld.core.rules`: the `Severity` enum lives in `pvsld.core.severity` (still importable from `pvsld.core.rules`); `calc.max_ocpd_for_ampacity_a` is shared by CON-003 and the conductor sizing
+- A specification of 12 modules per string now also reports STR-007 (13.2 kWp > 9 kW); the sample (2 x 7) and the golden DXF are unchanged
+- `IMPLEMENTATION_PLAN.md`: Stage 3.3 and Stage 3.4 In Progress
+
 ## [0.2.0-spike] - 2026-10-06
 
 Phase 2 (MCP Server Prototype & Connectivity Spike) complete; ADR-0001 confirmed.
