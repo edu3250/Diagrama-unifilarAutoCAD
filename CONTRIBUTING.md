@@ -179,6 +179,17 @@ pytest --run-autocad -m autocad
 
 On a platform other than Windows the flag has no effect: the tests stay skipped. New tests that touch AutoCAD must carry the `autocad` marker.
 
+## Adding a component
+
+Equipment facts (PV modules, inverters, DC breakers) live in `datasheets/records/<type>/<family-id>.yaml`, one file per datasheet family, with one variant (and one `component_id`) per power level or model. The schema and the reasons are in [ADR-0004](docs/decisions/ADR-0004-component-catalogue.md). Manufacturer PDFs are copyrighted: only the extracted facts are committed.
+
+1. **Inbox** — put the PDF in `datasheets/inbox/` (git-ignored, any file name). Never commit it, and never paste datasheet text or images into an issue or PR.
+2. **Convert** — run `markitdown` on the PDF and keep the result in `datasheets/cache/` (git-ignored). When it returns no text (fonts exported as outlines), render the pages to PNG with `pypdfium2` (a markitdown dependency) and read the images instead; record `extraction_method: rendered_page`.
+3. **Draft** — write a draft record in `datasheets/cache/drafts/<type>/`, copying the layout of an existing record: shared values once on the family, one variant per model, names carrying the unit (`_v`, `_a`, `_w`, `_pct`), and the `source` block (file name, SHA-256 of the PDF, title and revision as printed, pages, extraction method and date). Leave `reviewed_by` and `review_date` as `null` and write anything doubtful in `source.notes` (ambiguous footnotes, column mapping, missing certifications).
+4. **Validate** — `pvsld catalogue validate datasheets/cache/drafts/<type>/<file>.yaml` checks the schema and the plausibility rules (Vmp < Voc, P = V x I within 2 %, coefficient signs, inverter limits, ...) and names the file, field and value of every problem. A passing check does not prove that a number was read correctly.
+5. **Owner review** — the owner compares every value with the datasheet and fills `reviewed_by` and `review_date`. Only reviewed records are loaded by default (`pvsld catalogue list --include-unreviewed` shows the rest).
+6. **Commit** — move the file to `datasheets/records/<type>/<family-id in lowercase>.yaml`, run `pvsld catalogue validate`, and commit it as `feat(catalogue): add <family> (datasheet rev <rev>, reviewed by <owner>)`.
+
 ## Testing Before Commit
 
 Run these locally before pushing:

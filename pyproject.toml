@@ -36,7 +36,8 @@ dependencies = [
 dev = [
     "pytest>=8",
     "pytest-cov>=5",
-    "ruff>=0.6",
+    # 0.16 started formatting Python blocks in Markdown; an open-ended spec broke CI, so cap the minor.
+    "ruff>=0.16,<0.17",
 ]
 # Only needed for the S2 COM spike and tests marked "autocad"; AutoCAD itself is Windows-only.
 autocad = [

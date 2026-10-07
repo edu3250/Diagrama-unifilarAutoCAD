@@ -1,0 +1,48 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per model.
+# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
+component_type: string_inverter
+family_id: GROWATT-MIN-TL-X2
+manufacturer: Growatt
+model_family: MIN 2500-6000TL-X2
+startup_voltage_v: 50
+rated_input_voltage_v: 360
+mppt_count: 2
+inputs_per_mppt: 1
+max_input_current_per_mppt_a: 16
+max_short_circuit_current_per_mppt_a: 24
+mppt_efficiency_pct: 99.9
+grid: single_phase
+rated_ac_voltage_v: [230]                 # range 160-300 V, depends on the country grid code
+max_ac_current_reference_voltage_v: 220   # max_ac_output_current_a is specified at 220 V (owner confirmed 2026-10-07)
+frequency_hz: [50, 60]                     # 45-55 / 54-65 Hz
+power_factor_range: [-0.8, 0.8]
+thd_max_pct: 3
+protection: {dc_reverse_polarity: true, dc_switch: true, dc_spd: "class II", ac_spd: "class III", insulation_monitoring: true, ac_short_circuit: true, grid_monitoring: true, anti_islanding: true, residual_current_monitoring: true, afci: true}
+topology: transformerless
+operating_temp_c: [-30, 60]
+altitude_m: 4000
+ip_rating: IP66
+weight_kg: 10.8
+dimensions_mm: [375, 350, 158]
+night_power_w: 1
+dc_connector: H4/MC4
+variants:   # max_input_voltage_v and mppt_voltage_range_v differ by model -> stored per variant
+  - {component_id: GROWATT-MIN-2500TL-X2, recommended_max_pv_power_wp: 3750, max_input_voltage_v: 500, mppt_voltage_range_v: [40, 500], rated_ac_power_w: 2500, max_apparent_power_va: 2500, max_ac_output_current_a: 11.3, max_efficiency_pct: 98.2, euro_efficiency_pct: 97.1}
+  - {component_id: GROWATT-MIN-3000TL-X2, recommended_max_pv_power_wp: 4500, max_input_voltage_v: 500, mppt_voltage_range_v: [40, 500], rated_ac_power_w: 3000, max_apparent_power_va: 3000, max_ac_output_current_a: 13.6, max_efficiency_pct: 98.2, euro_efficiency_pct: 97.1}
+  - {component_id: GROWATT-MIN-3600TL-X2, recommended_max_pv_power_wp: 5250, max_input_voltage_v: 550, mppt_voltage_range_v: [40, 550], rated_ac_power_w: 3600, max_apparent_power_va: 3600, max_ac_output_current_a: 16.0, max_efficiency_pct: 98.2, euro_efficiency_pct: 97.2}
+  - {component_id: GROWATT-MIN-4200TL-X2, recommended_max_pv_power_wp: 6300, max_input_voltage_v: 550, mppt_voltage_range_v: [40, 550], rated_ac_power_w: 4200, max_apparent_power_va: 4200, max_ac_output_current_a: 19.0, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.5}
+  - {component_id: GROWATT-MIN-4600TL-X2, recommended_max_pv_power_wp: 6900, max_input_voltage_v: 550, mppt_voltage_range_v: [40, 550], rated_ac_power_w: 4600, max_apparent_power_va: 4600, max_ac_output_current_a: 20.9, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.5}
+  - {component_id: GROWATT-MIN-5000TL-X2, recommended_max_pv_power_wp: 7500, max_input_voltage_v: 550, mppt_voltage_range_v: [40, 550], rated_ac_power_w: 5000, max_apparent_power_va: 5000, max_ac_output_current_a: 22.7, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.5}
+  - {component_id: GROWATT-MIN-6000TL-X2, recommended_max_pv_power_wp: 9000, max_input_voltage_v: 550, mppt_voltage_range_v: [40, 550], rated_ac_power_w: 6000, max_apparent_power_va: 6000, max_ac_output_current_a: 27.2, max_efficiency_pct: 98.4, euro_efficiency_pct: 97.5}
+source:
+  filename: MIN_2500-6000TL-X2_Hoja_de_datos_MX.pdf
+  sha256: 87b90d5b43613d29aa151fbe9ede28fbdefdaa22acd073cdfee33b2684ab3d97
+  title: MIN 2500-6000TL-X2 Hoja de datos (Mexico market, Spanish)
+  pages: [2]
+  extraction_method: rendered_page
+  extraction_date: 2026-10-07
+  reviewed_by: null
+  review_date: null
+  notes: >-
+    No text layer; page 2 rendered with pypdfium2 and read visually. The 3000TL-X2 rated power cell is printed with overlapping
+    digits; read as 3000 W, consistent with its 3000 VA apparent power.

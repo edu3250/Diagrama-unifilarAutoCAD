@@ -1,0 +1,40 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per power level.
+# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
+component_type: pv_module
+family_id: JINKO-JKM-66HL4M-BDV
+manufacturer: Jinko Solar
+model_family: JKM625-650N-66HL4M-BDV
+cell_type: N-type mono-crystalline
+cells: 132
+bifacial: true
+bifaciality_pct: {voc: 98, isc: 80, pmax: 80}   # ±5 % each
+dimensions_mm: [2382, 1134, 30]
+weight_kg: 32.4
+frame: anodized aluminium alloy
+max_system_voltage_v: 1500                       # IEC
+max_series_fuse_a: 35
+operating_temp_c: [-40, 70]
+power_tolerance_pct: [0, 3]                 # 0 ~ +3 % (owner confirmed 2026-10-07)
+temp_coef_pmax_pct_per_c: -0.29
+temp_coef_voc_pct_per_c: -0.25
+temp_coef_isc_pct_per_c: 0.045
+connector: JK03M / JK03M2 (MC4, MC4-EVO2 on request)
+cable_mm2: 4.0
+certifications: []                               # not stated on the page read
+variants:   # STC (1000 W/m², 25 °C, AM1.5); bnpi = front 1000 W/m² + rear 135 W/m²
+  - {component_id: JINKO-JKM625N-66HL4M-BDV, pmax_w: 625, vmp_v: 40.88, imp_a: 15.29, voc_v: 49.28, isc_a: 16.14, efficiency_pct: 23.14, bnpi: {pmax_w: 690, vmp_v: 40.88, imp_a: 16.88, voc_v: 49.26, isc_a: 17.83}}
+  - {component_id: JINKO-JKM630N-66HL4M-BDV, pmax_w: 630, vmp_v: 41.02, imp_a: 15.36, voc_v: 49.48, isc_a: 16.20, efficiency_pct: 23.32, bnpi: {pmax_w: 696, vmp_v: 41.04, imp_a: 16.95, voc_v: 49.46, isc_a: 17.90}}
+  - {component_id: JINKO-JKM635N-66HL4M-BDV, pmax_w: 635, vmp_v: 41.16, imp_a: 15.43, voc_v: 49.68, isc_a: 16.26, efficiency_pct: 23.51, bnpi: {pmax_w: 701, vmp_v: 41.17, imp_a: 17.03, voc_v: 49.66, isc_a: 17.96}}
+  - {component_id: JINKO-JKM640N-66HL4M-BDV, pmax_w: 640, vmp_v: 41.30, imp_a: 15.50, voc_v: 49.88, isc_a: 16.32, efficiency_pct: 23.69, bnpi: {pmax_w: 707, vmp_v: 41.33, imp_a: 17.10, voc_v: 49.86, isc_a: 18.03}}
+  - {component_id: JINKO-JKM645N-66HL4M-BDV, pmax_w: 645, vmp_v: 41.44, imp_a: 15.57, voc_v: 50.08, isc_a: 16.38, efficiency_pct: 23.88, bnpi: {pmax_w: 712, vmp_v: 41.46, imp_a: 17.17, voc_v: 50.06, isc_a: 18.09}}
+  - {component_id: JINKO-JKM650N-66HL4M-BDV, pmax_w: 650, vmp_v: 41.58, imp_a: 15.64, voc_v: 50.28, isc_a: 16.44, efficiency_pct: 24.06, bnpi: {pmax_w: 718, vmp_v: 41.61, imp_a: 17.24, voc_v: 50.26, isc_a: 18.16}}
+source:
+  filename: JKM625-650N-66HL4M-BDV-Z1-EU.pdf
+  sha256: f77886ca92bded751ea135cd3a8f080df4ec9d8a3e5214155e1c80833b330ba5
+  title: JKM625-650N-66HL4M-BDV-Z1-EU (© 2024 Jinko Solar)
+  pages: [2]
+  extraction_method: rendered_page
+  extraction_date: 2026-10-07
+  reviewed_by: null
+  review_date: null
+  notes: No text layer (Adobe Illustrator, fonts outlined); page 2 rendered with pypdfium2 and read visually.
