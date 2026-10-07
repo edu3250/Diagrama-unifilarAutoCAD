@@ -251,13 +251,6 @@ def _str_007(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
 # --- CON-003 -----------------------------------------------------------------------------------
 
 
-def _max_ocpd_for_ampacity(ampacity_a: float, tables: NomTables) -> float:
-    """Largest OCPD that protects ``ampacity_a`` (NOM 240-4(b): next standard size up to 800 A)."""
-    if ampacity_a <= 800:
-        return calc.next_standard_ocpd_a(ampacity_a, tables)
-    return max(r for r in tables.standard_ocpd_a if r <= ampacity_a)
-
-
 def _con_003(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
     for values in ctx.derived.circuits:
         if values.ocpd_id is None or values.ocpd_rating_a is None:
@@ -273,7 +266,7 @@ def _con_003(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
                 f"a la temperatura de diseño ({_g(values.t_effective_c or 0)} °C).",
             )
             continue
-        limit = _max_ocpd_for_ampacity(ampacity, ctx.tables)
+        limit = calc.max_ocpd_for_ampacity_a(ampacity, ctx.tables)
         small_limit = ctx.tables.small_conductor_ocpd_limit_a.get(values.size)
         clause = "NOM 240-4(b)"
         if small_limit is not None and small_limit < limit:
