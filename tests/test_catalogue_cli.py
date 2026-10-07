@@ -19,6 +19,19 @@ def test_validate_accepts_the_committed_catalogue(capsys: pytest.CaptureFixture[
     assert "7 hybrid_inverter" in out
 
 
+@pytest.fixture
+def unreviewed(tmp_path: Path) -> Path:
+    """A copy of the catalogue with every review field cleared."""
+    return copy_records(tmp_path / "unreviewed", reviewed=False)
+
+
+def test_the_committed_catalogue_is_fully_reviewed(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["catalogue", "validate", str(RECORDS), "--require-reviewed"]) == 0
+    out = capsys.readouterr().out
+    assert "34 component(s)" in out
+    assert "0 unreviewed" in out
+
+
 def test_validate_defaults_to_datasheets_records_of_the_working_directory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -69,7 +82,7 @@ def test_list_hides_unreviewed_records_by_default(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     copy_records(tmp_path, reviewed=False)
-    write(tmp_path, MODULE, mark_reviewed(raw(MODULE)))
+    write(tmp_path, MODULE, mark_reviewed(raw(MODULE)))  # only the Jinko record is approved
 
     assert main(["catalogue", "list", "--records", str(tmp_path)]) == 0
 
@@ -80,8 +93,10 @@ def test_list_hides_unreviewed_records_by_default(
     assert "5 unreviewed record(s) skipped" in captured.err
 
 
-def test_list_filters_by_type_and_manufacturer(capsys: pytest.CaptureFixture[str]) -> None:
-    args = ["catalogue", "list", "--records", str(RECORDS), "--include-unreviewed"]
+def test_list_filters_by_type_and_manufacturer(
+    unreviewed: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = ["catalogue", "list", "--records", str(unreviewed), "--include-unreviewed"]
     assert main([*args, "--type", "dc_breaker", "--manufacturer", "suntree"]) == 0
     out = capsys.readouterr().out
     assert "9 component(s)" in out
@@ -114,14 +129,16 @@ def test_list_reports_a_broken_catalogue(
     assert "must be a YAML mapping" in capsys.readouterr().err
 
 
-def test_show_prints_the_expanded_component_as_yaml(capsys: pytest.CaptureFixture[str]) -> None:
+def test_show_prints_the_expanded_component_as_yaml(
+    unreviewed: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     code = main(
         [
             "catalogue",
             "show",
             "HUAWEI-SUN2000-6KTL-L1",
             "--records",
-            str(RECORDS),
+            str(unreviewed),
             "--include-unreviewed",
         ]
     )
@@ -150,10 +167,17 @@ def test_show_unknown_id_suggests_close_matches(capsys: pytest.CaptureFixture[st
     assert "HUAWEI-SUN2000-6KTL-L1" in err
 
 
+def test_show_prints_reviewed_status_and_reviewer(capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["catalogue", "show", "SCHNEIDER-A9N61652", "--records", str(RECORDS)]) == 0
+    out = capsys.readouterr().out
+    assert out.startswith("# SCHNEIDER-A9N61652 (dc_breaker, reviewed)")
+    assert "reviewed_by: edu3250" in out
+
+
 def test_show_does_not_see_unreviewed_records_by_default(
-    capsys: pytest.CaptureFixture[str],
+    unreviewed: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    assert main(["catalogue", "show", "SCHNEIDER-A9N61652", "--records", str(RECORDS)]) == 1
+    assert main(["catalogue", "show", "SCHNEIDER-A9N61652", "--records", str(unreviewed)]) == 1
     assert "unknown component_id" in capsys.readouterr().err
 
 

@@ -43,9 +43,16 @@ def mark_reviewed(data: dict[str, Any], owner: str = "Test Owner") -> dict[str, 
     return data
 
 
+def mark_unreviewed(data: dict[str, Any]) -> dict[str, Any]:
+    """Clear the review fields, whatever the committed state of the record is."""
+    data["source"]["reviewed_by"] = None
+    data["source"]["review_date"] = None
+    return data
+
+
 def copy_records(root: Path, *, reviewed: bool = False) -> Path:
-    """Copy the committed records into ``root`` keeping their folder layout."""
+    """Copy the committed records into ``root`` with every review field set or cleared."""
     for relative in ALL_RECORDS:
         data = raw(relative)
-        write(root, relative, mark_reviewed(data) if reviewed else data)
+        write(root, relative, mark_reviewed(data) if reviewed else mark_unreviewed(data))
     return root
