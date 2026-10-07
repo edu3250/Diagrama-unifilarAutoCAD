@@ -1,0 +1,32 @@
+# Request for `pvsld size`: Jinko JKM650N bifacial modules on a Growatt MIN 5000TL-X2 inverter at the
+# site and service of examples/residential_7p7kwp.yaml.
+#
+#   pvsld size examples/sizing_jinko_growatt.yaml --include-unreviewed -o out/sized.yaml
+#
+# Component ids come from `pvsld catalogue list`. The datasheet records are still awaiting the owner's
+# review, hence --include-unreviewed (never use it for a design that gets issued).
+# Expected: 2 strings x 5 modules (6.50 kWp, DC/AC 1.30); 2 x 6 would exceed the 7.5 kWp the
+# datasheet recommends for this inverter (STR-007) and 11 modules per string exceed 550 V (VOLT-001).
+module: JINKO-JKM650N-66HL4M-BDV
+inverters: [GROWATT-MIN-5000TL-X2]   # or "auto" to screen every inverter of the catalogue
+target_dc_power_w: 9000              # the best configuration within the limits is chosen
+# module_count_min: 10               # alternatively, bound the total number of modules
+# module_count_max: 16
+optimizers_on_all_modules: false     # true only if every module has an optimizer (raises the Pdc limit)
+dc_ocpd: auto                        # auto: a string breaker only where NOM 690-9(a) needs one; or always
+# dc_breakers: [SUNTREE-SL7N-63-32A] # restrict the catalogue breakers considered (default: all)
+cell_temp_rise_c: 35                 # cell temperature above the maximum ambient (rooftop array)
+dc_ac_policy:                        # project policy, not regulation (owner decision pending)
+  warn_above: 1.35
+  error_above: 1.50
+routing:                             # data no catalogue provides
+  dc_string_length_m: 25
+  ac_output_length_m: 30
+  rooftop_clearance_mm: 25
+  tilt_deg: 20
+  azimuth_deg: 180
+max_candidates: 10
+# Site (project.site: T_min, T_max), service (utility), grounding, title block, layout, panel and
+# point of connection come from this file; the engine replaces modules, inverters, strings,
+# circuits, dc_bos.disconnects and ac_bos.ocpds.
+template_file: residential_7p7kwp.yaml
