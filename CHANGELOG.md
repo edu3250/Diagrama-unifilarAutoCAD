@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0-spike] - 2026-10-06
+
+Phase 2 (MCP Server Prototype & Connectivity Spike) complete; ADR-0001 confirmed.
+
 ### Added
 - Phase 2, Stage 2.5: `docs/spikes/phase-2-review.md`, the spike review. It holds the per-stage results against the criteria, the ADR-0001 exit-gate evaluation (passed), the status of reversal triggers T1–T9 (none fired), the findings, the open items and the proposed (tentative) scope for Phases 3–5
 - Phase 2, Stage 2.4 (S4, PR #6): Core Console finisher `pvsld.finishers.core_console` and `pvsld finish`: DXF → DWG 2018 (TrustedDWG) plus an AutoCAD-plotted A3 PDF through `accoreconsole.exe /isolate`, in 4.2–10.8 s per sheet. A run is ok only on several independent signals (exit code, progress markers, AUDIT summary, output formats), so failures are never silent. It also adds a CI fake runner, live `autocad` tests and the `scripts/s4_measure.py` harness; report `docs/spikes/s4-core-console.md`
