@@ -21,7 +21,7 @@ licensed full AutoCAD); the exit code is 1 unless every output was produced and 
 file and prints the selection, the ranked alternatives and why every other configuration was
 rejected; the exit code is 1 when no configuration survives. ``-o`` writes the selected
 parameter specification, ready for ``validate`` and ``generate``. ``symbols`` builds, lists
-and validates the CFE symbol library (``symbols/pvsld-symbols-cfe.dxf``, see
+and validates the symbol library (``symbols/pvsld-symbols.dxf``, see
 :mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """

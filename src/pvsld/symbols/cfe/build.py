@@ -1,6 +1,6 @@
 """Build the symbol library DXF: one ``BLOCK`` per symbol and the ``Legend`` sheet (ADR-0005).
 
-The file is ``symbols/pvsld-symbols-cfe.dxf`` (DXF R2018). It holds every block of
+The file is ``symbols/pvsld-symbols.dxf`` (DXF R2018). It holds every block of
 :data:`pvsld.symbols.cfe.definitions.LIBRARY` (geometry, ``ATTDEF`` s, port XDATA) and a
 paper-space layout ``Legend`` (A3, landscape) with the table *Símbolo | Designación | Fuente*, one
 row per block with an ``INSERT`` scaled to fit its cell.
@@ -50,13 +50,13 @@ from pvsld.symbols.cfe.model import (
     SymbolSpec,
 )
 
-LIBRARY_FILE = Path("symbols") / "pvsld-symbols-cfe.dxf"
+LIBRARY_FILE = Path("symbols") / "pvsld-symbols.dxf"
 LEGEND_LAYOUT = "Legend"
-LEGEND_TITLE = "SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)"
+LEGEND_TITLE = "SIMBOLOGÍA — DIAGRAMAS UNIFILARES FOTOVOLTAICOS"
 LEGEND_COLUMNS = ("Símbolo", "Designación", "Fuente")
 LEGEND_NOTES = (
-    "Símbolos redibujados como geometría vectorial a partir de CFE G0100-04, Apéndices C y D "
-    "(informativos); la especificación no se incluye ni se copia.",
+    "Símbolos redibujados como geometría vectorial a partir de la norma indicada en la columna "
+    "Fuente; ninguna norma se incluye ni se copia.",
     "Cada símbolo es un bloque PVSLD_<FUNCIÓN> con los atributos TAG y DESC y, ocultos, COMP_ID, "
     "IEC_REF, NMX_REF y SOURCE_STANDARD; los puertos están en XDATA (aplicación PVSLD).",
     "Dimensiones en mm a escala 1:1 dentro del bloque; en esta hoja cada símbolo se reduce, si "
@@ -395,14 +395,14 @@ def build_document(specs: Iterable[SymbolSpec] = LIBRARY) -> Drawing:
     doc.header["$LIMMAX"] = (SHEET_WIDTH_MM, SHEET_HEIGHT_MM)
     doc.header["$EXTMIN"] = (MARGIN_MM, MARGIN_MM, 0.0)
     doc.header["$EXTMAX"] = (SHEET_WIDTH_MM - MARGIN_MM, SHEET_HEIGHT_MM - MARGIN_MM, 0.0)
-    doc.header["$PROJECTNAME"] = "pvsld-symbols-cfe"
+    doc.header["$PROJECTNAME"] = "pvsld-symbols"
     doc.ezdxf_metadata()["PVSLD_LIBRARY_VERSION"] = LIBRARY_VERSION
     _sort_class_registration(doc)
     return doc
 
 
 def render_library(specs: Iterable[SymbolSpec] = LIBRARY) -> bytes:
-    """The bytes of ``pvsld-symbols-cfe.dxf``: UTF-8, LF newlines, identical on every platform."""
+    """The bytes of ``pvsld-symbols.dxf``: UTF-8, LF newlines, identical on every platform."""
     with fixed_metadata(True):
         doc = build_document(specs)
         stream = io.StringIO()

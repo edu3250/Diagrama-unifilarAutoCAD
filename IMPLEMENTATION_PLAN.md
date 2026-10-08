@@ -556,7 +556,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Target Release:** `v0.4.0-symbols`
 
-**Key Decision:** The symbol library is a versioned DXF master file (`symbols/pvsld-symbols-cfe.dxf`) that is the single source of truth. The generator imports blocks from it instead of code-defined geometry. A legend sheet documents each symbol's CFE G0100-04 source. A regeneration script ensures the library is deterministic and CI-testable.
+**Key Decision:** The symbol library is a versioned DXF master file (`symbols/pvsld-symbols.dxf`) that is the single source of truth. The generator imports blocks from it instead of code-defined geometry. A legend sheet documents each symbol's CFE G0100-04 source. A regeneration script ensures the library is deterministic and CI-testable.
 
 ---
 
@@ -567,7 +567,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 **Success Criteria:**
 
 - ADR-0005 (proposed) documents:
-  - **Library as DXF master:** `symbols/pvsld-symbols-cfe.dxf` is the single source of truth; blocks are imported by the generator, not code-defined
+  - **Library as DXF master:** `symbols/pvsld-symbols.dxf` is the single source of truth; blocks are imported by the generator, not code-defined
   - **Block naming and attributes:** Comply with ADR-0003 (PVSLD_<FUNCTION>, standard attributes TAG/DESC/COMP_ID/IEC_REF/NMX_REF, function-specific attributes with units)
   - **Symbol sourcing:** Each block records its source in XDATA or hidden attributes:
     - **CFE G0100-04 Appendix C symbols (13 source symbols):** Módulo fotovoltaico, Varistor, Interruptor termomagnético, Inversor, Medidor de energía, Red eléctrica de distribución, Gabinete, Diodo de paso, Cargas de iluminación, Sensor de corriente, Interruptor manual, Transformador de aislamiento, Carga de contactos
@@ -598,7 +598,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Success Criteria:**
 
-- **Master DXF created:** `symbols/pvsld-symbols-cfe.dxf` (R2018 format, UTF-8)
+- **Master DXF created:** `symbols/pvsld-symbols.dxf` (R2018 format, UTF-8)
 - **Blocks implemented (≥17):**
   - **CFE G0100-04 Appendix C (13):** PVSLD_PV_STRING, PVSLD_VARISTOR, PVSLD_CB (inverter-side and string-side variants if needed), PVSLD_INV (box + diagonal, "=" upper-left, "~" lower-right per Appendix C figure), PVSLD_METER (box with ↔ over kWh), PVSLD_GRID (circle with ~), PVSLD_STRUCTURE (dash-dot rectangle), PVSLD_DIODE_BYPASS, PVSLD_LOAD_LIGHT, PVSLD_CT (current sensor), PVSLD_SW_MANUAL, PVSLD_TRAFO_ISO, PVSLD_LOAD_CONTACT
   - **Supplementary (≥4):** PVSLD_GND (earth/ground symbol, IEC 60617), PVSLD_SPD (surge protector / varistor variant, IEC 60617 or CFE if defined), PVSLD_DC_DISCONNECT (IEC 60617), PVSLD_FUSE (IEC 60617)
@@ -634,7 +634,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **As built (deviations from the plan above):**
 
-- The canonical definition is a Python module (`src/pvsld/symbols/cfe/definitions.py`), not YAML; the builder is `pvsld symbols build` (`scripts/build_symbol_library.py` wraps it). The library DXF is `symbols/pvsld-symbols-cfe.dxf`, version 0.4.0.
+- The canonical definition is a Python module (`src/pvsld/symbols/cfe/definitions.py`), not YAML; the builder is `pvsld symbols build` (`scripts/build_symbol_library.py` wraps it). The library DXF is `symbols/pvsld-symbols.dxf`, version 0.4.0.
 - 22 blocks in v0.4.0 and 56 in v0.5.0 (round 2: the 28 components of the symbol map plus the IEC thermomagnetic breaker and the RCD; three Legend layouts by family). v0.4.0 blocks: the 13 Appendix C symbols (names follow ADR-0003: `PVSLD_PV_MODULE`, `PVSLD_SPD`, `PVSLD_CB`, `PVSLD_INV`, `PVSLD_METER`, `PVSLD_GRID`, `PVSLD_ENCLOSURE`, `PVSLD_DIODE`, `PVSLD_LOAD_LIGHT`, `PVSLD_CT`, `PVSLD_SWITCH`, `PVSLD_XFMR_ISO`, `PVSLD_LOAD_RECEPT`), `PVSLD_GND`, `PVSLD_COND_MARK`, `PVSLD_POL_POS`, `PVSLD_POL_NEG`, `PVSLD_JUNCTION`, and the Phase 2 blocks `PVSLD_PV_STRING`, `PVSLD_PANEL`, `PVSLD_PI`, `PVSLD_TTLB`.
 - Source priority CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617 (through the DGE norm and the UNE-EN 60617 sheet); every block records the clause, figure or code. `PVSLD_DC_DISCONNECT` and `PVSLD_FUSE` were added in v0.5.0. The inverter attribute `CERT` is dropped.
 - ezdxf's `Importer` does not copy block-record XDATA (the ports); `pvsld.symbols.cfe.loader.import_blocks` does, and Stage 4.3 should use it instead of `blocks.import_blocks`.
@@ -651,7 +651,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 - **Generator code changes:**
   - `src/pvsld/backends/ezdxf_backend.py` refactored to:
-    - Load the library DXF (`symbols/pvsld-symbols-cfe.dxf`)
+    - Load the library DXF (`symbols/pvsld-symbols.dxf`)
     - Import block definitions via `dwg.blocks.import_blocks(library_dwg)` or equivalent
     - Insert blocks by reference, no code-defined geometry
   - Remove `src/pvsld/symbols/catalogue.py` or refactor to a library loader; remove old block definitions
@@ -708,12 +708,12 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 **Success Criteria:**
 
 - **Core Console finisher output:**
-  - `symbols/pvsld-symbols-cfe.dwg` (TrustedDWG 2018, produced via `pvsld finish` on owner's licensed workstation)
+  - `symbols/pvsld-symbols.dwg` (TrustedDWG 2018, produced via `pvsld finish` on owner's licensed workstation)
   - Audit result (automated headless check): 0 errors, 0 fixes
   - File metadata: "last saved by" field cleared (privacy per owner request)
 - **Library committed:**
-  - `symbols/pvsld-symbols-cfe.dxf` (source, R2018)
-  - `symbols/pvsld-symbols-cfe.dwg` (finalized, TrustedDWG 2018)
+  - `symbols/pvsld-symbols.dxf` (source, R2018)
+  - `symbols/pvsld-symbols.dwg` (finalized, TrustedDWG 2018)
   - Both files committed to the repository with README pointing to each
 - **CI validation:**
   - Script checks that the DWG exists and is TrustedDWG 2018 format
@@ -725,7 +725,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Tests:**
 
-- `test_library_dwg_exists`: file `symbols/pvsld-symbols-cfe.dwg` exists
+- `test_library_dwg_exists`: file `symbols/pvsld-symbols.dwg` exists
 - `test_library_dwg_is_trustedacad`: DWG header confirms TrustedDWG and AC1032 (2018)
 - `test_library_dwg_audit_clean`: if headless AUDIT available, (0, 0); otherwise manual check recorded
 - Manual (owner): Open DWG in AutoCAD, AUDIT, confirm 0/0; review metadata privacy

@@ -1,6 +1,6 @@
-# CFE symbol library
+# Symbol library
 
-`pvsld-symbols-cfe.dxf` (DXF R2018, UTF-8, LF) is the master file of the drawing symbols
+`pvsld-symbols.dxf` (DXF R2018, UTF-8, LF) is the master file of the drawing symbols
 ([ADR-0005](../docs/decisions/ADR-0005-cfe-symbol-library.md)). Every symbol is a named block
 `PVSLD_<FUNCTION>` with attributes and ports, plus three paper-space layouts `Legend`, `Legend2` and
 `Legend3` (A3) with the table *Símbolo | Designación | Fuente*, grouped by family (generation and
@@ -42,14 +42,14 @@ pvsld symbols dwg --check    # verify the committed DWG (no AutoCAD needed)
 ```powershell
 pvsld symbols build --png out/pvsld-symbols-legend.png   # writes legend-1.png, -2, -3
 pvsld symbols validate                                   # audit 0/0, attributes, ports, sources, Legend
-pvsld symbols build --check                              # exit 1 when symbols/pvsld-symbols-cfe.dxf is stale
+pvsld symbols build --check                              # exit 1 when symbols/pvsld-symbols.dxf is stale
 ```
 
 Bump `LIBRARY_VERSION` in `src/pvsld/symbols/cfe/model.py` with the rules of ADR-0005, section 7.
 
 ## Review in AutoCAD
 
-1. Open `pvsld-symbols-cfe.dxf`. It opens on the `Legend` layout (tabs `Legend2`, `Legend3` follow);
+1. Open `pvsld-symbols.dxf`. It opens on the `Legend` layout (tabs `Legend2`, `Legend3` follow);
    compare each row with its source named in the *Fuente* column.
 2. Run `AUDIT` (expect 0 errors) and `-INSERT` a few blocks into a new drawing: `TAG` and `DESC`
    prompt, the other attributes are hidden; `ATTDISP` set to `On` shows them.

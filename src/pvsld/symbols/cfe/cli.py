@@ -1,8 +1,8 @@
-"""``pvsld symbols``: build, list and validate the CFE symbol library (ADR-0005).
+"""``pvsld symbols``: build, list and validate the symbol library (ADR-0005).
 
 Usage::
 
-    pvsld symbols build [-o symbols/pvsld-symbols-cfe.dxf] [--png out/legend.png] [--check]
+    pvsld symbols build [-o symbols/pvsld-symbols.dxf] [--png out/legend.png] [--check]
     pvsld symbols list [--json]
     pvsld symbols validate [PATH] [--no-fresh-check]
     pvsld symbols dwg [--check]
@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-DEFAULT_FILE = Path("symbols") / "pvsld-symbols-cfe.dxf"
+DEFAULT_FILE = Path("symbols") / "pvsld-symbols.dxf"
 PNG_DPI = 110
 
 
@@ -94,7 +94,7 @@ def _validate(args: argparse.Namespace) -> int:
         for problem in problems:
             print(f"  {problem}", file=sys.stderr)
         return 1
-    print(f"OK: {args.path} is a valid CFE symbol library")
+    print(f"OK: {args.path} is a valid symbol library")
     return 0
 
 
@@ -122,8 +122,8 @@ def register(subcommands: Any) -> None:
     """Add the ``symbols`` command group to the ``pvsld`` parser."""
     symbols = subcommands.add_parser(
         "symbols",
-        help="build, list and validate the CFE symbol library (DXF blocks and legend)",
-        description="Work with the symbol library of ADR-0005 (symbols/pvsld-symbols-cfe.dxf).",
+        help="build, list and validate the symbol library (DXF blocks and legend)",
+        description="Work with the symbol library of ADR-0005 (symbols/pvsld-symbols.dxf).",
     )
     actions = symbols.add_subparsers(dest="symbols_command", required=True)
 

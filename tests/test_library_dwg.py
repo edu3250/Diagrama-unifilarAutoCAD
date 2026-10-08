@@ -28,7 +28,7 @@ from pvsld.symbols.cfe.dwg import (
 from pvsld.symbols.cfe.model import LIBRARY_VERSION
 from s1_helpers import ROOT
 
-DXF = ROOT / "symbols" / "pvsld-symbols-cfe.dxf"
+DXF = ROOT / "symbols" / "pvsld-symbols.dxf"
 DWG = ROOT / "symbols" / "pvsld-symbols.dwg"
 
 
@@ -143,6 +143,6 @@ def test_export_without_autocad_is_a_clear_error(
         export_dwg(tmp_path / "lib.dxf", tmp_path / "lib.dwg")
     monkeypatch.chdir(tmp_path)
     (tmp_path / "symbols").mkdir()
-    shutil.copyfile(DXF, tmp_path / "symbols" / "pvsld-symbols-cfe.dxf")
+    shutil.copyfile(DXF, tmp_path / "symbols" / "pvsld-symbols.dxf")
     assert main(["symbols", "dwg"]) == 1
     assert "accoreconsole" in capsys.readouterr().err

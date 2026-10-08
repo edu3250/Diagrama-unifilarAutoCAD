@@ -993,7 +993,7 @@ $DIMASSOC
   9
 $PROJECTNAME
   1
-pvsld-symbols-cfe
+pvsld-symbols
   9
 $CAMERADISPLAY
 290
@@ -39303,7 +39303,7 @@ AcDbText
  40
 6.0
   1
-SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)
+SIMBOLOGÍA — DIAGRAMAS UNIFILARES FOTOVOLTAICOS
   7
 PVSLD_STD
  11
@@ -45221,7 +45221,7 @@ AcDbText
  40
 2.5
   1
-Símbolos redibujados como geometría vectorial a partir de CFE G0100-04, Apéndices C y D (informativos); la especificación no se incluye ni se copia.
+Símbolos redibujados como geometría vectorial a partir de la norma indicada en la columna Fuente; ninguna norma se incluye ni se copia.
   7
 PVSLD_STD
  11
@@ -45501,7 +45501,7 @@ AcDbText
  40
 6.0
   1
-SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)
+SIMBOLOGÍA — DIAGRAMAS UNIFILARES FOTOVOLTAICOS
   7
 PVSLD_STD
  11
@@ -49503,7 +49503,7 @@ AcDbText
  40
 2.5
   1
-Símbolos redibujados como geometría vectorial a partir de CFE G0100-04, Apéndices C y D (informativos); la especificación no se incluye ni se copia.
+Símbolos redibujados como geometría vectorial a partir de la norma indicada en la columna Fuente; ninguna norma se incluye ni se copia.
   7
 PVSLD_STD
  11
@@ -49763,7 +49763,7 @@ AcDbText
  40
 6.0
   1
-SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)
+SIMBOLOGÍA — DIAGRAMAS UNIFILARES FOTOVOLTAICOS
   7
 PVSLD_STD
  11
@@ -56169,7 +56169,7 @@ AcDbText
  40
 2.5
   1
-Símbolos redibujados como geometría vectorial a partir de CFE G0100-04, Apéndices C y D (informativos); la especificación no se incluye ni se copia.
+Símbolos redibujados como geometría vectorial a partir de la norma indicada en la columna Fuente; ninguna norma se incluye ni se copia.
   7
 PVSLD_STD
  11
