@@ -620,4 +620,5 @@ def build_sheet_diagram(
         circles=(*template.circles, *circles),
         samples=tuple(samples),
         text_styles=template.text_styles,
+        sheet_in_model=True,  # everything editable in one place (owner request)
     )

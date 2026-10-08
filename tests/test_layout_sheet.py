@@ -330,8 +330,21 @@ def test_the_sheet_renders_reads_back_and_is_deterministic(diagram: Diagram) -> 
     assert render_dxf(diagram).data == first.data
     doc = first.document
     assert doc.styles.get("OpenSans").dxf.font == "arial.ttf"
-    samples = [e for e in doc.layouts.get("A3") if e.dxftype() == "INSERT" and e.dxf.xscale < 1]
+    samples = [e for e in doc.modelspace() if e.dxftype() == "INSERT" and e.dxf.xscale < 1]
     assert len(samples) == len(diagram.samples)
+
+
+def test_everything_is_editable_in_model_space_and_the_file_opens_there(diagram: Diagram) -> None:
+    doc = render_dxf(diagram).document
+    assert doc.header["$TILEMODE"] == 1  # AutoCAD opens the Model tab, where the whole sheet is
+    sheet = doc.layouts.get("A3")
+    assert {e.dxftype() for e in sheet} == {"VIEWPORT"}  # the layout only plots the model
+    texts = {e.dxf.text for e in doc.modelspace().query("TEXT")}
+    assert COMPANY in texts  # the template furniture
+    assert "LATITUD:" in texts  # a fixed text of the (synthetic) template
+    assert {e.dxf.name for e in doc.modelspace().query("INSERT")} >= {"PVSLD_INV", "PVSLD_CB"}
+    unlocked = [layer.dxf.name for layer in doc.layers if not layer.is_locked()]
+    assert len(unlocked) == len(list(doc.layers))
 
 
 def test_the_service_lays_out_with_the_sheet_template_it_names(

@@ -574,3 +574,9 @@ def test_build_and_write_take_less_than_one_second(tmp_path: Path) -> None:
         write_dxf(build_diagram(report.spec, report.derived), tmp_path / f"sld{run}.dxf")
         timings.append(time.perf_counter() - started)
     assert min(timings) <= 1.0, f"build + write took {min(timings):.2f} s"
+
+
+def test_the_drawing_opens_on_the_sheet_not_on_the_model_tab(diagram: Diagram) -> None:
+    doc = render_dxf(diagram).document
+    assert doc.header["$TILEMODE"] == 0  # 1 would open the Model tab, without the sheet
+    assert doc.layouts.active_layout().name == LAYOUT_NAME

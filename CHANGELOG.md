@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Drawings on the owner's sheet template are editable in one place (owner request): the frame, template boxes, fixed texts, fields, symbology, schematic and protection schedule are all in model space at 1:1, and the file opens on the Model tab. The `A3` layout keeps only the 1:1 viewport, for plotting (`Diagram.sheet_in_model`). Every text, line and block can be edited directly; blocks keep their attributes
+- Drawings and the symbol library open on their sheet (`A3`, `Legend`) in AutoCAD: `$TILEMODE` is 0. With ezdxf's default 1 they opened on the Model tab, where the sheet template, frame and title block (paper space) are not visible. The golden DXF, the library DXF and its DWG were regenerated
+
 ### Added
 - Phase 3, Stage 3.5: MCP tools `list_components` and `get_component` (reviewed catalogue, with datasheet provenance) and `size_pv_system` (the sizing engine: the selected design as a complete spec, ranked alternatives and rejections grouped by rule; about 3k tokens per result); resource `pvsld://examples/sizing-template`; `$PVSLD_CATALOGUE_DIR` (default `datasheets/records`). The server instructions now start from the catalogue
 
