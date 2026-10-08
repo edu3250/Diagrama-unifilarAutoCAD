@@ -12,6 +12,14 @@ The input is a set of solar installation parameters: capacity, inverters, string
 
 ## Current Status
 
+**Phase 4: Symbol library:** Complete, released as `v0.4.0-symbols` (2026-10-08).
+- 57 symbol blocks with ports and per-symbol sources, in `symbols/pvsld-symbols.dxf` and `.dwg`.
+- The generator draws with them, on the owner's A3 sheet template (`a3_plantilla_v1`).
+
+**Phase 3: Parametric sizing engine:** In progress.
+- Done: the component catalogue (reviewed datasheet records), the sizing engine v1 (`pvsld size`) and, in Stage 3.5, the MCP tools that let Claude size and draw a system in one conversation.
+- Next: completing the balance of system (Stage 3.4b) and the Claude Code plugin (Stage 3.6).
+
 **Phase 2: MCP Server Prototype & Connectivity Spike:** Complete, released as `v0.2.0-spike` (2026-10-06). The spikes S1–S4 confirmed [ADR-0001](docs/decisions/ADR-0001-claude-autocad-integration.md): the exit gate passed and no reversal trigger fired. See the [Phase 2 spike review](docs/spikes/phase-2-review.md).
 
 Phase 2 delivered:
@@ -97,14 +105,43 @@ pvsld generate examples/residential_7p7kwp.yaml -o out/residential.dxf --png
 pvsld size examples/sizing_jinko_growatt.yaml --include-unreviewed -o out/sized.yaml
 ```
 
-**MCP server for Claude Code.** The repository's `.mcp.json` registers the stdio server `pvsld` (`pvsld-mcp`, tools `validate_pv_design` and `generate_single_line_diagram`). Start Claude Code in the repository root and approve the project server once; `claude mcp list` should show `pvsld ... Connected`. The committed command only finds `pvsld-mcp` when the virtual environment is active in the shell that starts Claude Code. Otherwise, point the `PVSLD_MCP_COMMAND` variable at the venv executable before starting it:
+**MCP server for Claude Code.** The repository's `.mcp.json` registers the stdio server `pvsld` (`pvsld-mcp`). Start Claude Code in the repository root and approve the project server once; `claude mcp list` should show `pvsld ... Connected`. The committed command only finds `pvsld-mcp` when the virtual environment is active in the shell that starts Claude Code. Otherwise, point the `PVSLD_MCP_COMMAND` variable at the venv executable before starting it:
 
 ```powershell
 $env:PVSLD_MCP_COMMAND = "$PWD\.venv\Scripts\pvsld-mcp.exe"   # Linux/macOS: export PVSLD_MCP_COMMAND="$PWD/.venv/bin/pvsld-mcp"
 claude
 ```
 
-Output files go to `out/` (or `PVSLD_OUTPUT_DIR`). Claude Desktop set-up and details: [`docs/spikes/s3-mcp-round-trip.md`](docs/spikes/s3-mcp-round-trip.md).
+| Tool | What it does |
+|---|---|
+| `list_components` | Lists the reviewed catalogue: PV modules, string and hybrid inverters, DC breakers (filter by type or manufacturer) |
+| `get_component` | Shows every datasheet value of one component, with its provenance (file, SHA-256, pages, reviewer) |
+| `size_pv_system` | Sizes the strings, protection and conductors from the catalogue. Returns the selected design as a complete spec, ranked alternatives and the rejected configurations grouped by rule |
+| `validate_pv_design` | Checks a spec against the rule pack `mx-gd-2026.10` |
+| `generate_single_line_diagram` | Draws the validated spec as DXF on the A3 sheet, verifies it by reading it back and returns a PNG preview |
+
+The server also publishes four resources:
+- `pvsld://schema/pv-system-spec`: the spec JSON Schema.
+- `pvsld://rulepack/mx-gd-2026.10`: the rule pack.
+- `pvsld://symbols`: the symbol library.
+- `pvsld://examples/sizing-template`: an example of the site, service and title-block sections a sizing request needs.
+
+Environment variables:
+- `PVSLD_OUTPUT_DIR`: where drawings go (default `out/`).
+- `PVSLD_CATALOGUE_DIR`: the component records (default `datasheets/records`).
+
+**Example: size a 10 kWp system in Guadalajara.** Ask Claude in Spanish, for example:
+
+> Dimensiona un sistema de unos 10 kWp en Guadalajara con módulos ET Solar de 550 W y el inversor que mejor convenga del catálogo, y genera el diagrama.
+
+Claude works through the tools in this order:
+1. Calls `list_components` to find `ETSOLAR-ET-M672BH550`.
+2. Reads `pvsld://examples/sizing-template` and asks for the site and service data it lacks.
+3. Calls `size_pv_system` with `inverters: "auto"` and `target_dc_power_w: 10000`.
+
+With the current catalogue the engine selects `GROWATT-MIN-6000TL-X2` 2 × 8 (8.80 kWp, DC/AC 1.47). The larger inverters are not in the catalogue yet, and every bigger configuration breaks STR-007 or VOLT-001. The engine reports the STR-007 warning and lists the alternatives (Huawei SUN2000-6KTL-L1 2 × 8, then 2 × 7). After the user accepts, Claude calls `validate_pv_design` and `generate_single_line_diagram` with the returned spec. The result is the DXF on the A3 sheet plus a preview. A sizing result stays around 3k tokens, well under the 25k cap of a Claude Code tool result.
+
+Claude Desktop set-up and details: [`docs/spikes/s3-mcp-round-trip.md`](docs/spikes/s3-mcp-round-trip.md).
 
 **DWG and PDF (optional, licensed AutoCAD 2027 on Windows).** `pvsld finish out/residential.dxf` converts a DXF to DWG 2018 and an A3 PDF through the AutoCAD Core Console ([`docs/spikes/s4-core-console.md`](docs/spikes/s4-core-console.md)). Output paths must be ASCII for now. A DWG records the Windows login as "last saved by", so check it before sharing.
 
