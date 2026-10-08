@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- Drawings on the owner's sheet template are editable in one place (owner request): the frame, template boxes, fixed texts, fields, symbology, schematic and protection schedule are all in model space at 1:1, and the file opens on the Model tab. The `A3` layout keeps only the 1:1 viewport, for plotting (`Diagram.sheet_in_model`). Every text, line and block can be edited directly; blocks keep their attributes
 - Drawings and the symbol library open on their sheet (`A3`, `Legend`) in AutoCAD: `$TILEMODE` is 0. With ezdxf's default 1 they opened on the Model tab, where the sheet template, frame and title block (paper space) are not visible. The golden DXF, the library DXF and its DWG were regenerated
 
 ### Added

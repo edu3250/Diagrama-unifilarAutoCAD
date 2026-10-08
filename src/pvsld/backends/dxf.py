@@ -207,7 +207,10 @@ def _build_document(diagram: Diagram) -> Drawing:
     # AutoCAD requires that viewport on layer 0 (AUDIT: 'Paperspace vport layer Not "0"'); it is
     # the one entity allowed there. The detail viewport added below stays on the non-plot layer.
     paper.reset_main_viewport().dxf.layer = layers.OVERALL_VIEWPORT
-    spaces: dict[str, BaseLayout] = {"model": model, "paper": paper}
+    spaces: dict[str, BaseLayout] = {
+        "model": model,
+        "paper": model if diagram.sheet_in_model else paper,
+    }
 
     for item in diagram.instances:
         symbol = get_symbol(item.symbol)
@@ -295,11 +298,12 @@ def _build_document(diagram: Diagram) -> Drawing:
         dxfattribs={"layer": vp.layer},
     )
 
-    # The file opens on the A3 sheet, framed on the border.
-    doc.layouts.set_active_layout(LAYOUT_NAME)
-    # TILEMODE 0: AutoCAD opens on that layout; ezdxf leaves 1 (the Model tab), where the sheet
-    # furniture of paper space (frame, template boxes, title block) is not visible.
-    doc.header["$TILEMODE"] = 0
+    # The file opens where the editable content is. With the sheet in model space that is the
+    # Model tab (TILEMODE 1); otherwise the A3 layout (TILEMODE 0), since the frame and the title
+    # block are in paper space and the Model tab would show the schematic alone.
+    doc.layouts.set_active_layout(LAYOUT_NAME)  # the layout plotted, and the one AutoCAD shows
+    doc.header["$TILEMODE"] = 1 if diagram.sheet_in_model else 0  # 1: the Model tab instead
+    # Model space views the sheet, framed on the border.
     doc.set_modelspace_vport(height=vp.view_height, center=(vp.view_center.x, vp.view_center.y))
     doc.header["$LIMMIN"] = (0.0, 0.0)
     doc.header["$LIMMAX"] = (diagram.sheet.width, diagram.sheet.height)

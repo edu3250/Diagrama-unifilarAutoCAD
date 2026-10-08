@@ -434,6 +434,10 @@ class Diagram:
     samples: tuple[SymbolSample, ...] = ()
     text_styles: tuple[tuple[str, str], ...] = ()
     """Text styles of a sheet template as ``(name, font file)``."""
+    sheet_in_model: bool = False
+    """Draw the sheet furniture (the ``"paper"`` items) in model space too, so the whole drawing is
+    edited in one place and the file opens on the Model tab; the layout keeps only the 1:1
+    viewport, for plotting (the owner's sheet template; the v1 template keeps its paper space)."""
 
     def instance(self, comp_id: str) -> SymbolInstance:
         for item in self.instances:
