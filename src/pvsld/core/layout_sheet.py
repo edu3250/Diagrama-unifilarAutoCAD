@@ -24,6 +24,7 @@ from pvsld.core.diagram import (
     Diagram,
     Point,
     SymbolSample,
+    Table,
     TextItem,
     Viewport,
     rnd,
@@ -34,8 +35,10 @@ from pvsld.core.layout import (
     LayoutError,
     Placement,
     _conductor_text,
+    _fit_widths,
     _g,
     _n,
+    _protection_table,
     _raceway,
     _raceway_text,
     _wrap,
@@ -76,7 +79,14 @@ PLACEMENT = Placement(
     gec_ac_text=(205.0, 150.0),
     callouts=False,
     pi_description="",
+    full_strings=True,
 )
+PROTECTIONS_CORNER = (309.0, 102.0)
+"""Lower-right corner of the protection schedule, in the free lower right of the schematic area."""
+TABLE_TEXT = (1.4, 3.4, "OpenSans", "OpenSansCondensed-Bold")
+"""Text height, row height, cell style and title style of the schedule (the template's boxes)."""
+TABLE_TITLE_HEIGHT = 2.2
+"""Height of the box titles of the template."""
 
 # Width available to the value of each field group (sheet millimetres).
 FIELD_WIDTHS: dict[str, float] = {
@@ -431,6 +441,36 @@ def _symbology(
     return samples, texts
 
 
+def _protections(spec: PvSystemSpec) -> Table:
+    """The protection schedule of v1 in the style of the template's boxes."""
+    rows = _protection_table(spec).rows
+    title = "CUADRO DE PROTECCIONES"
+    header = ("Equipo", "Función", "Polos", "Capacidad", "Tensión", "kAIC", "Ubicación")
+    text_height, row_height, style, title_style = TABLE_TEXT
+    widths = list(_fit_widths(title, header, rows, text_height=text_height, minimum=7.0))
+    title_width = text_width_mm(title, TABLE_TITLE_HEIGHT) + 4.0
+    if sum(widths) < title_width:
+        widths[-1] += title_width - sum(widths)
+    x1, y0 = PROTECTIONS_CORNER
+    height = row_height * (2 + len(rows))
+    return Table(
+        id="TBL-PROTECTIONS",
+        layer=layers.TABLES,
+        x=rnd(x1 - sum(widths)),
+        y_top=rnd(y0 + height),
+        col_widths=tuple(widths),
+        title=title,
+        header=header,
+        rows=rows,
+        row_height=row_height,
+        text_height=text_height,
+        style=style,
+        title_style=title_style,
+        title_center=True,
+        title_height=TABLE_TITLE_HEIGHT,
+    )
+
+
 # --- The template -------------------------------------------------------------------------------
 
 
@@ -533,7 +573,13 @@ def build_sheet_diagram(
     fields.set("drawing", f"{tb.drawing_no}   HOJA {tb.sheet.upper()}   REV. {tb.revision}")
     fields.set("date", _date(tb.date))
 
-    drawn = list(dict.fromkeys(i.symbol for i in schematic.instances))
+    # A full string is shown in the symbology as one module.
+    drawn = list(
+        dict.fromkeys(
+            "PVSLD_PV_MODULE" if i.symbol.startswith("PVSLD_PV_STRING") else i.symbol
+            for i in schematic.instances
+        )
+    )
     samples, symbology_texts = _symbology(drawn, definition.SYMBOLOGY_BOX)
 
     border = A3.border
@@ -569,7 +615,7 @@ def build_sheet_diagram(
         ),
         lines=template.lines,
         polylines=template.polylines,
-        tables=(),
+        tables=(_protections(spec),),
         viewport=viewport,
         circles=(*template.circles, *circles),
         samples=tuple(samples),

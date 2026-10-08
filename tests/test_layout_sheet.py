@@ -33,6 +33,7 @@ from pvsld.sheets.loader import (
     read_template,
     write_template,
 )
+from pvsld.symbols import get_symbol
 from s1_helpers import mutated
 from test_core_diagram import MIN_GAP_MM, _model_boxes, _segment_hits
 
@@ -119,6 +120,15 @@ def _one_string(spec: dict[str, Any]) -> None:
     spec["circuits"] = [c for c in spec["circuits"] if c["id"] != "C-S2"]
 
 
+def _thirteen_each(spec: dict[str, Any]) -> None:
+    for string in spec["strings"]:
+        string["n_series"] = 13  # three rows per string (the layout limit, not a valid design)
+
+
+LAYOUTS = [None, _one_string, _thirteen_each]
+LAYOUT_IDS = ["two strings of 7", "one string", "two strings of 13"]
+
+
 # --- Reader and neutral writer -------------------------------------------------------------------
 
 
@@ -182,9 +192,15 @@ def test_loading_a_missing_or_unknown_template_fails_clearly(tmp_path: Path) -> 
 # --- Layout -------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("change", [None, _one_string], ids=["two strings", "one string"])
+def _build_any(template: SheetTemplate, change: Any) -> Diagram:
+    report = validate_pv_design(_sheet_spec(change))
+    assert report.spec is not None
+    return build_sheet_diagram(report.spec, report.derived, template)
+
+
+@pytest.mark.parametrize("change", LAYOUTS, ids=LAYOUT_IDS)
 def test_the_schematic_is_sound_and_stays_in_its_area(template: SheetTemplate, change: Any) -> None:
-    diagram = _build(template, change)
+    diagram = _build_any(template, change)
     assert check_diagram(diagram) == []
     area = Box(*definition.SCHEMATIC_AREA)
     boxes = _model_boxes(diagram)
@@ -201,10 +217,34 @@ def test_the_schematic_is_sound_and_stays_in_its_area(template: SheetTemplate, c
                 assert not _segment_hits(box, a, b), f"wire {conn.id} crosses {name}"
 
 
-def test_a_single_string_runs_straight_into_its_mppt(template: SheetTemplate) -> None:
-    diagram = _build(template, _one_string)
-    wire = next(c for c in diagram.connections if c.kind == "pv_source")
-    assert len(wire.points) == 2
+@pytest.mark.parametrize("change", LAYOUTS, ids=LAYOUT_IDS)
+def test_every_module_is_drawn_and_each_string_runs_straight_into_its_mppt(
+    template: SheetTemplate, change: Any
+) -> None:
+    diagram = _build_any(template, change)
+    strings = [i for i in diagram.instances if i.symbol.startswith("PVSLD_PV_STRING_")]
+    assert strings
+    for item in strings:
+        n_series = int(item.values["N_SERIES"])
+        assert item.symbol.startswith(f"PVSLD_PV_STRING_{n_series}M_")
+        modules = [g for g in get_symbol(item.symbol).geometry if getattr(g, "closed", False)]
+        assert len(modules) == n_series
+    for wire in (c for c in diagram.connections if c.kind == "pv_source"):
+        assert len(wire.points) == 2
+    if len(strings) == 2:  # the upper string grows up, the lower one down: they never meet
+        assert [s.symbol[-2:] for s in strings] == ["UP", "DN"]
+
+
+def test_the_protection_schedule_lists_every_device_in_the_template_style(
+    diagram: Diagram,
+) -> None:
+    table = next(t for t in diagram.tables if t.id == "TBL-PROTECTIONS")
+    assert [row[0] for row in table.rows] == ["ITM-1", "ITM-P", "DCD-1", "DPS-CD1", "DPS-CA1"]
+    assert table.space == "model"
+    assert Box(*definition.SCHEMATIC_AREA).contains(table.box())
+    title = table.texts()[0]
+    assert (title.align, title.style, title.height) == ("center", "OpenSansCondensed-Bold", 2.2)
+    assert {t.style for t in table.texts()[1:]} == {"OpenSans"}
 
 
 def test_circuits_are_numbered_with_the_template_markers(diagram: Diagram) -> None:
@@ -261,8 +301,13 @@ def test_every_field_is_written_once_with_the_design_values(diagram: Diagram) ->
 
 
 def test_the_symbology_shows_each_block_drawn_inside_its_box(diagram: Diagram) -> None:
-    drawn = list(dict.fromkeys(i.symbol for i in diagram.instances))
-    assert [s.symbol for s in diagram.samples] == drawn
+    drawn = list(
+        dict.fromkeys(
+            "PVSLD_PV_MODULE" if i.symbol.startswith("PVSLD_PV_STRING") else i.symbol
+            for i in diagram.instances
+        )
+    )
+    assert [s.symbol for s in diagram.samples] == drawn  # a full string shows as one module
     x0, y0, x1, y1 = definition.SYMBOLOGY_BOX
     for sample in diagram.samples:
         assert x0 < sample.x < x1

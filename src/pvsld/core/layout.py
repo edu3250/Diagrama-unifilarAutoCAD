@@ -54,6 +54,7 @@ from pvsld.symbols.cfe.definitions import (
     TITLE_BLOCK_FIELDS,
     TITLE_BLOCK_HEIGHT_MM,
     TITLE_BLOCK_WIDTH_MM,
+    pv_string_name,
 )
 
 TEMPLATE = "bt_string_residential_v1"
@@ -119,6 +120,9 @@ class Placement:
     gec_ac_text: tuple[float, float]
     callouts: bool = True
     pi_description: str = "Punto de interconexión"
+    full_strings: bool = False
+    """Draw every module of each string (``PVSLD_PV_STRING_<n>M_UP|DN``), level with its MPPT
+    input; otherwise the two-module convention ``PVSLD_PV_STRING``."""
     """Description under the PI marker; a compact sheet leaves it empty (the legend names it)."""
 
 
@@ -204,15 +208,20 @@ def _string_instances(
     for index, (string, values) in enumerate(zip(spec.strings, derived.strings, strict=True)):
         module = modules[string.module]
         kwp = _n(values.p_stc_w / 1000, 2)
-        if len(spec.strings) == 1:  # level with its MPPT input: a straight conductor
-            y = placement.inverter[1] + get_symbol("PVSLD_INV").port(string.mppt).y
+        symbol = "PVSLD_PV_STRING"
+        port_y = get_symbol("PVSLD_INV").port(string.mppt).y
+        if placement.full_strings:  # level with its MPPT input; the rows stack away from it
+            y = placement.inverter[1] + port_y
+            symbol = pv_string_name(string.n_series, "up" if port_y >= 0 else "down")
+        elif len(spec.strings) == 1:  # level with its MPPT input: a straight conductor
+            y = placement.inverter[1] + port_y
         else:
             y = placement.inverter[1] + (
                 placement.string_dy if index == 0 else -placement.string_dy
             )
         out.append(
             _instance(
-                "PVSLD_PV_STRING",
+                symbol,
                 string.id,
                 placement.string_x,
                 y,

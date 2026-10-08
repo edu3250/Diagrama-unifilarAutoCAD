@@ -1089,6 +1089,110 @@ def combiner_box(n_strings: int, *, name: str | None = None) -> SymbolSpec:
 
 COMBINER_BOX = combiner_box(2, name="PVSLD_COMBINER")
 
+
+# --- PV string with every module (owner decision 2026-10-07) ----------------------------------
+
+MODULES_PER_ROW = 6
+MAX_STRING_MODULES = 30
+_MOD_W, _MOD_H, _MOD_PITCH, _ROW_PITCH = 5.0, 10.0, 7.5, 15.0
+
+
+def pv_string_name(n_modules: int, extend: str = "up") -> str:
+    """Block name of a string of ``n_modules`` drawn in full, e.g. ``PVSLD_PV_STRING_7M_UP``."""
+    return f"PVSLD_PV_STRING_{n_modules}M_{'UP' if extend == 'up' else 'DN'}"
+
+
+def pv_string(n_modules: int, extend: str = "up") -> SymbolSpec:
+    """A PV string with every module drawn: CFE modules in series, six to a row.
+
+    The output ``OUT`` is the end of the last row, on the base point's row (``y = 0``); the other
+    rows stack away from it, upwards (``extend="up"``) or downwards (``"down"``), and the tag,
+    description and model sit beyond them. Rows are joined by a return conductor along the left.
+    Two strings of one inverter use one of each, so both run straight into their MPPT inputs.
+
+    Raises:
+        ValueError: ``n_modules`` is outside ``1..MAX_STRING_MODULES`` or ``extend`` is unknown.
+    """
+    if not 1 <= n_modules <= MAX_STRING_MODULES:
+        raise ValueError(f"a string takes 1 to {MAX_STRING_MODULES} modules, not {n_modules}")
+    if extend not in ("up", "down"):
+        raise ValueError(f"extend must be 'up' or 'down', not {extend!r}")
+    counts = [MODULES_PER_ROW] * (n_modules // MODULES_PER_ROW)
+    if n_modules % MODULES_PER_ROW:
+        counts.append(n_modules % MODULES_PER_ROW)
+    rows = len(counts)
+    sign = 1 if extend == "up" else -1
+    ys = [_r(sign * (rows - 1 - r) * _ROW_PITCH) for r in range(rows)]
+    # A short last row is right-aligned, so the output is always at the right edge.
+    starts = [0.0] * rows
+    if rows > 1:
+        starts[-1] = (MODULES_PER_ROW - counts[-1]) * _MOD_PITCH
+    geometry: list[Primitive] = []
+    for row, (count, y, x0) in enumerate(zip(counts, ys, starts, strict=True)):
+        for i in range(count):
+            x = x0 + i * _MOD_PITCH
+            top = y + _MOD_H / 2
+            geometry += [
+                Polyline(_rect(x, y - _MOD_H / 2, x + _MOD_W, top), _EQ_DC, closed=True),
+                Polyline(((x, top), (x + _MOD_W / 2, _r(y + 1.25)), (x + _MOD_W, top)), _EQ_DC),
+            ]
+            if i < count - 1:
+                geometry.append(Line(x + _MOD_W, y, x + _MOD_PITCH, y, _DC_COND))
+        if row < rows - 1:
+            x_end = x0 + (count - 1) * _MOD_PITCH + _MOD_W
+            y_next, x_next = ys[row + 1], starts[row + 1]
+            middle = _r((y + y_next) / 2)
+            geometry.append(
+                Polyline(
+                    (
+                        (x_end, y),
+                        (x_end + 1.25, y),
+                        (x_end + 1.25, middle),
+                        (x_next - 1.25, middle),
+                        (x_next - 1.25, y_next),
+                        (x_next, y_next),
+                    ),
+                    _DC_COND,
+                )
+            )
+    x_out = starts[-1] + (counts[-1] - 1) * _MOD_PITCH + _MOD_W
+    far = max(ys) + _MOD_H / 2 if extend == "up" else min(ys) - _MOD_H / 2
+    if extend == "up":
+        tag_xy, desc_xy, model_y = (0.0, far + 10.5), (0.0, far + 6.5), far + 2.5
+    else:
+        tag_xy, desc_xy, model_y = (0.0, far - 6.0), (0.0, far - 10.5), far - 14.5
+    return _spec(
+        pv_string_name(n_modules, extend),
+        "Rama de módulos fotovoltaicos en serie",
+        "CFE G0100-04 Apéndices C y D",
+        _EQ_DC,
+        tuple(geometry),
+        (Port("OUT", x_out, 0, "right", "DC"),),
+        iec_ref="IEC 60617 S00908",
+        tag_xy=tag_xy,
+        desc_xy=desc_xy,
+        extra=(
+            AttDef("MODEL", "Modelo del módulo", 0, _r(model_y)),
+            *_hidden(
+                ("MFR", "Fabricante del módulo"),
+                ("MPPT", "Entrada MPPT del inversor"),
+                ("PMAX_W", "Potencia del módulo (W)"),
+                ("N_SERIES", "Módulos en serie"),
+                ("KWP", "Potencia de la rama (kWp)"),
+                ("VOC_MAX_V", "Voc máxima a T mín (V)"),
+                ("VMP_V", "Vmp en STC de la rama (V)"),
+                ("ISC_A", "Isc del módulo (A)"),
+                ("IMP_A", "Imp del módulo (A)"),
+            ),
+        ),
+        family=F_GEN,
+        note=(
+            "Every module of the string drawn as the CFE module (5 x 10 mm), six to a row, rows "
+            "joined in series; the generator defines it per module count."
+        ),
+    )
+
+
 BATTERY = _spec(
     "PVSLD_BATTERY",
     "Batería o banco de baterías",
@@ -2009,13 +2113,15 @@ SYMBOLS: Mapping[str, SymbolSpec] = {spec.name: spec for spec in LIBRARY}
 
 
 _COMBINER_NAME = re.compile(r"PVSLD_COMBINER_([1-9][0-9]?)S")
+_PV_STRING_NAME = re.compile(r"PVSLD_PV_STRING_([1-9][0-9]?)M_(UP|DN)")
 
 
 def get_symbol(name: str) -> SymbolSpec:
     """Return the symbol called ``name``.
 
     Besides the blocks of :data:`LIBRARY`, ``PVSLD_COMBINER_<n>S`` names the combiner box for
-    ``n`` strings (:func:`combiner_box`); the generator defines it on demand.
+    ``n`` strings (:func:`combiner_box`) and ``PVSLD_PV_STRING_<n>M_UP|DN`` a string with its
+    ``n`` modules drawn (:func:`pv_string`); the generator defines them on demand.
 
     Raises:
         KeyError: the library has no such block.
@@ -2027,4 +2133,7 @@ def get_symbol(name: str) -> SymbolSpec:
     match = _COMBINER_NAME.fullmatch(name)
     if match and 1 <= int(match.group(1)) <= MAX_COMBINER_STRINGS:
         return combiner_box(int(match.group(1)))
+    match = _PV_STRING_NAME.fullmatch(name)
+    if match and 1 <= int(match.group(1)) <= MAX_STRING_MODULES:
+        return pv_string(int(match.group(1)), "up" if match.group(2) == "UP" else "down")
     raise KeyError(f"unknown symbol {name!r}; library has {', '.join(SYMBOLS)}")

@@ -303,6 +303,13 @@ class Table:
     row_height: float = 5.0
     text_height: float = 2.5
     space: Space = "model"
+    style: str | None = None
+    """Text style of the cells (``None``: the house style)."""
+    title_style: str | None = None
+    title_center: bool = False
+    """Centre the title in its row (the owner's sheet template boxes)."""
+    title_height: float | None = None
+    """Height of the title text (default ``text_height``)."""
 
     @property
     def width(self) -> float:
@@ -343,23 +350,43 @@ class Table:
 
     def texts(self) -> list[TextItem]:
         pad_x, pad_y = 1.5, (self.row_height - self.text_height) / 2
-        items = [
-            TextItem(
+        if self.title_center:
+            title = TextItem(
+                self.layer,
+                rnd(self.x + self.width / 2),
+                rnd(self.y_top - self.row_height / 2),
+                self.title_height or self.text_height,
+                self.title,
+                self.space,
+                style=self.title_style or self.style,
+                align="center",
+            )
+        else:
+            title = TextItem(
                 self.layer,
                 rnd(self.x + pad_x),
                 rnd(self.y_top - self.row_height + pad_y),
-                self.text_height,
+                self.title_height or self.text_height,
                 self.title,
                 self.space,
+                style=self.title_style or self.style,
             )
-        ]
+        items = [title]
         for index, row in enumerate((self.header, *self.rows), start=1):
             y = rnd(self.y_top - (index + 1) * self.row_height + pad_y)
             x = self.x
             for width, text in zip(self.col_widths, row, strict=True):
                 if text:
                     items.append(
-                        TextItem(self.layer, rnd(x + pad_x), y, self.text_height, text, self.space)
+                        TextItem(
+                            self.layer,
+                            rnd(x + pad_x),
+                            y,
+                            self.text_height,
+                            text,
+                            self.space,
+                            style=self.style,
+                        )
                     )
                 x = rnd(x + width)
         return items

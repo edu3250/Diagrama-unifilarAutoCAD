@@ -19,7 +19,7 @@ from ezdxf.document import Drawing
 from ezdxf.lldxf.const import DXFValueError
 
 from pvsld.symbols.cfe.build import LIBRARY_FILE, build_document
-from pvsld.symbols.cfe.definitions import combiner_box, combiner_name
+from pvsld.symbols.cfe.definitions import combiner_name, get_symbol
 from pvsld.symbols.cfe.model import APP_ID, BLOCK_PREFIX, LIBRARY_VERSION
 
 LIBRARY_ENV = "PVSLD_SYMBOL_LIBRARY"
@@ -102,17 +102,30 @@ def import_blocks(
     return todo
 
 
+def ensure_symbol(target: Drawing, name: str) -> str:
+    """Define the generated block ``name`` in ``target`` (combiner, full string) and return it.
+
+    The block is rendered from its definition (:func:`~pvsld.symbols.cfe.definitions.get_symbol`)
+    and copied with :func:`import_blocks`, so it brings its layers, linetypes and port XDATA. A
+    block already in ``target`` is reused.
+
+    Raises:
+        KeyError: ``name`` is not a block the definitions can render.
+    """
+    if name not in target.blocks:
+        import_blocks(build_document([get_symbol(name)]), target, [name])
+    return name
+
+
 def ensure_combiner(target: Drawing, n_strings: int) -> str:
     """Define the combiner box for ``n_strings`` strings in ``target`` and return its block name.
-
-    The block is rendered from :func:`~pvsld.symbols.cfe.definitions.combiner_box` and copied with
-    :func:`import_blocks`, so it brings its layers, linetypes and port XDATA. A block already in
-    ``target`` is reused.
 
     Raises:
         ValueError: ``n_strings`` is outside the supported range.
     """
     name = combiner_name(n_strings)
     if name not in target.blocks:
+        from pvsld.symbols.cfe.definitions import combiner_box
+
         import_blocks(build_document([combiner_box(n_strings)]), target, [name])
     return name

@@ -107,18 +107,18 @@ def _new_document() -> Drawing:
 def define_symbol_blocks(doc: Drawing, names: Iterable[str]) -> None:
     """Import the blocks ``names`` from the symbol library, in sorted order (stable handles).
 
-    Library blocks come from :func:`~pvsld.symbols.cfe.loader.library_document`; a combiner box
-    ``PVSLD_COMBINER_<n>S`` is rendered for its string count. Port XDATA comes along.
+    Library blocks come from :func:`~pvsld.symbols.cfe.loader.library_document`; generated blocks
+    (``PVSLD_COMBINER_<n>S``, ``PVSLD_PV_STRING_<n>M_UP|DN``) are rendered from their definition.
+    Port XDATA comes along.
     """
     # Imported here: the library builder reuses this module's document set-up.
-    from pvsld.symbols.cfe.loader import ensure_combiner, import_blocks, library_document
+    from pvsld.symbols.cfe.loader import ensure_symbol, import_blocks, library_document
 
     wanted = sorted(set(names))
     import_blocks(library_document(), doc, [name for name in wanted if name in SYMBOLS])
     for name in wanted:
         if name not in SYMBOLS:
-            spec = get_symbol(name)  # KeyError for an unknown block
-            ensure_combiner(doc, len([p for p in spec.ports if p.id.startswith("IN")]))
+            ensure_symbol(doc, name)  # KeyError for an unknown block
 
 
 def _sort_class_registration(doc: Drawing) -> None:
@@ -146,7 +146,16 @@ def _draw_table(target: BaseLayout, table: Table) -> None:
             (line.x1, line.y1), (line.x2, line.y2), dxfattribs=_attribs(line.layer, weight=None)
         )
     for text in table.texts():
-        _add_text(target, text.layer, text.x, text.y, text.height, text.text)
+        _add_text(
+            target,
+            text.layer,
+            text.x,
+            text.y,
+            text.height,
+            text.text,
+            style=text.style,
+            align=text.align,
+        )
 
 
 def _add_text(
