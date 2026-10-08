@@ -1,7 +1,7 @@
 """The canonical definition of the CFE symbol library (ADR-0005, Stage 4.2).
 
 This module is the single source of truth that ``pvsld symbols build`` turns into
-``symbols/pvsld-symbols-cfe.dxf``. Read it next to the legend sheet: each :class:`SymbolSpec`
+``symbols/pvsld-symbols.dxf``. Read it next to the legend sheet: each :class:`SymbolSpec`
 carries its Spanish designation, the source it is drawn from and a reviewer note.
 
 How the shapes were obtained. The symbols of CFE G0100-04 Appendix C (13) and the usage of

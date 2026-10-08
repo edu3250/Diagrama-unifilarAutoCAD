@@ -1,6 +1,6 @@
 """The CFE symbol library DXF: blocks, attributes, ports, legend, determinism, rendering, CLI.
 
-The committed ``symbols/pvsld-symbols-cfe.dxf`` must equal what the definitions render. When a
+The committed ``symbols/pvsld-symbols.dxf`` must equal what the definitions render. When a
 deliberate change to a symbol fails ``test_the_committed_library_is_what_the_definitions_render``,
 regenerate it and review the picture::
 
@@ -40,7 +40,7 @@ from pvsld.symbols.cfe.loader import ensure_combiner, import_blocks, load_librar
 from pvsld.symbols.cfe.validate import validate_document, validate_file
 from s1_helpers import ROOT
 
-COMMITTED = ROOT / "symbols" / "pvsld-symbols-cfe.dxf"
+COMMITTED = ROOT / "symbols" / "pvsld-symbols.dxf"
 RENDER_DIR = ROOT / "out"  # git-ignored
 
 
@@ -149,13 +149,25 @@ def test_the_legend_layouts_insert_every_block_once_at_most_one_to_one(document)
 
 
 def test_every_legend_sheet_has_the_title_the_version_and_the_three_columns(document) -> None:  # type: ignore[no-untyped-def]
-    assert LEGEND_TITLE == "SIMBOLOGÍA — DIAGRAMAS UNIFILARES FV (CFE G0100-04 Apéndice C)"
+    # The library itself names no standard (owner decision); each row's Fuente column does.
+    assert LEGEND_TITLE == "SIMBOLOGÍA — DIAGRAMAS UNIFILARES FOTOVOLTAICOS"
     for index, name in enumerate(_sheets(document), start=1):
         texts = [t.dxf.text for t in document.layouts.get(name).query("TEXT")]
         assert LEGEND_TITLE in texts
         assert any(f"v{LIBRARY_VERSION}" in t and f"hoja {index} de 3" in t for t in texts)
         for column in ("Símbolo", "Designación", "Fuente"):
             assert column in texts
+
+
+def test_the_library_names_no_standard_outside_the_source_of_each_symbol(document) -> None:  # type: ignore[no-untyped-def]
+    # Allowed: the source of a symbol and a designation naming the utility (the CFE/user boundary).
+    own = {spec.source for spec in LIBRARY} | {spec.description_es for spec in LIBRARY}
+    for name in _sheets(document):
+        for text in document.layouts.get(name).query("TEXT"):
+            if "CFE" in text.dxf.text:
+                assert any(text.dxf.text in field for field in own), text.dxf.text
+    assert document.header["$PROJECTNAME"] == "pvsld-symbols"
+    assert COMMITTED.name == "pvsld-symbols.dxf"
 
 
 def test_the_legend_lists_each_block_name_and_each_family_heading(document) -> None:  # type: ignore[no-untyped-def]
@@ -228,7 +240,7 @@ def test_the_bytes_do_not_depend_on_the_hash_seed_of_the_process(library_bytes: 
 def test_the_committed_library_is_what_the_definitions_render(library_bytes: bytes) -> None:
     committed = COMMITTED.read_bytes()
     assert sha256_hex(committed) == sha256_hex(library_bytes), (
-        "symbols/pvsld-symbols-cfe.dxf is stale; run `pvsld symbols build` and review the legend"
+        "symbols/pvsld-symbols.dxf is stale; run `pvsld symbols build` and review the legend"
     )
     assert b"\r" not in committed, "checked out with CRLF; check .gitattributes"
 

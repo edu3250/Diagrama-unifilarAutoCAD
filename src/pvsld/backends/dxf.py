@@ -3,7 +3,7 @@
 The file has an A3 paper-space layout (border, title block with attributes, revision block and a
 1:1 viewport onto the model, the overall viewport on layer 0 as AutoCAD requires), the house layer
 standard, one ``BLOCK`` per used symbol, imported from the CFE symbol library
-``symbols/pvsld-symbols-cfe.dxf`` (ADR-0005) with its ``ATTDEF`` s and port data, and one
+``symbols/pvsld-symbols.dxf`` (ADR-0005) with its ``ATTDEF`` s and port data, and one
 ``INSERT`` with ``ATTRIB`` s per component. A combiner box ``PVSLD_COMBINER_<n>S`` is defined for
 its exact string count. Identity and
 connectivity are stored as data, so the file can be read back and checked (see

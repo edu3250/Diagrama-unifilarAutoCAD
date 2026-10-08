@@ -1,7 +1,7 @@
 """Symbol library (ADR-0005): the CFE block library the generator draws with.
 
 The blocks are defined in :mod:`pvsld.symbols.cfe.definitions` and kept in
-``symbols/pvsld-symbols-cfe.dxf``; the DXF backend imports them from that file
+``symbols/pvsld-symbols.dxf``; the DXF backend imports them from that file
 (:func:`pvsld.symbols.cfe.loader.library_document`). This module is the interface the layout,
 the diagram model and the MCP server use.
 """

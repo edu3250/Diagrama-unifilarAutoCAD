@@ -11,7 +11,7 @@
 
 > [!NOTE]
 > **Decision in one paragraph.**
-> The symbol library is a versioned DXF master file (`symbols/pvsld-symbols-cfe.dxf`, R2018) that is the single source of truth. The generator imports block definitions from this file instead of code-defining symbols. Every block is drawn to match CFE G0100-04 Appendix C first; symbols CFE does not define are sourced from NMX-J-136-ANCE or IEC 60617. Each block records its standard source in a hidden attribute or XDATA metadata. A legend layout documents all symbols and their sources. A deterministic regeneration script (`scripts/regenerate_symbol_library.py`) can rebuild the DXF from a canonical definition, ensuring reproducibility across runs and platforms. The finalized library is exported to DWG 2018 via Core Console and committed alongside the DXF.
+> The symbol library is a versioned DXF master file (`symbols/pvsld-symbols.dxf`, R2018) that is the single source of truth. The generator imports block definitions from this file instead of code-defining symbols. Every block is drawn to match CFE G0100-04 Appendix C first; symbols CFE does not define are sourced from NMX-J-136-ANCE or IEC 60617. Each block records its standard source in a hidden attribute or XDATA metadata. A legend layout documents all symbols and their sources. A deterministic regeneration script (`scripts/regenerate_symbol_library.py`) can rebuild the DXF from a canonical definition, ensuring reproducibility across runs and platforms. The finalized library is exported to DWG 2018 via Core Console and committed alongside the DXF.
 
 ## Context
 
@@ -26,7 +26,7 @@ ADR-0001's decision on integration approach (ezdxf DXF first, AutoCAD .NET plug-
 
 | | Option A: Code-Defined Library (Current) | Option B: File-Based Library (Proposed) |
 |---|---|---|
-| **Single source of truth** | `src/pvsld/symbols/catalogue.py` (Python) | `symbols/pvsld-symbols-cfe.dxf` (DXF master file) |
+| **Single source of truth** | `src/pvsld/symbols/catalogue.py` (Python) | `symbols/pvsld-symbols.dxf` (DXF master file) |
 | **Symbol visualization** | Code comments / test output DXF | Open in AutoCAD, inspect visually |
 | **Review workflow** | Code review (PR) + manual test inspection | Visual review in AutoCAD + code review of changes |
 | **Geometry changes** | Edit Python, regenerate test | Edit DXF blocks directly, regenerate from canonical def |
@@ -47,7 +47,7 @@ The symbol library is a versioned DXF master file that is the single source of t
 
 ### 1. Library Format and Structure
 
-- **Master file:** `symbols/pvsld-symbols-cfe.dxf` (DWG Reference Format R2018 / AC1021)
+- **Master file** (renamed from `pvsld-symbols-cfe.dxf` on 2026-10-08 at the owner's request: the library file, its legend title and notes name no standard; each symbol still records its source): `symbols/pvsld-symbols.dxf` (DWG Reference Format R2018 / AC1021)
 - **Block naming and attributes:** Per ADR-0003:
   - Names: `PVSLD_<FUNCTION>` (uppercase ASCII, digits, underscore)
   - Visible attributes: `TAG`, `DESC` (Spanish description)
@@ -124,12 +124,12 @@ A Python script (`scripts/regenerate_symbol_library.py`) rebuilds the master DXF
 ### 6. DWG Finalization (Phase 4, Stage 4.4)
 
 - **Core Console finisher:** On the owner's licensed workstation, `pvsld finish` converts the master DXF to DWG 2018 (TrustedDWG, AC1032 format)
-  - Output: `symbols/pvsld-symbols-cfe.dwg`
+  - Output: `symbols/pvsld-symbols.dwg`
   - Metadata privacy: "last saved by" field cleared
   - Audit result: 0 errors, 0 fixes (headless check if available; owner manual verification otherwise)
 - **Committed files:**
-  - `symbols/pvsld-symbols-cfe.dxf` (source, R2018)
-  - `symbols/pvsld-symbols-cfe.dwg` (finalized, TrustedDWG 2018)
+  - `symbols/pvsld-symbols.dxf` (source, R2018)
+  - `symbols/pvsld-symbols.dwg` (finalized, TrustedDWG 2018)
 - **CI validation:** Script checks DWG existence and format; warns if DXF changes without DWG update
 
 ### 7. Version Bumping and Golden Test Regeneration
