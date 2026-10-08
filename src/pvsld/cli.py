@@ -8,6 +8,7 @@ Usage::
     pvsld finish out/sld.dxf [-d out/finished] [--no-pdf] [--json]
     pvsld catalogue validate [PATH] | list [--type T] | show ID
     pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC.yaml] [--json]
+    pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
 
 ``validate`` parses the specification against the parameter model and runs the rule pack
 ``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
@@ -18,7 +19,9 @@ licensed full AutoCAD); the exit code is 1 unless every output was produced and 
 :mod:`pvsld.catalogue.cli`). ``size`` runs the sizing engine (:mod:`pvsld.sizing`) on a request
 file and prints the selection, the ranked alternatives and why every other configuration was
 rejected; the exit code is 1 when no configuration survives. ``-o`` writes the selected
-parameter specification, ready for ``validate`` and ``generate``.
+parameter specification, ready for ``validate`` and ``generate``. ``symbols`` builds, lists
+and validates the CFE symbol library (``symbols/pvsld-symbols-cfe.dxf``, see
+:mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
 
@@ -57,6 +60,7 @@ from pvsld.service import (
     validate_pv_design,
 )
 from pvsld.sizing import SizingInputError, format_report, load_request, size_pv_system
+from pvsld.symbols.cfe import cli as symbols_cli
 
 
 def _finding_line(finding: Finding) -> str:
@@ -395,6 +399,7 @@ def build_parser() -> argparse.ArgumentParser:
     size.add_argument("--json", action="store_true", help="print the full result as JSON")
     size.set_defaults(run=_size)
     catalogue_cli.register(subcommands)
+    symbols_cli.register(subcommands)
     return parser
 
 
