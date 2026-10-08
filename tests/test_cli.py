@@ -177,7 +177,7 @@ def test_generate_writes_a_verified_dxf(tmp_path: Path, capsys: pytest.CaptureFi
     assert main(["generate", str(EXAMPLE), "-o", str(output)]) == 0
     out = capsys.readouterr().out
     assert out.startswith("OK: wrote")
-    assert "attributes 147/147" in out
+    assert "attributes 157/157" in out
     assert "dangling ports 0" in out
     assert "entities on layer 0: 0" in out
     assert output.read_bytes().startswith(b"  0\nSECTION")

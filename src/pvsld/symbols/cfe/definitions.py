@@ -25,6 +25,7 @@ Conventions (ADR-0003):
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Mapping
 
 from pvsld.core import layers
@@ -2007,8 +2008,14 @@ LIBRARY: tuple[SymbolSpec, ...] = (
 SYMBOLS: Mapping[str, SymbolSpec] = {spec.name: spec for spec in LIBRARY}
 
 
+_COMBINER_NAME = re.compile(r"PVSLD_COMBINER_([1-9][0-9]?)S")
+
+
 def get_symbol(name: str) -> SymbolSpec:
     """Return the symbol called ``name``.
+
+    Besides the blocks of :data:`LIBRARY`, ``PVSLD_COMBINER_<n>S`` names the combiner box for
+    ``n`` strings (:func:`combiner_box`); the generator defines it on demand.
 
     Raises:
         KeyError: the library has no such block.
@@ -2016,4 +2023,8 @@ def get_symbol(name: str) -> SymbolSpec:
     try:
         return SYMBOLS[name]
     except KeyError:
-        raise KeyError(f"unknown symbol {name!r}; library has {', '.join(SYMBOLS)}") from None
+        pass
+    match = _COMBINER_NAME.fullmatch(name)
+    if match and 1 <= int(match.group(1)) <= MAX_COMBINER_STRINGS:
+        return combiner_box(int(match.group(1)))
+    raise KeyError(f"unknown symbol {name!r}; library has {', '.join(SYMBOLS)}")

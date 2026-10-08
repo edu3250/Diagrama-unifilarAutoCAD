@@ -24,8 +24,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from pvsld.core import layers
-from pvsld.symbols import SYMBOLS, get_symbol
-from pvsld.symbols.catalogue import Circle, Label, Line, Polyline
+from pvsld.symbols import get_symbol
 
 Space = Literal["model", "paper"]
 ConnectionKind = Literal["pv_source", "inverter_output", "ac_network", "grounding"]
@@ -169,30 +168,11 @@ class SymbolInstance:
     def boxes(self) -> list[tuple[str, Box]]:
         """Named boxes of this instance: its geometry and each visible attribute text."""
         symbol = get_symbol(self.symbol)
-        xs: list[float] = []
-        ys: list[float] = []
-        for item in symbol.geometry:
-            if isinstance(item, Line):
-                xs += [item.x1, item.x2]
-                ys += [item.y1, item.y2]
-            elif isinstance(item, Polyline):
-                xs += [p[0] for p in item.points]
-                ys += [p[1] for p in item.points]
-            elif isinstance(item, Circle):
-                xs += [item.cx - item.radius, item.cx + item.radius]
-                ys += [item.cy - item.radius, item.cy + item.radius]
-            elif isinstance(item, Label):
-                xs += [item.x, item.x + text_width_mm(item.text, item.height)]
-                ys += [item.y, item.y + item.height]
+        x0, y0, x1, y1 = symbol.bounds()
         result = [
             (
                 f"{self.comp_id} symbol",
-                Box(
-                    rnd(self.x + min(xs)),
-                    rnd(self.y + min(ys)),
-                    rnd(self.x + max(xs)),
-                    rnd(self.y + max(ys)),
-                ),
+                Box(rnd(self.x + x0), rnd(self.y + y0), rnd(self.x + x1), rnd(self.y + y1)),
             )
         ]
         values = self.values
@@ -410,6 +390,14 @@ class Diagram:
         return used
 
 
+def _known(name: str) -> bool:
+    try:
+        get_symbol(name)
+    except KeyError:
+        return False
+    return True
+
+
 def check_diagram(diagram: Diagram) -> list[str]:
     """Structural problems of a diagram (empty list when sound).
 
@@ -421,10 +409,11 @@ def check_diagram(diagram: Diagram) -> list[str]:
     problems += [f"duplicate COMP_ID {name}" for name, count in ids.items() if count > 1]
 
     for item in diagram.instances:
-        if item.symbol not in SYMBOLS:
+        try:
+            symbol = get_symbol(item.symbol)
+        except KeyError:
             problems.append(f"{item.comp_id}: unknown symbol {item.symbol}")
             continue
-        symbol = get_symbol(item.symbol)
         tags = [tag for tag, _ in item.attributes]
         if tags != list(symbol.tags):
             problems.append(f"{item.comp_id}: attributes {tags} differ from {list(symbol.tags)}")
@@ -454,6 +443,8 @@ def check_diagram(diagram: Diagram) -> list[str]:
                 problems.append(f"{conn.id}: diagonal segment {a} -> {b}")
 
     for item in diagram.instances:
+        if not _known(item.symbol):
+            continue
         for port in get_symbol(item.symbol).ports:
             if port.required and connected[f"{item.comp_id}.{port.id}"] == 0:
                 problems.append(f"{item.comp_id}.{port.id} is a dangling required port")

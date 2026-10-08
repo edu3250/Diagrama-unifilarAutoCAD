@@ -677,7 +677,14 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_no_code_defined_symbols`: grep confirms no references to old symbol definitions in the backend code
 - Manual (owner): Open regenerated golden in AutoCAD, visually confirm it looks correct, run AUDIT
 
-**Status:** Not Started
+**Status:** In Progress (implemented in PR; owner review of the regenerated golden pending)
+
+**As built (deviations from the plan above):**
+
+- The backend is `src/pvsld/backends/dxf.py`; `define_symbol_blocks` imports the used blocks, in sorted order, from `loader.library_document()` with `loader.import_blocks` (port XDATA included). `pvsld.symbols` is now the interface over the CFE library (`SYMBOLS`, `get_symbol`, `symbol_catalogue`); `src/pvsld/symbols/catalogue.py` and `render_symbol_library()` are gone. The nine Phase 2 blocks keep their tags and port ids (frozen as `PHASE2_CONTRACT` in `tests/test_cfe_definitions.py`).
+- `get_symbol("PVSLD_COMBINER_<n>S")` resolves the combiner for `n` strings and the backend defines it with `ensure_combiner`; the residential template has no combiner yet, so this is covered by unit tests.
+- Every instance also carries `SOURCE_STANDARD`; `CERT` is gone (157 attributes in the sample instead of 147). The symbology table cites the short source (`CFE G0100-04 Ap. C`).
+- Layout: the CFE inverter is 50 mm wide with its DC ports at ±10 mm, so the inverter moved 5 mm left and the string wires bend 7.5 mm before it (clear of the string callouts); the meter description is `Medidor MF` (the legend spells it out). The golden `tests/golden/residential_7p7kwp.dxf` was regenerated.
 
 ---
 

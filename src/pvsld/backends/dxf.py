@@ -2,8 +2,10 @@
 
 The file has an A3 paper-space layout (border, title block with attributes, revision block and a
 1:1 viewport onto the model, the overall viewport on layer 0 as AutoCAD requires), the house layer
-standard, one ``BLOCK`` per used symbol with
-``ATTDEF`` s and port data, and one ``INSERT`` with ``ATTRIB`` s per component. Identity and
+standard, one ``BLOCK`` per used symbol, imported from the CFE symbol library
+``symbols/pvsld-symbols-cfe.dxf`` (ADR-0005) with its ``ATTDEF`` s and port data, and one
+``INSERT`` with ``ATTRIB`` s per component. A combiner box ``PVSLD_COMBINER_<n>S`` is defined for
+its exact string count. Identity and
 connectivity are stored as data, so the file can be read back and checked (see
 :mod:`pvsld.backends.readback`):
 
@@ -21,7 +23,7 @@ as ``-text`` so a committed golden file keeps its bytes.
 from __future__ import annotations
 
 import io
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -35,15 +37,7 @@ from ezdxf.lldxf import const
 from pvsld.backends.base import RenderResult, sha256_hex
 from pvsld.core import layers
 from pvsld.core.diagram import Diagram, Table, rnd
-from pvsld.symbols import APP_ID, get_symbol
-from pvsld.symbols.catalogue import (
-    SYMBOLS,
-    Circle,
-    Label,
-    Line,
-    Polyline,
-    SymbolDef,
-)
+from pvsld.symbols import APP_ID, SYMBOLS, get_symbol
 
 DXF_VERSION = "R2018"
 LAYOUT_NAME = "A3"
@@ -109,63 +103,21 @@ def _new_document() -> Drawing:
     return doc
 
 
-def _port_xdata(symbol: SymbolDef) -> list[tuple[int, Any]]:
-    tags: list[tuple[int, Any]] = [
-        (1000, BLOCK_FORMAT),
-        (1000, symbol.library_version),
-        (1070, len(symbol.ports)),
-    ]
-    for port in symbol.ports:
-        tags += [
-            (1000, port.id),
-            (1000, port.kind),
-            (1000, port.direction),
-            (1040, float(port.x)),
-            (1040, float(port.y)),
-            (1070, int(port.required)),
-        ]
-    return tags
+def define_symbol_blocks(doc: Drawing, names: Iterable[str]) -> None:
+    """Import the blocks ``names`` from the symbol library, in sorted order (stable handles).
 
+    Library blocks come from :func:`~pvsld.symbols.cfe.loader.library_document`; a combiner box
+    ``PVSLD_COMBINER_<n>S`` is rendered for its string count. Port XDATA comes along.
+    """
+    # Imported here: the library builder reuses this module's document set-up.
+    from pvsld.symbols.cfe.loader import ensure_combiner, import_blocks, library_document
 
-def define_symbol_block(doc: Drawing, symbol: SymbolDef) -> None:
-    """Add the ``BLOCK`` of ``symbol``: geometry, attribute definitions and port XDATA."""
-    block = doc.blocks.new(symbol.name, base_point=(0, 0))
-    for item in symbol.geometry:
-        if isinstance(item, Line):
-            block.add_line(
-                (item.x1, item.y1),
-                (item.x2, item.y2),
-                dxfattribs=_attribs(item.layer, weight=item.lineweight),
-            )
-        elif isinstance(item, Polyline):
-            block.add_lwpolyline(
-                list(item.points), close=item.closed, dxfattribs=_attribs(item.layer)
-            )
-        elif isinstance(item, Circle):
-            block.add_circle((item.cx, item.cy), item.radius, dxfattribs=_attribs(item.layer))
-        elif isinstance(item, Label):
-            text = block.add_text(
-                item.text,
-                height=item.height,
-                dxfattribs={"layer": item.layer, "style": TEXT_STYLE},
-            )
-            text.set_placement((item.x, item.y))
-    for attdef in symbol.attdefs:
-        attribs: dict[str, Any] = {
-            "layer": attdef.layer,
-            "style": TEXT_STYLE,
-            "prompt": attdef.prompt_es,
-        }
-        if not attdef.visible:
-            attribs["flags"] = const.ATTRIB_INVISIBLE
-        block.add_attdef(
-            attdef.tag,
-            (attdef.x, attdef.y),
-            text=attdef.default,
-            height=attdef.height,
-            dxfattribs=attribs,
-        )
-    block.block_record.set_xdata(APP_ID, _port_xdata(symbol))
+    wanted = sorted(set(names))
+    import_blocks(library_document(), doc, [name for name in wanted if name in SYMBOLS])
+    for name in wanted:
+        if name not in SYMBOLS:
+            spec = get_symbol(name)  # KeyError for an unknown block
+            ensure_combiner(doc, len([p for p in spec.ports if p.id.startswith("IN")]))
 
 
 def _sort_class_registration(doc: Drawing) -> None:
@@ -204,10 +156,7 @@ def _add_text(target: BaseLayout, layer: str, x: float, y: float, height: float,
 
 def _build_document(diagram: Diagram) -> Drawing:
     doc = _new_document()
-    used = {item.symbol for item in diagram.instances}
-    for name, symbol in SYMBOLS.items():
-        if name in used:
-            define_symbol_block(doc, symbol)
+    define_symbol_blocks(doc, (item.symbol for item in diagram.instances))
 
     model = doc.modelspace()
     doc.layouts.rename("Layout1", LAYOUT_NAME)
@@ -344,22 +293,6 @@ def write_dxf(diagram: Diagram, path: Path, *, deterministic: bool = True) -> Dx
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(output.data)
     return output
-
-
-def render_symbol_library(*, deterministic: bool = True) -> bytes:
-    """A DXF that holds every block of the symbol library and no drawing entities.
-
-    Both backends insert these definitions (ADR-0001, point 6), and CAD users can load them as a
-    master library.
-    """
-    with fixed_metadata(deterministic):
-        doc = _new_document()
-        for symbol in SYMBOLS.values():
-            define_symbol_block(doc, symbol)
-        _sort_class_registration(doc)
-        stream = io.StringIO()
-        doc.write(stream)
-        return doc.encode(stream.getvalue())
 
 
 class DxfBackend:

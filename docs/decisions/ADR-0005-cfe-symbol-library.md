@@ -115,11 +115,8 @@ A Python script (`scripts/regenerate_symbol_library.py`) rebuilds the master DXF
 
 ### 5. Generator Integration (Phase 4, Stage 4.3)
 
-- **Block import:** `src/pvsld/backends/ezdxf_backend.py` loads the master DXF:
-  ```python
-  import_dwg = ezdxf.readfile("symbols/pvsld-symbols-cfe.dxf")
-  diagram_dwg.blocks.import_blocks(import_dwg)
-  ```
+- **Block import:** `src/pvsld/backends/dxf.py` loads the master DXF once per process (`pvsld.symbols.cfe.loader.library_document()`: `$PVSLD_SYMBOL_LIBRARY`, else the repository file, else the same blocks rendered from the definitions; a file of another library version is refused) and copies only the blocks a diagram uses with `pvsld.symbols.cfe.loader.import_blocks`. ezdxf's `Importer` does not copy block-record XDATA, where the ports live, so `import_blocks` copies it after the import.
+- **Combiner box:** its shape depends on the number of strings, so the library file holds only the two-string legend form `PVSLD_COMBINER`; the generator defines `PVSLD_COMBINER_<n>S` (1 to 24 strings) with `loader.ensure_combiner` (amended in Stage 4.3).
 - **Symbol insertion:** Generator inserts blocks by name (e.g., `diagram_dwg.modelspace().add_blockref('PVSLD_INV', insert=(x, y))`)
 - **Attribute assignment:** Function-specific attributes are set on the INSERT via `attribs` dict
 - **No code-defined geometry:** Old symbol catalogue code is removed; geometry comes exclusively from the imported DXF
