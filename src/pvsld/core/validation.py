@@ -16,6 +16,7 @@ from pydantic import ValidationError
 from pvsld.core import calc
 from pvsld.core.calc import Derived
 from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, PvSystemSpec, parse_spec
+from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.rules import Cite, Finding, Severity, run_rules
 
 GEN_001_MX_IDS = ("MX-A06", "MX-A08", "MX-C01", "MX-D01")
@@ -73,8 +74,16 @@ def _schema_findings(error: ValidationError) -> tuple[Finding, ...]:
     return tuple(findings)
 
 
-def validate_pv_design(data: Mapping[str, Any] | PvSystemSpec) -> ValidationReport:
-    """Validate a PV design against the parameter schema and the rule pack ``mx-gd-2026.10``."""
+def validate_pv_design(
+    data: Mapping[str, Any] | PvSystemSpec,
+    *,
+    dc_ac_policy: DcAcPolicy = DEFAULT_DC_AC_POLICY,
+) -> ValidationReport:
+    """Validate a PV design against the parameter schema and the rule pack ``mx-gd-2026.10``.
+
+    ``dc_ac_policy`` sets the DC/AC ratio thresholds of STR-007 (project policy, see
+    :mod:`pvsld.core.policy`).
+    """
     if isinstance(data, PvSystemSpec):
         spec = data
     else:
@@ -89,7 +98,7 @@ def validate_pv_design(data: Mapping[str, Any] | PvSystemSpec) -> ValidationRepo
                 derived=None,
             )
     derived = calc.derive(spec)
-    findings = tuple(run_rules(spec, derived))
+    findings = tuple(run_rules(spec, derived, dc_ac_policy))
     return ValidationReport(
         ok=not any(f.severity is Severity.ERROR for f in findings),
         rulepack=RULEPACK_ID,

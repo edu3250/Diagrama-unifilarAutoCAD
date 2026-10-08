@@ -27,6 +27,7 @@ from pvsld.backends.dxf import write_dxf
 from pvsld.backends.readback import ReadBackReport, verify
 from pvsld.core.layout import build_diagram
 from pvsld.core.model import PvSystemSpec
+from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.validation import ValidationReport
 from pvsld.core.validation import validate_pv_design as _validate
 
@@ -43,9 +44,16 @@ class SpecFileError(ValueError):
     """A specification file cannot be read; the message says why and is safe to show the user."""
 
 
-def validate_pv_design(data: Mapping[str, Any] | PvSystemSpec) -> ValidationReport:
-    """Validate a PV design (a mapping as parsed from YAML or JSON, or a model object)."""
-    return _validate(data)
+def validate_pv_design(
+    data: Mapping[str, Any] | PvSystemSpec,
+    *,
+    dc_ac_policy: DcAcPolicy = DEFAULT_DC_AC_POLICY,
+) -> ValidationReport:
+    """Validate a PV design (a mapping as parsed from YAML or JSON, or a model object).
+
+    ``dc_ac_policy`` sets the DC/AC ratio thresholds of STR-007 (see :mod:`pvsld.core.policy`).
+    """
+    return _validate(data, dc_ac_policy=dc_ac_policy)
 
 
 def load_spec_file(path: Path) -> dict[str, Any]:

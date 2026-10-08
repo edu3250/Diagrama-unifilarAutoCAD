@@ -443,7 +443,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Vault lint: all 98 rule IDs in the vault have a corresponding Python implementation or a deferred note
 - CLI: `pvsld check examples/residential_7p7kwp.yaml` reports 0 findings
 
-**Status:** Not Started
+**Status:** In Progress. STR-007 is implemented (9 of 98 rules; PR for Stage 3.4): array STC power against the inverter PV power limit (error), DC/AC ratio policy with defaults warning above 1.35 and error above 1.50 in `pvsld.core.policy` (owner decision pending). The other 89 rules, the vault re-read and the coverage tests remain.
 
 ---
 
@@ -488,7 +488,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_sizing_result_passes_rule_pack`: proposed spec runs through full rule validation and reports 0 errors (warnings/info allowed)
 - `test_residential_example`: end-to-end sizing of the Phase 2 7.7 kWp example returns ≥ 1 candidate, selected spec, no validation errors
 
-**Status:** Not Started
+**Status:** In Progress. v1 is done in `pvsld.sizing` (strings, string OCPD from the catalogue, inverter-output breaker, copper conductors and voltage drop; `pvsld size`). Stage 3.4b remains: EGC per Table 250-122, conduit fill, external DC disconnect, inverter maximum OCPD (OCP-005), multiple inverters, three-phase services, aluminium, optimizer limits (STR-009).
 
 ---
 

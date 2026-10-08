@@ -1,0 +1,63 @@
+# Test fixture: copy of datasheets/records/protection/suntree-sl7n-63.yaml with the review flag set, so the sizing tests do not depend on later catalogue edits.
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rated current.
+# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
+component_type: dc_breaker
+family_id: SUNTREE-SL7N-63
+manufacturer: Suntree
+range_name: SL7N-63 DC circuit breaker
+frame_current_a: 63
+pole_options:                       # rated service voltage Ue (DC) per pole count, chosen at design time
+  - {poles: 1, ue_v_options: [15, 60, 100, 180, 250]}
+  - {poles: 2, ue_v_options: [125, 375, 550, 600, 800]}
+  - {poles: 3, ue_v_options: [750, 800]}
+  - {poles: 4, ue_v_options: [800, 1000, 1200]}
+breaking_capacity_dc:               # Ics = Icu
+  - {poles: 2, voltage_v: 800, icu_ka: 6.0}
+  - {poles: 4, voltage_v: 1200, icu_ka: 6.0}
+  - {poles: null, voltage_v: null, icu_ka: 2.0}   # "Ics=Icu=2KA" for the other configurations (ambiguous on the datasheet)
+ics_pct_of_icu: 100
+trip_curves: [B, C]
+magnetic_trip: 10 x In               # marking "Ii=10In" on the product images
+insulation_voltage_v: 1250
+impulse_withstand_kv: 6
+overvoltage_category: III
+pollution_degree: 3
+standards: [IEC 60947-2, GB/T 14048.2]
+certifications: [CB, CE]             # marks shown; a third mark is not legible
+ip_rating: IP40 body, IP20 terminals
+mechanical_life_ops: 8500
+electrical_life_ops: {"<125 V 1P / <250 V 2P": 1500, other: 1000}
+operating_temp_c: [-30, 70]
+storage_temp_c: [-40, 85]
+altitude_m: 2000
+humidity_max_pct: 95
+height_mm: 82
+depth_mm: 72
+width_mm_per_pole: 17.8
+weight_kg_per_pole: 0.12
+accessories: [OF, SD, MX, MN, MX+OF]
+variants:
+  - {component_id: SUNTREE-SL7N-63-6A,  rated_current_a: 6}
+  - {component_id: SUNTREE-SL7N-63-10A, rated_current_a: 10}
+  - {component_id: SUNTREE-SL7N-63-16A, rated_current_a: 16}
+  - {component_id: SUNTREE-SL7N-63-20A, rated_current_a: 20}
+  - {component_id: SUNTREE-SL7N-63-25A, rated_current_a: 25}
+  - {component_id: SUNTREE-SL7N-63-32A, rated_current_a: 32}
+  - {component_id: SUNTREE-SL7N-63-40A, rated_current_a: 40}
+  - {component_id: SUNTREE-SL7N-63-50A, rated_current_a: 50}
+  - {component_id: SUNTREE-SL7N-63-63A, rated_current_a: 63}
+source:
+  filename: DC-MCB-SL7N-63.pdf
+  sha256: 2695d068dcc4683853d37c58b7be253320252e507ed095721a4c7d0571d2a699
+  title: Suntree DC Circuit Breaker SL7N-63 (brochure)
+  pages: [3]
+  extraction_method: rendered_page
+  extraction_date: 2026-10-07
+  reviewed_by: "test fixture"
+  review_date: 2026-10-07
+  notes: >-
+    No text layer; pages rendered with pypdfium2. Ue per pole count is a list of options, so the pole/voltage
+    configuration is chosen at design time (e.g. 2P 550 V or 2P 800 V). Product images also show "2P 550V" and "4P 1000V"
+    labels. The breaking capacity row is ambiguous outside 2P 800 V / 4P 1200 V (2 kA assumed conservatively); confirm with
+    the manufacturer. The 2 kA fallback is kept (owner accepted it 2026-10-07): it matters mainly for battery circuits, since PV string fault currents are far below it. The model-code example (S S7N 63/1-10 OF) differs from the "SL7N-63" marking. The instantaneous
+    trip "10 x In" comes from a marking on the product images.

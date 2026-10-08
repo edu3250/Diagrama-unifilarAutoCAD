@@ -1,0 +1,32 @@
+# Test fixture: the hypothetical 6 kW inverter of examples/residential_7p7kwp.yaml and of the vault
+# note "PV String Sizing" (Vdc max 600 V, MPPT 90-560 V, 2 x 16 A / 22 A, Pdc max 9 kW).
+component_type: string_inverter
+family_id: YI-6000
+manufacturer: "Fabricante Y"
+model_family: YI-6000
+max_input_voltage_v: 600
+startup_voltage_v: 120
+rated_input_voltage_v: 360
+mppt_voltage_range_v: [90, 560]
+mppt_count: 2
+inputs_per_mppt: 1
+max_input_current_per_mppt_a: 16
+max_short_circuit_current_per_mppt_a: 22
+grid: single_phase
+rated_ac_voltage_v: [220]
+frequency_hz: [60]
+power_factor_range: [-0.8, 0.8]
+thd_max_pct: 3
+protection: {dc_switch: true, dc_spd: "Tipo 2", insulation_monitoring: true, afci: true}
+topology: transformerless
+variants:
+  - {component_id: YI-6000, recommended_max_pv_power_wp: 9000, rated_ac_power_w: 6000, max_apparent_power_va: 6000, max_ac_output_current_a: 27.3, max_efficiency_pct: 98.0}
+source:
+  filename: fixture.pdf
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  title: Hypothetical sample inverter (test fixture)
+  pages: [1]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: "test fixture"
+  review_date: 2026-10-07
