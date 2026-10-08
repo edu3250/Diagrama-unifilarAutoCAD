@@ -1,0 +1,29 @@
+# Test fixture: the hypothetical 550 W module of examples/residential_7p7kwp.yaml and of the vault
+# note "PV String Sizing", as a catalogue record. Not a real product.
+component_type: pv_module
+family_id: XM-550
+manufacturer: "Fabricante X"
+model_family: XM-550
+cell_type: mono-crystalline
+cells: 144
+bifacial: false
+dimensions_mm: [2279, 1134, 35]
+weight_kg: 28.9
+max_system_voltage_v: 1500
+max_series_fuse_a: 25
+operating_temp_c: [-40, 85]
+temp_coef_pmax_pct_per_c: -0.35
+temp_coef_voc_pct_per_c: -0.27
+temp_coef_isc_pct_per_c: 0.05
+certifications: ["IEC 61215", "IEC 61730"]
+variants:
+  - {component_id: XM-550, pmax_w: 550, vmp_v: 41.60, imp_a: 13.22, voc_v: 49.60, isc_a: 14.00, efficiency_pct: 21.28}
+source:
+  filename: fixture.pdf
+  sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+  title: Hypothetical sample module (test fixture)
+  pages: [1]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: "test fixture"
+  review_date: 2026-10-07

@@ -1,0 +1,40 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rating.
+component_type: dc_breaker
+family_id: SCHNEIDER-ACTI9-C60PV-DC
+manufacturer: Schneider Electric
+range_name: Acti9 C60PV-DC
+poles: 2
+rated_voltage_v: 800                   # rated DC voltage
+breaking_capacity_dc:                  # Icu by DC voltage (any pole count: the range is 2P only)
+  - {voltage_v: 650, icu_ka: 3.0}
+  - {voltage_v: 800, icu_ka: 1.5}
+ics_pct_of_icu: 100
+trip_curves: [B]
+magnetic_trip: 5.5 x In
+polarity_sensitive: false              # protects bi-directional current
+isolation_suitable: true
+utilization_category: A
+impulse_withstand_kv: 6
+standards: [IEC/EN 60947-2]
+terminals: {rigid_mm2: [1, 25], flexible_mm2: [1, 16]}
+tightening_torque_nm: 2.5
+operating_temp_c: [-25, 70]
+mounting: DIN rail 35 mm, 8 modules of 9 mm
+height_mm: 132.7
+width_mm: 72
+depth_mm: 77.4
+weight_kg: 0.545
+variants:
+  - {component_id: SCHNEIDER-A9N61652, rated_current_a: 20, power_loss_w_at_in: 11.8}  # 588 mV, 29.4 mOhm at 20 A
+source:
+  filename: PES_Schneider Electric_Acti9-C60HDC-Acti9-C60PVDC_A9N61652.pdf
+  sha256: 61a8dd4330d5cffb7f9fef4c66d7ea5db7fd77b6185232c56f9c5a7d87ccfdd5
+  title: Ficha técnica del producto A9N61652 (generated 7 oct 2026)
+  pages: [1, 2]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: edu3250
+  review_date: 2026-10-07
+  notes: >-
+    Single-reference datasheet: the family holds one variant (A9N61652, 20 A). Rotated sidebar text of
+    the PDF was discarded as noise.

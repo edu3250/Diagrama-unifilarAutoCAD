@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0-symbols] - 2026-10-08
+
+Symbol library, the generator drawing with it, and the owner's sheet template. Also ships the first part of Phase 3 (component catalogue and the sizing engine v1).
+
+### Added
+- Symbol library (Phase 4, ADR-0005): 57 blocks `PVSLD_<FUNCTION>` (library 0.6.0) redrawn as vector geometry, each with its ports (DC, AC, PE, SIG, ANY) in XDATA, its attributes and the standard it comes from (hidden `SOURCE_STANDARD` and the *Fuente* column of the legend). `symbols/pvsld-symbols.dxf` (R2018, byte-reproducible) holds them with three `Legend` layouts grouped by family; `symbols/pvsld-symbols.dwg` is the same library as a TrustedDWG 2018 (AUDIT 0/0). `pvsld symbols build|list|validate|dwg`, `scripts/build_symbol_library.py`
+- Parametric blocks defined on demand: the combiner box for 1 to 24 strings (`PVSLD_COMBINER_<n>S`) and a PV string with every module drawn (`PVSLD_PV_STRING_<n>M_UP|DN`, up to 30 modules); AC fuse `PVSLD_FUSE_AC`
+- Layout template `a3_plantilla_v1`: the schematic on the owner's A3 sheet. `pvsld sheet import TEMPLATE.dwg|dxf` writes the neutral template `sheet_templates/a3_plantilla_v1.dxf` (published); the layout fills the heading, capacity, service, calculation summary, notes, circuit boxes, module and inverter data, symbology of the blocks drawn, protection schedule, drawing number and date. Personal data stays blank and the title block reads "COMPAÑÍA INSTALADORA". `pvsld size` produces designs on this sheet by default
+- Component catalogue (Phase 3, ADR-0004): reviewed datasheet records under `datasheets/records/`, `pvsld catalogue validate|list|show`, review gate in CI
+- Sizing engine v1 (Phase 3, Stage 3.4): `pvsld size REQUEST.yaml` enumerates string configurations per catalogue inverter, rejects those that break a rule, ranks the rest and writes a full specification; rule STR-007 and the DC/AC ratio policy (Stage 3.3)
+- Diagram model: text styles and centred text, circles, scaled symbol samples; tables with a cell style and a centred title
+
+### Changed
+- The generator imports the blocks a diagram uses from the library DXF (port XDATA included) instead of defining symbols in code; instances carry `SOURCE_STANDARD`, the inverter has no `CERT` attribute (certifications are out of scope); the symbology table cites each symbol's source; the golden DXF was regenerated
+- The thermomagnetic breaker of the diagrams is `PVSLD_CB` (owner decision); `PVSLD_CB_IEC` stays as an alternative
+- `pvsld.core.rules`: `Severity` lives in `pvsld.core.severity`; `calc.max_ocpd_for_ampacity_a` is shared by CON-003 and the conductor sizing
+
+### Removed
+- `pvsld.symbols.catalogue` (the Phase 2 code-defined symbols) and `pvsld.backends.dxf.render_symbol_library`
+
 ## [0.2.0-spike] - 2026-10-06
 
 Phase 2 (MCP Server Prototype & Connectivity Spike) complete; ADR-0001 confirmed.

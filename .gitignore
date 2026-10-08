@@ -97,3 +97,13 @@ credentials.json
 # Generated files from research (transient)
 /downloads/
 /cache/
+
+# Component datasheets and extraction cache (copyrighted PDFs, token cache)
+# Raw PDFs: never commit (copyright)
+datasheets/inbox/
+# Markitdown markdown cache: never commit (derived, token-heavy)
+datasheets/cache/
+# Committed component records: stored in datasheets/records/ (extracted facts only, no full text)
+
+# The owner's source templates stay local; the neutral DXF of `pvsld sheet import` is committed
+sheet_templates/*.dwg

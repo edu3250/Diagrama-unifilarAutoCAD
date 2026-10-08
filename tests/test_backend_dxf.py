@@ -19,7 +19,6 @@ from pvsld.backends.dxf import (
     DxfBackend,
     DxfOutput,
     render_dxf,
-    render_symbol_library,
     write_dxf,
 )
 from pvsld.backends.readback import ReadBackReport, load_document, read_inventory, verify
@@ -27,7 +26,7 @@ from pvsld.core import layers
 from pvsld.core.diagram import Diagram
 from pvsld.core.layout import build_diagram
 from pvsld.core.validation import validate_pv_design
-from pvsld.symbols import SYMBOLS, get_symbol
+from pvsld.symbols import get_symbol
 from s1_helpers import load_example
 
 
@@ -207,7 +206,7 @@ def test_every_attribute_round_trips_by_comp_id(doc: Drawing, diagram: Diagram) 
         assert by_id[item.comp_id].attributes == item.values
         assert by_id[item.comp_id].xdata_comp_id == item.comp_id
         total += len(item.values)
-    assert total == 147  # 11 components, every ATTRIB compared
+    assert total == 157  # 11 components, every ATTRIB compared
 
 
 def test_attribute_values_keep_spanish_accents_and_units(doc: Drawing) -> None:
@@ -271,7 +270,7 @@ def test_the_verifier_confirms_every_s1_criterion(output: DxfOutput, diagram: Di
     assert report.ok
     assert (report.audit_errors, report.audit_fixes) == (0, 0)
     assert report.insert_counts == report.expected_counts
-    assert report.attributes_matched == report.attributes_checked == 147
+    assert report.attributes_matched == report.attributes_checked == 157
     assert report.instances_matched == report.instances_checked == 11
     assert report.required_ports == 18
     assert report.dangling_ports == ()
@@ -294,7 +293,7 @@ def test_the_summary_is_plain_json(output: DxfOutput, diagram: Diagram) -> None:
 
     summary = verify(diagram, output.data).summary()
     json.dumps(summary)
-    assert summary["attribute_roundtrip"] == "147/147"
+    assert summary["attribute_roundtrip"] == "157/157"
     assert summary["entities_on_layer_0"] == 0
 
 
@@ -528,14 +527,39 @@ def test_the_backend_satisfies_the_render_backend_protocol(
     assert result.sha256 == sha256_hex((tmp_path / "sld.dxf").read_bytes())
 
 
-def test_the_symbol_library_dxf_holds_every_block_and_no_inserts() -> None:
-    data = render_symbol_library()
-    doc = load_document(data)
-    assert {b.name for b in doc.blocks if not b.name.startswith("*")} == set(SYMBOLS)
-    assert len(doc.modelspace()) == 0
-    auditor = doc.audit()
-    assert (len(auditor.errors), len(auditor.fixes)) == (0, 0)
-    assert render_symbol_library() == data  # deterministic as well
+def test_blocks_are_imported_from_the_symbol_library_with_their_ports(diagram: Diagram) -> None:
+    from pvsld.symbols.cfe.loader import library_document
+
+    doc = render_dxf(diagram).document
+    library = library_document()
+    used = {item.symbol for item in diagram.instances}
+    assert {b.name for b in doc.blocks if b.name.startswith("PVSLD_")} == used
+    for name in used:
+        ours = [(e.dxftype(), e.dxf.layer) for e in doc.blocks.get(name)]
+        theirs = [(e.dxftype(), e.dxf.layer) for e in library.blocks.get(name)]
+        assert ours == theirs, name
+        ports = [(t.code, t.value) for t in doc.blocks.get(name).block_record.get_xdata("PVSLD")]
+        expected = library.blocks.get(name).block_record.get_xdata("PVSLD")
+        assert ports == [(t.code, t.value) for t in expected], name
+    assert "CERT" not in get_symbol("PVSLD_INV").tags
+
+
+def test_a_combiner_is_defined_for_its_string_count_next_to_library_blocks() -> None:
+    from pvsld.backends.dxf import _new_document, define_symbol_blocks
+
+    doc = _new_document()
+    define_symbol_blocks(
+        doc, ["PVSLD_COMBINER_3S", "PVSLD_CB", "PVSLD_CB", "PVSLD_PV_STRING_7M_DN"]
+    )
+    assert {b.name for b in doc.blocks if b.name.startswith("PVSLD_")} == {
+        "PVSLD_CB",
+        "PVSLD_COMBINER_3S",
+        "PVSLD_PV_STRING_7M_DN",
+    }
+    xdata = doc.blocks.get("PVSLD_COMBINER_3S").block_record.get_xdata("PVSLD")
+    assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.6.0", 5]  # IN1-IN3, OUT, PE
+    with pytest.raises(KeyError, match="PVSLD_NOPE"):
+        define_symbol_blocks(doc, ["PVSLD_NOPE"])
 
 
 # --- Performance (S1 criterion: build + write <= 1 s) -----------------------------------------

@@ -15,7 +15,9 @@ instead of drawing something wrong.
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Sequence
+from dataclasses import dataclass
 
 from pvsld.core import calc, layers
 from pvsld.core.calc import Derived
@@ -48,10 +50,11 @@ from pvsld.core.model import (
 )
 from pvsld.core.tables import NomTables, get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
-from pvsld.symbols.catalogue import (
+from pvsld.symbols.cfe.definitions import (
     TITLE_BLOCK_FIELDS,
     TITLE_BLOCK_HEIGHT_MM,
     TITLE_BLOCK_WIDTH_MM,
+    pv_string_name,
 )
 
 TEMPLATE = "bt_string_residential_v1"
@@ -62,9 +65,10 @@ NO_VALUE = "—"
 MEXICAN_GRID_FREQUENCY_HZ = 60
 
 # --- Sheet regions (sheet millimetres, origin bottom-left of the A3 sheet) ---------------------
-INVERTER_XY = (115.0, 220.0)
+INVERTER_XY = (110.0, 220.0)
 STRING_X = 20.0
 STRING_DY = 20.0
+STRING_BEND_MM = 7.5
 ITM1_X = 216.0
 PI_X = 244.0
 PANEL_X = 266.0
@@ -80,6 +84,63 @@ NOTES_X, NOTES_Y_TOP = 290.0, 187.0
 NOTES_MAX_WIDTH_MM = 112.0
 MIN_REVISION_ROWS, MAX_REVISION_ROWS = 3, 5
 CALLOUT_LINE_MM = 3.5
+
+
+@dataclass(frozen=True)
+class Schematic:
+    """The power path of a spec: components, conductors and their texts."""
+
+    instances: tuple[SymbolInstance, ...]
+    connections: tuple[Connection, ...]
+    texts: tuple[TextItem, ...]
+    i1: Ocpd
+    i2: MainBreaker
+
+
+@dataclass(frozen=True)
+class Placement:
+    """Where the schematic sits on the sheet (sheet millimetres) and how circuits are labelled.
+
+    ``callouts`` draws the four-line conductor callout over each circuit (template v1); without it
+    the caller labels the circuits itself (the sheet template numbers them).
+    """
+
+    inverter: tuple[float, float]
+    string_x: float
+    string_dy: float
+    string_bend_mm: float
+    itm1_x: float
+    pi_x: float
+    panel_x: float
+    itmp_x: float
+    meter_x: float
+    grid_x: float
+    ground: tuple[float, float]
+    gec_dc_text: tuple[float, float]
+    gec_ac_text: tuple[float, float]
+    callouts: bool = True
+    pi_description: str = "Punto de interconexión"
+    full_strings: bool = False
+    """Draw every module of each string (``PVSLD_PV_STRING_<n>M_UP|DN``), level with its MPPT
+    input; otherwise the two-module convention ``PVSLD_PV_STRING``."""
+    """Description under the PI marker; a compact sheet leaves it empty (the legend names it)."""
+
+
+RESIDENTIAL = Placement(
+    inverter=INVERTER_XY,
+    string_x=STRING_X,
+    string_dy=STRING_DY,
+    string_bend_mm=STRING_BEND_MM,
+    itm1_x=ITM1_X,
+    pi_x=PI_X,
+    panel_x=PANEL_X,
+    itmp_x=ITMP_X,
+    meter_x=METER_X,
+    grid_x=GRID_X,
+    ground=GROUND_XY,
+    gec_dc_text=(140.0, 174.0),
+    gec_ac_text=(226.0, 174.0),
+)
 
 
 class LayoutError(ValueError):
@@ -109,6 +170,7 @@ def _attributes(
         "COMP_ID": comp_id,
         "IEC_REF": symbol.iec_ref,
         "NMX_REF": symbol.nmx_ref,
+        "SOURCE_STANDARD": symbol.source,
         **values,
     }
     missing = [tag for tag in symbol.tags if tag not in values]
@@ -139,19 +201,29 @@ def _instance(
 
 
 def _string_instances(
-    spec: PvSystemSpec, derived: Derived, inverter: Inverter
+    spec: PvSystemSpec, derived: Derived, inverter: Inverter, placement: Placement
 ) -> list[SymbolInstance]:
     modules = {m.id: m for m in spec.modules}
     out = []
     for index, (string, values) in enumerate(zip(spec.strings, derived.strings, strict=True)):
         module = modules[string.module]
         kwp = _n(values.p_stc_w / 1000, 2)
-        y = INVERTER_XY[1] + (STRING_DY if index == 0 else -STRING_DY)
+        symbol = "PVSLD_PV_STRING"
+        port_y = get_symbol("PVSLD_INV").port(string.mppt).y
+        if placement.full_strings:  # level with its MPPT input; the rows stack away from it
+            y = placement.inverter[1] + port_y
+            symbol = pv_string_name(string.n_series, "up" if port_y >= 0 else "down")
+        elif len(spec.strings) == 1:  # level with its MPPT input: a straight conductor
+            y = placement.inverter[1] + port_y
+        else:
+            y = placement.inverter[1] + (
+                placement.string_dy if index == 0 else -placement.string_dy
+            )
         out.append(
             _instance(
-                "PVSLD_PV_STRING",
+                symbol,
                 string.id,
-                STRING_X,
+                placement.string_x,
                 y,
                 {
                     "TAG": string.id,
@@ -172,11 +244,11 @@ def _string_instances(
     return out
 
 
-def _inverter_instance(inverter: Inverter) -> SymbolInstance:
+def _inverter_instance(inverter: Inverter, placement: Placement) -> SymbolInstance:
     return _instance(
         "PVSLD_INV",
         inverter.id,
-        *INVERTER_XY,
+        *placement.inverter,
         {
             "TAG": inverter.id,
             "DESC": f"Inversor de red {_n(inverter.pac_w / 1000)} kW, {_g(inverter.vac_v)} V",
@@ -190,7 +262,6 @@ def _inverter_instance(inverter: Inverter) -> SymbolInstance:
             "MPPT_N": str(len(inverter.mppt)),
             "OCPD_MAX_A": _g(inverter.ocpd_max_a),
             "ISOLATION": inverter.isolation,
-            "CERT": "; ".join(inverter.certifications) or NO_VALUE,
             "DC_SWITCH": "Integrado" if inverter.dc_switch_integrated else "No",
             "DC_SPD": inverter.dc_spd_integrated or "No",
         },
@@ -200,6 +271,7 @@ def _inverter_instance(inverter: Inverter) -> SymbolInstance:
 def _breaker_instance(
     comp_id: str,
     x: float,
+    y: float,
     *,
     role: str,
     poles: int,
@@ -214,7 +286,7 @@ def _breaker_instance(
         "PVSLD_CB",
         comp_id,
         x,
-        INVERTER_XY[1],
+        y,
         {
             "TAG": comp_id,
             "ROLE": role,
@@ -246,11 +318,14 @@ def _key_devices(spec: PvSystemSpec) -> tuple[Ocpd, MainBreaker, Meter, Panel]:
 # --- Routing -----------------------------------------------------------------------------------
 
 
-def _hvh(a: Point, b: Point) -> tuple[Point, ...]:
-    """Horizontal, vertical, horizontal route (straight when the ends are level)."""
+def _hvh(a: Point, b: Point, *, bend_x: float | None = None) -> tuple[Point, ...]:
+    """Horizontal, vertical, horizontal route (straight when the ends are level).
+
+    The vertical leg is at ``bend_x``, by default half-way between the ends.
+    """
     if a.y == b.y:
         return (a, b)
-    mid = rnd((a.x + b.x) / 2)
+    mid = rnd((a.x + b.x) / 2) if bend_x is None else rnd(bend_x)
     return (a, Point(mid, a.y), Point(mid, b.y), b)
 
 
@@ -340,6 +415,60 @@ def _check_fit(table: Table, max_width: float) -> Table:
     return table
 
 
+_BREAKS = re.compile(r"[^ ;\-]+[ ;\-]*")
+
+
+def _chunks(text: str, limit_mm: float, text_height: float) -> list[str]:
+    """Split ``text`` after spaces, semicolons and hyphens into pieces that fit ``limit_mm``."""
+    lines: list[str] = []
+    current = ""
+    for token in _BREAKS.findall(text):
+        if current and text_width_mm((current + token).rstrip(), text_height) > limit_mm:
+            lines.append(current.rstrip())
+            current = ""
+        current += token
+    lines.append(current.rstrip())
+    return lines
+
+
+def _wrap_rows(
+    table_id: str,
+    title: str,
+    header: tuple[str, ...],
+    rows: tuple[tuple[str, ...], ...],
+    max_width: float,
+    text_height: float = 2.5,
+) -> tuple[tuple[str, ...], ...]:
+    """Wrap the widest column onto continuation rows when the table is wider than its band.
+
+    The widest column gets the width that makes the table fit; a cell longer than that continues in
+    extra rows (other cells blank). Short tables come back unchanged, so their drawing is too.
+
+    Raises:
+        LayoutError: a single word of the widest column is wider than the room left for it.
+    """
+    widths = _fit_widths(title, header, rows)
+    excess = sum(widths) - max_width
+    if excess <= 0:
+        return rows
+    column = max(range(len(widths)), key=lambda i: widths[i])
+    limit = widths[column] - excess - 2 * CELL_PADDING_MM
+    wrapped: list[tuple[str, ...]] = []
+    for row in rows:
+        pieces = _chunks(row[column], limit, text_height)
+        for piece in pieces:
+            if text_width_mm(piece, text_height) > limit:
+                raise LayoutError(
+                    f"{table_id}: {piece!r} (column {header[column]!r}) cannot be wrapped into "
+                    f"{limit:.1f} mm; shorten the text or use a larger sheet"
+                )
+        wrapped.append((*row[:column], pieces[0], *row[column + 1 :]))
+        wrapped += [
+            tuple(piece if i == column else "" for i in range(len(row))) for piece in pieces[1:]
+        ]
+    return tuple(wrapped)
+
+
 def _auto(
     *,
     id: str,
@@ -350,8 +479,11 @@ def _auto(
     header: tuple[str, ...],
     rows: tuple[tuple[str, ...], ...],
     row_height: float = 5.0,
+    max_width: float | None = LEFT_BAND_WIDTH_MM,
 ) -> Table:
-    """A table whose column widths are fitted to its content."""
+    """A table whose column widths are fitted to its content (wrapped to ``max_width``)."""
+    if max_width is not None:
+        rows = _wrap_rows(id, title, header, rows, max_width)
     return Table(
         id=id,
         layer=layer,
@@ -581,6 +713,14 @@ def _protection_table(spec: PvSystemSpec) -> Table:
     )
 
 
+def _short_source(source: str) -> str:
+    """The source of a symbol as the legend prints it: the standard and the clause or appendix."""
+    if source.startswith("pvsld"):
+        return "pvsld (sin símbolo oficial)"
+    short = source.replace("Apéndices", "Ap.").replace("Apéndice", "Ap.")
+    return short.split(" (")[0].split(";")[0]
+
+
 def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
     rows = []
     seen: set[str] = set()
@@ -589,15 +729,16 @@ def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
             continue
         seen.add(item.symbol)
         symbol = get_symbol(item.symbol)
-        rows.append((symbol.name, symbol.description_es, symbol.iec_ref))
+        rows.append((symbol.name, symbol.description_es, _short_source(symbol.source)))
     return _auto(
         id="TBL-LEGEND",
         layer=layers.NOTES,
         x=LEGEND_X,
         y_top=LEGEND_Y_TOP,
-        title="CUADRO DE SIMBOLOGÍA (IEC 60617; abreviaturas NMX-J-136-ANCE)",
-        header=("Bloque", "Descripción", "Referencia"),
+        title="CUADRO DE SIMBOLOGÍA (CFE G0100-04; NMX-J-136-ANCE-2019)",
+        header=("Bloque", "Descripción", "Fuente"),
         rows=tuple(rows),
+        max_width=RIGHT_BAND_WIDTH_MM,
         row_height=4.2,
     )
 
@@ -767,18 +908,13 @@ def _title_block(spec: PvSystemSpec, derived: Derived) -> SymbolInstance:
 # --- The template -------------------------------------------------------------------------------
 
 
-def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram:
-    """Lay out ``spec`` on an A3 sheet.
+def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) -> Schematic:
+    """Components and conductors of ``spec`` placed by ``placement`` (shared by every template).
 
     Raises:
-        LayoutError: the spec is outside the template (more than one inverter or two strings, an
-            unknown MPPT, no I1/I2/MF device) or does not fit on the sheet.
+        LayoutError: more than one inverter or two strings, an unknown MPPT or a missing I1, I2
+            or MF device.
     """
-    if spec.layout.template != TEMPLATE:
-        raise LayoutError(f"unsupported layout template {spec.layout.template!r}")
-    derived = derived or calc.derive(spec)
-    tables_data = get_tables(spec.standards.nom_edition)
-
     if len(spec.inverters) != 1:
         raise LayoutError(
             f"template {TEMPLATE} draws exactly one inverter, got {len(spec.inverters)}"
@@ -793,12 +929,13 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
     i1, i2, meter, panel = _key_devices(spec)
 
     # Components, in drawing order.
-    instances: list[SymbolInstance] = [*_string_instances(spec, derived, inverter)]
-    instances.append(_inverter_instance(inverter))
+    instances: list[SymbolInstance] = [*_string_instances(spec, derived, inverter, placement)]
+    instances.append(_inverter_instance(inverter, placement))
     instances.append(
         _breaker_instance(
             i1.id,
-            ITM1_X,
+            placement.itm1_x,
+            placement.inverter[1],
             role="I1",
             poles=i1.poles,
             rating_a=i1.rating_a,
@@ -812,11 +949,11 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         _instance(
             "PVSLD_PI",
             poc.id,
-            PI_X,
-            INVERTER_XY[1],
+            placement.pi_x,
+            placement.inverter[1],
             {
                 "TAG": poc.id,
-                "DESC": "Punto de interconexión",
+                "DESC": placement.pi_description,
                 "PI_TYPE": poc.type,
                 "PANEL": poc.panel,
                 "BREAKER": poc.breaker,
@@ -827,8 +964,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         _instance(
             "PVSLD_PANEL",
             panel.id,
-            PANEL_X,
-            INVERTER_XY[1],
+            placement.panel_x,
+            placement.inverter[1],
             {
                 "TAG": panel.id,
                 "DESC": panel.name,
@@ -845,7 +982,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
     instances.append(
         _breaker_instance(
             i2.id,
-            ITMP_X,
+            placement.itmp_x,
+            placement.inverter[1],
             role="I2",
             poles=i2.poles,
             rating_a=i2.rating_a,
@@ -858,11 +996,11 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         _instance(
             "PVSLD_METER",
             meter.id,
-            METER_X,
-            INVERTER_XY[1],
+            placement.meter_x,
+            placement.inverter[1],
             {
                 "TAG": meter.id,
-                "DESC": "Medidor bidireccional (MF)",
+                "DESC": "Medidor MF",
                 "METER_TYPE": "MF",
                 "BIDIRECTIONAL": "SI" if meter.bidirectional else "NO",
                 "OWNER": meter.owner,
@@ -875,8 +1013,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         _instance(
             "PVSLD_GRID",
             GRID_COMP_ID,
-            GRID_X,
-            INVERTER_XY[1],
+            placement.grid_x,
+            placement.inverter[1],
             {
                 "TAG": "RED-1",
                 "DESC": f"Red {utility.supplier}",
@@ -895,7 +1033,7 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         _instance(
             "PVSLD_GND",
             GROUND_COMP_ID,
-            *GROUND_XY,
+            *placement.ground,
             {
                 "TAG": GROUND_COMP_ID,
                 "DESC": "Electrodo de puesta a tierra",
@@ -922,15 +1060,16 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         end: PortRef,
         *,
         route: str = "hvh",
+        bend_x: float | None = None,
         circuit: Circuit | None = None,
     ) -> None:
         a = by_id[start.comp_id].port_xy(start.port)
         b = by_id[end.comp_id].port_xy(end.port)
-        points = _hvh(a, b) if route == "hvh" else _vh(a, b)
+        points = _hvh(a, b, bend_x=bend_x) if route == "hvh" else _vh(a, b)
         connections.append(
             Connection(conn_id, kind, layer, start, end, points, circuit.id if circuit else None)
         )
-        if circuit is not None:
+        if circuit is not None and placement.callouts:
             texts.extend(_callout(spec, circuit, values_by_circuit[circuit.id].vd_pct, points[0]))
 
     for string in spec.strings:
@@ -948,6 +1087,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
             layers.DC_CONDUCTORS,
             PortRef(string.id, "OUT"),
             PortRef(inverter.id, string.mppt),
+            # Bend next to the inverter, clear of the callout above the string's wire.
+            bend_x=placement.inverter[0] - placement.string_bend_mm,
             circuit=circuit,
         )
     inverter_circuit = next((c for c in spec.circuits if c.kind == "inverter_output"), None)
@@ -984,12 +1125,29 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         PortRef(GROUND_COMP_ID, "PE"),
         route="vh",
     )
-    texts.append(
-        TextItem(layers.TAGS, 140.0, 174.0, 2.5, f"GEC CD: {spec.grounding.gec_dc} Cu desnudo")
-    )
-    texts.append(
-        TextItem(layers.TAGS, 226.0, 174.0, 2.5, f"GEC CA: {spec.grounding.gec_ac} Cu desnudo")
-    )
+    gec_dc = f"GEC CD: {spec.grounding.gec_dc} Cu desnudo"
+    gec_ac = f"GEC CA: {spec.grounding.gec_ac} Cu desnudo"
+    texts.append(TextItem(layers.TAGS, *placement.gec_dc_text, 2.5, gec_dc))
+    texts.append(TextItem(layers.TAGS, *placement.gec_ac_text, 2.5, gec_ac))
+    return Schematic(tuple(instances), tuple(connections), tuple(texts), i1, i2)
+
+
+def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram:
+    """Lay out ``spec`` on an A3 sheet.
+
+    Raises:
+        LayoutError: the spec is outside the template (more than one inverter or two strings, an
+            unknown MPPT, no I1/I2/MF device) or does not fit on the sheet.
+    """
+    if spec.layout.template != TEMPLATE:
+        raise LayoutError(f"unsupported layout template {spec.layout.template!r}")
+    derived = derived or calc.derive(spec)
+    tables_data = get_tables(spec.standards.nom_edition)
+
+    schematic = build_schematic(spec, derived, RESIDENTIAL)
+    instances = list(schematic.instances)
+    connections = list(schematic.connections)
+    texts = list(schematic.texts)
 
     # Headings.
     texts.append(TextItem(layers.TAGS, 15.0, 277.0, 5.0, "DIAGRAMA UNIFILAR FOTOVOLTAICO"))

@@ -339,55 +339,468 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
-## Phase 3: Parametric PV Sizing Engine
+## Phase 3: Parametric PV Sizing Engine & Complete Rule Pack
 
-**Tentative Intent:** Implement the deterministic sizing engine and complete the rule pack (per ADR-0001 and the Phase 2 review). It accepts solar installation parameters (location, roof/site specs, load, inverter models) and computes the string/inverter configuration. Tentative stages, owner to confirm:
-- 3.1 Parameter model schema v1 (ADR-0002): the fields that 7 catalogue rules still need, equipment catalogue entries from datasheets, versioning
-- 3.2 Complete rule pack `mx-gd-2026.10`: all 98 rules, starting with STR-007 (inverter DC power and DC/AC ratio, the gap found in the owner's Claude test); NOM tables re-read against the published text; coverage tests per MX item
-- 3.3 Sizing engine: string configuration proposals, inverter matching, DC/AC ratio, conductor, OCPD and voltage-drop sizing
-- 3.4 MCP surface: a sizing tool and the full rule-catalogue resource; confirm the preview token budget; close the MCP Inspector check
+**Goal:** Implement the deterministic PV system sizing engine, store component specifications from manufacturer datasheets, complete the validation rule pack to all 98 rules (including STR-007, the gap found in Phase 2), and expose sizing as an MCP tool to Claude. The owner supplies component datasheets; the team extracts specifications, validates them, and stores them in a versioned catalogue. The sizing engine proposes string configurations, inverter matching, and balance-of-system (BOS) sizing deterministically, while Claude elicits parameters and explains trade-offs.
 
 **Target Release:** `v0.3.0-engine`
 
-**Status:** To be defined (tentative, owner confirmation pending)
+---
 
-**Estimated Stages:** 3.1–3.4
+### Stage 3.1: Component Catalogue Data Model & Storage Format (ADR-0004)
+
+**Goal:** Design and implement the component catalogue schema and storage backend. Define how equipment datasheets map to the parameter model, including PV module specs (Pstc, Voc, Vmp, Imp, temp coefficients), inverter specs (Pdc_max, Vdc_max, MPPT count and limits, AC power, certifications), and balance-of-system components (conductors, fuses, breakers, SPD ratings). Establish a workflow for datasheet ingestion: PDF → markitdown → human review → versioned catalogue.
+
+**Success Criteria:**
+
+- ADR-0004 (proposed) documents the chosen storage format (YAML per component, SQLite, or JSON), with rationale for cost-of-change, auditability, and version control
+- Component schema defined and validated:
+  - PV modules: `pstc_w`, `voc_v`, `vmp_v`, `imp_a`, `temp_coef_voc` (V/K), `temp_coef_pmp` (%/K), `temp_coef_imp` (A/K), `isc_a`, dimensions, weight, frame type, source (datasheet SHA-256, page ref, extraction date, reviewed flag)
+  - String/hybrid inverters: `pdc_max_w`, `vdc_max_v`, `vdc_min_v`, `mppt_count`, per-MPPT `isc_max_a`, `vmp_window_v`, `pac_nominal_w`, `pf_range`, `thd_max`, certifications (UL-1741-SB, IEEE-1547, NMX), source fields
+  - Conductors: rated ampacity vs. temperature, insulation type, core cross-section, voltage drop per meter at rated current
+  - Overcurrent devices: interrupting rating (KAIC), voltage rating, current rating, certifications
+- `src/pvsld/catalogue.py` module with typed schema (Pydantic) and a `ComponentRegistry` class
+- Git-ignored `datasheets/inbox/` and `datasheets/cache/` directories (raw PDFs and markitdown); committed `datasheets/records/` with per-component JSON/YAML records including provenance
+- Unit validation tests (e.g., Vmp < Voc, Imp < Isc, temperature coefficients in plausible ranges)
+- Documentation in `CONTRIBUTING.md` on the datasheet ingestion workflow
+
+**Tests:**
+
+- Schema validation: 10+ fixtures pass Pydantic type checking and unit plausibility
+- Three mutated specs fail expected validations (e.g., Voc < Vmp, negative temp coeff where positive expected)
+- Roundtrip test: record → model → JSON serialization is lossless
+- File integrity test: source SHA-256 and extraction metadata are present and immutable after commit
+- Coverage: at least 3 PV modules, 3 inverters, 5 conductor types, 10 protection devices in the initial commit
+
+**Status:** Not Started
 
 ---
 
-## Phase 4: Diagram Generation & Symbol Library
+### Stage 3.2: Datasheet Ingestion Pipeline & Validation Workflow
 
-**Tentative Intent:** Develop the Claude reasoning engine that translates parametric configuration into single-line diagram topology, and render AutoCAD .dwg files with proper symbology and labeling.
+**Goal:** Create a semi-automated pipeline to extract component specifications from manufacturer PDFs using markitdown and Claude's reading ability, validate the extracted facts, and store them in the catalogue. Establish a human-review workflow so the owner can approve extracted records before they're committed.
 
-**Note (ADR-0001):** Topology and layout are assigned to deterministic code, not to Claude; Claude elicits, validates and explains parameters. Rendering is DXF-first (ezdxf), with DWG coming from the AutoCAD backend or a finisher. Revise this description when Phase 4 is planned.
+**Success Criteria:**
 
-**Proposed scope (Phase 2 review, tentative):**
-- Layout templates beyond `bt_string_residential_v1`: more strings and MPPTs, several inverters, three-phase, microinverters and optimizers
-- The symbol library grown to the NMX-J-136-ANCE figures, with approved Mexican SLDs as references
-- B2 production methods (`render_diagram`, `read_back`, `save_as_dwg`, `plot_pdf`, `zoom_to`), the B1/B2 parity test, and a signed `.bundle` that loads without the per-session prompt
-- `export_drawing` (Core Console finisher with batching, non-ASCII paths and DWGPROPS "last saved by" privacy) and `get_diagram_summary`
+- `docs/datasheet-ingestion-protocol.md` documents the workflow:
+  1. Owner places PDF in `datasheets/inbox/<component_type>/<model>.pdf`
+  2. markitdown converts to markdown, cached in `datasheets/cache/` (git-ignored)
+  3. Claude reads the markdown and extracts structured facts into a JSON template
+  4. Python validation script checks plausibility (units, ranges, cross-field consistency)
+  5. Owner reviews the extracted record and either approves or flags for re-read
+  6. Approved record is committed to `datasheets/records/<component_type>/<model>.yaml`
+- `src/pvsld/ingest.py` script:
+  - `ingest_datasheet(pdf_path: Path, component_type: str) → dict` (returns extraction template for human review)
+  - `validate_component_record(record: dict, schema: Type[BaseModel]) → tuple[bool, list[str]]` (returns validity and any warnings)
+  - Token budget for PDFs: estimate tokens with markitdown, then chunk if > 50k
+- Example ingestion of 3 real datasheets (modules, inverter, protection device) in the repo history
+- Validation catches at least 5 common datasheet mistakes (ambiguous specs, unit mismatches, out-of-range values)
+- `src/pvsld/rules.py` extended with a datasheet-sourced fact check (rule DTS-001: every catalogue component has a source and extraction date)
 
-**Status:** To be defined (tentative, owner confirmation pending)
+**Tests:**
 
-**Estimated Stages:** 4.1–4.5
+- Unit test: `test_validate_component_record` with 10+ fixture records (valid, under-spec'd, out-of-range, missing required fields)
+- Integration test: `test_ingest_example_datasheet` reads a sample markdown (synthetic, no copyright), extracts to template, validates, and compares against expected fields (photosynthetic match, not byte match)
+- Workflow test: a dry run of the full pipeline on one owner-supplied PDF (marked `datasheets`, skipped in CI because the PDF is not in the repository; only the reviewed record is committed)
+- No full PDFs committed to the public repo; `.gitignore` enforces this
+
+**Status:** Not Started
 
 ---
 
-## Phase 5: Validation & Production Release
+### Stage 3.3: Rule Pack Completion & STR-007 Priority
 
-**Tentative Intent:** Validate diagrams against Mexican electrical standards (NOM-001-SEDE, CRE/CNE, CFE, UVIE), create integration test suite, package as standalone tool, and release `v1.0.0`.
+**Goal:** Implement all 98 validation rules in the Mexican PV SLD rule pack (`mx-gd-2026.10`), with immediate focus on STR-007 (inverter DC power and DC/AC ratio), which Phase 2 identified as a gap. Update the vault tables against the current NOM-001-SEDE-2012 and CRE regulations.
 
-**Proposed scope (Phase 2 review, tentative):**
-- Reviewer acceptance of DXF and PDF output (UVIE and CFE feedback; ADR-0001 trigger T3)
-- A package validator for MX-I01…I07, post-drawing TOP and DRW rules, and end-to-end tests
-- An MCPB bundle and a Claude Desktop run
-- A commercial-seat check of the Education-licence question
+**Success Criteria:**
 
-**Status:** To be defined (tentative, owner confirmation pending)
+- Phase 2 baseline: 8 of 98 rules implemented; Phase 3 target: ≥ 80 of 98 (85 %)
+- **STR-007 (inverter DC power)** implemented and tested:
+  - Rule: Σ(P_STC of modules on each string × number of strings) ≤ inverter P_dc,max (error if violated)
+  - DC/AC ratio check: ratio ≥ 1.0 and ≤ policy ceiling (e.g., 1.35 for warnings, 1.5+ as errors per owner policy; configurable)
+  - Test case: the Phase 2 owner test (2 × 11 × 550 W = 12.1 kWp vs. inverter P_dc,max = 9 kW) correctly rejects as STR-007
+- Vault note `PV SLD Validation Rules.md` re-read against NOM-001-SEDE-2012 (published text, not phase 2 memory); all 98 rules updated with:
+  - Rule ID (`STR-NNN`, `VOLT-NNN`, `CON-NNN`, `PCC-NNN`, `MET-NNN`, `DIS-NNN`, `PROT-NNN`, `I-NNN`)
+  - Mexican regulation reference (NOM, CRE/CNE table, CFE guideline, UVIE requirement)
+  - Machine-checkable condition (formal or pseudo-code)
+  - Severity (error vs. warning/info)
+- Coverage test per MX-xx checklist item: 65 of 71 machine-checkable items (MX-A through MX-I) have a mapping in `src/pvsld/rules.py`
+- `src/pvsld/rules.py`:
+  - One rule class per catalogue rule (factory or registry pattern)
+  - `RulePack` with a `check(spec: PVSystemSpec, catalogue: ComponentRegistry) → list[Finding]`
+  - `Finding` dataclass with rule_id, severity, description, affected_component_ids, remediation hint
+- Rule test suite:
+  - Happy path: the residential_7p7kwp example passes all implemented rules
+  - Sad paths: 30+ mutations of the example (bad string voltage, bad conductor size, too many modules, inverter overload, etc.) each fail the expected rule
+  - Regression: the Phase 2 8-rule subset still passes
+
+**Tests:**
+
+- `test_rule_str_007_dc_power`: nominal, at limit, and over limit cases
+- `test_rule_pack_coverage`: every MX-xx item has a mapping
+- `test_residential_7p7kwp_passes`: golden spec passes all implemented rules
+- `test_mutations_fail_expected_rules`: 30+ mutations each trigger exactly one expected rule
+- Vault lint: all 98 rule IDs in the vault have a corresponding Python implementation or a deferred note
+- CLI: `pvsld check examples/residential_7p7kwp.yaml` reports 0 findings
+
+**Status:** In Progress. STR-007 is implemented (9 of 98 rules; PR for Stage 3.4): array STC power against the inverter PV power limit (error), DC/AC ratio policy with defaults warning above 1.35 and error above 1.50 in `pvsld.core.policy` (owner decision pending). The other 89 rules, the vault re-read and the coverage tests remain.
+
+---
+
+### Stage 3.4: Parametric Sizing Engine (Strings, Inverters, Conductors, OCPD)
+
+**Goal:** Implement the deterministic sizing engine: given a site (min/max temperature, utility service voltage/frequency), a target system size (kWp), and a choice of components from the catalogue, compute viable string configurations, inverter matching, DC/AC ratio, conductor sizes, overcurrent protection, and voltage drop. Return a ranked list of candidate designs and recommend one. Explain why alternatives were rejected.
+
+**Success Criteria:**
+
+- `src/pvsld/sizing.py`:
+  - `propose_string_configs(modules: list[PVModule], vdc_window: tuple[float, float], mppt_isc_max_a: float, site: SiteParams) → list[StringConfig]`
+    - Input: module model, min/max counts per string (from voltage rules VOLT-NNN), MPPT current limit, temperature extremes
+    - Output: ≥ 1 and ≤ 10 candidate configs with (modules_per_string, count, voc_min_hot, voc_max_cold, isc, pdc)
+    - Compute temperature-corrected Voc at T_min (cold) and T_max (hot) using module temp coefficient
+    - Reject configs where Voc_cold > MPPT V_max or Voc_hot < MPPT V_min (VOLT rules)
+    - Reject configs where string Isc > MPPT I_max or total Pdc > inverter Pdc_max (STR-007)
+  - `match_inverters(target_pdc_w: float, target_vdc_window: tuple, site: SiteParams, catalogue: ComponentRegistry) → list[InverterMatch]`
+    - Propose ≥ 1 inverter from the catalogue that fits the DC power and voltage window
+    - Compute DC/AC ratio and report as info/warning/error per policy
+  - `size_conductors_and_ocpd(strings: list[StringConfig], pdc_total: float, vdc: float, circuit_type: str, max_voltage_drop_pct: float = 3.0) → BosSpec`
+    - Input: DC current (Isc × safety factor), AC current (Pac / V_ac), conductor routing length, ambient temperature
+    - Output: conductor AWG/mm², OCPD type and rating, voltage drop %, grounding requirements
+    - Use NOM-001 tables from vault for copper conductor ampacity (temperature-derating and bundling)
+    - Apply 125 % factor for continuous loads, 80 % factor for non-continuous; STR rules for string current limits
+    - Reject sizing where voltage drop > max (3 % DC typical, 3 % AC typical per NOM)
+  - `size_pv_system(site: SiteParams, target_pdc_w: float, module_model: str, inverter_choice: Optional[str], owner_constraints: dict) → SizingResult`
+    - Orchestrator: call propose_string_configs, match_inverters, size_conductors, then validate full spec with rule pack
+    - Return a `SizingResult` with a ranked list of candidate specs (best first), selected spec, and a human-readable report explaining trade-offs and rejections
+  - All sizing is deterministic Python; no LLM calls
+- Example (the Phase 2 owner test): with the sample 550 W module and the 6 kW inverter (P_dc,max 9 kW, V_dc,max 600 V) at T_min −3 °C, the engine rejects 2 × 12 (VOLT-001, 640 V) and 2 × 11 (STR-007, 12.1 kWp > 9 kW), and selects 2 × 8 (8.8 kWp, DC/AC 1.47, Voc 426.8 V), reporting why each alternative was rejected; its conductors, OCPD and voltage drop pass the rule pack
+- Test harness: `test_size_residential_7p7kwp` passes known configurations
+- Token budget: sizing result (candidate list + selected spec + explanations) stays under 10k tokens (leaves room for Claude's reasoning)
+
+**Tests:**
+
+- `test_string_config_temp_corrected_voc`: Voc at hot and cold temperatures is within voltage window
+- `test_string_config_reject_overvoltage`: config with Voc_cold > MPPT_Vmax is rejected
+- `test_string_config_reject_overpower`: config with Pdc > inverter Pdc_max is rejected (STR-007)
+- `test_inverter_match`: only inverters with Vdc_min ≤ string_vmp ≤ Vdc_max are matched
+- `test_conductor_size_voltage_drop`: 7.7 kWp system has ≤ 3 % drop on 50 m DC run with chosen conductor
+- `test_ocpd_rating_continuous`: DC OCPD is sized at 125 % × Isc (continuous load rule)
+- `test_sizing_result_passes_rule_pack`: proposed spec runs through full rule validation and reports 0 errors (warnings/info allowed)
+- `test_residential_example`: end-to-end sizing of the Phase 2 7.7 kWp example returns ≥ 1 candidate, selected spec, no validation errors
+
+**Status:** In Progress. v1 is done in `pvsld.sizing` (strings, string OCPD from the catalogue, inverter-output breaker, copper conductors and voltage drop; `pvsld size`). Stage 3.4b remains: EGC per Table 250-122, conduit fill, external DC disconnect, inverter maximum OCPD (OCP-005), multiple inverters, three-phase services, aluminium, optimizer limits (STR-009).
+
+---
+
+### Stage 3.5: MCP Tool Surface & Token Budget Confirmation
+
+**Goal:** Expose the sizing engine as an MCP tool (`size_pv_system`) and publish the component catalogue and rule pack as MCP resources. Confirm the preview token budget with real Claude runs and document the limits.
+
+**Success Criteria:**
+
+- `src/pvsld/mcp/server.py` extended with:
+  - `size_pv_system` tool: input schema (site, target_pdc_w, preferred_components, owner_constraints), returns result JSON with candidates, selected spec, report text, and a visual diagram preview (SVG or small PNG, ≤ 5 kB)
+  - `list_components` resource / tool: filter by type (module, inverter, conductor, ocpd), return brief catalogue
+  - `get_component` tool: fetch full datasheet-sourced spec of one catalogue entry
+  - `ingest_datasheet` tool (optional, early): upload a PDF and trigger the extraction pipeline (returns a template for owner review, not a committed record)
+- `.mcp.json` updated to list the new tools
+- Token budget test (real Claude Code run or estimate):
+  - Sizing result (full candidate list + explanations): ≤ 8k tokens
+  - Rule catalogue (all 98 rules + MX references): ≤ 15k tokens (published as a resource, not in every call)
+  - Total per `size_pv_system` call: ≤ 20k tokens (margin for Claude's reasoning: 25k hard cap, so 5k buffer)
+- Environment variable `PVSLD_MCP_COMMAND` documented in README and `.mcp.json` configured correctly
+- Optional MCP Inspector session run (if Node.js is installed; confirm tools and schemas are listed)
+- User-facing documentation: a worked example in the README ("Size a 10 kWp system for Guadalajara") that calls `size_pv_system`, shows the result and selected spec
+
+**Tests:**
+
+- `test_mcp_size_pv_system_schema`: tool input and output schemas are valid OpenAPI
+- `test_size_pv_system_result_under_token_cap`: result JSON serialization is ≤ 20k tokens
+- `test_mcp_list_components_by_type`: filter works and returns expected items
+- `test_mcp_get_component_detail`: fetches full spec including datasheet provenance
+- Integration test: `test_mcp_server_lists_tools`: the server starts, lists tools in < 5 s, and schemas match the code
+- Optional: manual Claude Code session ("size a 15 kWp commercial system") within 240 s, no output-cap errors
+
+**Status:** Not Started
+
+---
+
+### Stage 3.6: Minimum Installable Claude Code Plugin
+
+**Goal:** The owner's short-term goal is a Claude Code plugin. Package the `pvsld` MCP server with the plugin layout Claude Code uses (`.claude-plugin/plugin.json`, a plugin-level MCP server definition, skills or slash commands), so that installing the plugin gives Claude the validate, size and generate tools plus guided workflows: design a PV single-line diagram end to end, and ingest a datasheet into the catalogue.
+
+**Success Criteria:**
+- Plugin layout follows the structure of plugins actually installed on the workstation (checked against an installed plugin, not memory)
+- The plugin starts the MCP server without the `PVSLD_MCP_COMMAND` workaround (e.g., a launcher that finds or creates the Python environment, or a documented `pip install` step the plugin verifies)
+- Skills or commands: `design` (elicit inputs → `size_pv_system` → `validate_pv_design` → `generate_single_line_diagram` → review the preview) and `ingest-datasheet` (markitdown → extraction → validation → owner review)
+- Installed from a local marketplace/path by the owner in a fresh Claude Code session; the end-to-end design flow works on the owner's datasheet-based catalogue
+
+**Tests:**
+- CI: plugin manifest and MCP definition are valid JSON with the required fields; referenced files exist
+- Manual (owner): install the plugin, run the design workflow for one real installation, and record the result in the vault
+
+**Status:** Not Started
+
+---
+
+**Phase 3 Status Summary:** Paused (owner, 2026-10-07). Open items:
+- PR #12 (catalogue batch: Jinko 60HL4, pending owner review, CI intentionally red due to missing staged implementation)
+- PR #13 (STR-007 + sizing engine v1, pending owner decisions on scope)
+- Stages 3.1–3.6 remain Not Started; do not merge or rebase these branches until Phase 4 is kicked off.
+
+---
+
+## Phase 4: Symbol Library Versioning & Deterministic DXF Regeneration
+
+**Goal:** Create a versioned CFE-compliant symbol library in DXF master file format, replace code-defined symbols with library imports, and establish a deterministic regeneration pipeline. This forms the foundation for diagram generation and layout templates in Phase 5.
+
+**Target Release:** `v0.4.0-symbols`
+
+**Key Decision:** The symbol library is a versioned DXF master file (`symbols/pvsld-symbols.dxf`) that is the single source of truth. The generator imports blocks from it instead of code-defined geometry. A legend sheet documents each symbol's CFE G0100-04 source. A regeneration script ensures the library is deterministic and CI-testable.
+
+---
+
+### Stage 4.1: Symbol Library Specification & ADR-0005
+
+**Goal:** Document the design of the CFE-compliant symbol library and the code-to-file transition. Record the decision, library format, block naming, attributes, metadata, and regeneration strategy in ADR-0005.
+
+**Success Criteria:**
+
+- ADR-0005 (proposed) documents:
+  - **Library as DXF master:** `symbols/pvsld-symbols.dxf` is the single source of truth; blocks are imported by the generator, not code-defined
+  - **Block naming and attributes:** Comply with ADR-0003 (PVSLD_<FUNCTION>, standard attributes TAG/DESC/COMP_ID/IEC_REF/NMX_REF, function-specific attributes with units)
+  - **Symbol sourcing:** Each block records its source in XDATA or hidden attributes:
+    - **CFE G0100-04 Appendix C symbols (13 source symbols):** Módulo fotovoltaico, Varistor, Interruptor termomagnético, Inversor, Medidor de energía, Red eléctrica de distribución, Gabinete, Diodo de paso, Cargas de iluminación, Sensor de corriente, Interruptor manual, Transformador de aislamiento, Carga de contactos
+    - **Supplementary (CFE diagrams D1/D2 and NMX-J-136-ANCE / IEC 60617):** Earth/ground symbol, conductor-count marks (//), polarity (+/−), Detector de falla a tierra, fuse (IEC 60617-2), DC disconnect (IEC), battery (IEC), SPD (IEC or varistor variant)
+  - **Legend sheet (layout):** Símbolo | Designación | Fuente, listing all blocks with CFE/IEC/NMX reference
+  - **Regeneration:** A deterministic Python script (`scripts/regenerate_symbol_library.py`) that can rebuild the DXF from a canonical definition (YAML or Python), with bit-for-bit reproducibility across runs and platforms
+  - **DWG export:** Core Console finishes the library DXF to DWG 2018 (produced once, committed, CI validates it exists and audits 0)
+  - **Golden tests:** How the golden DXF test changes when the library regenerates (validation hook in CI, reviewed by owner)
+
+- ADR-0005 is written in vault and mirrored to `docs/decisions/ADR-0005-cfe-symbol-library.md`
+- Appendix C source crop images placed in `datasheets/cache/cfe_appendix_c/` with attribution notes (git-ignored)
+- A decision summary page in the vault notes the 13 CFE symbols and which IEC/NMX standards back the gaps
+
+**Tests:**
+
+- ADR document is well-formed markdown with clear rationale for the library-as-file approach
+- Comparison: code-defined (current) vs. file-based (proposed) shows the trade-offs (single source of truth, version control, visual review)
+- References to CFE G0100-04 Appendix C and IEC 60617 are correct
+- Owner approves the decision before Stage 4.2 begins
+
+**Status:** Complete (ADR-0005 accepted)
+
+---
+
+### Stage 4.2: Build CFE Symbol Set as Blocks in DXF + Legend Sheet
+
+**Goal:** Create the master DXF file with all required symbols as blocks, a legend layout, and metadata. All symbols are drawn from CFE G0100-04 Appendix C first, then NMX-J-136-ANCE and IEC 60617 for gaps. The file is deterministic and passes `doc.audit()` with 0 errors.
+
+**Success Criteria:**
+
+- **Master DXF created:** `symbols/pvsld-symbols.dxf` (R2018 format, UTF-8)
+- **Blocks implemented (≥17):**
+  - **CFE G0100-04 Appendix C (13):** PVSLD_PV_STRING, PVSLD_VARISTOR, PVSLD_CB (inverter-side and string-side variants if needed), PVSLD_INV (box + diagonal, "=" upper-left, "~" lower-right per Appendix C figure), PVSLD_METER (box with ↔ over kWh), PVSLD_GRID (circle with ~), PVSLD_STRUCTURE (dash-dot rectangle), PVSLD_DIODE_BYPASS, PVSLD_LOAD_LIGHT, PVSLD_CT (current sensor), PVSLD_SW_MANUAL, PVSLD_TRAFO_ISO, PVSLD_LOAD_CONTACT
+  - **Supplementary (≥4):** PVSLD_GND (earth/ground symbol, IEC 60617), PVSLD_SPD (surge protector / varistor variant, IEC 60617 or CFE if defined), PVSLD_DC_DISCONNECT (IEC 60617), PVSLD_FUSE (IEC 60617)
+  - **Existing (redrawn to match CFE aesthetics):** PVSLD_TTLB (title block, Mexican fields), PVSLD_PANEL (conductor or panel placeholder), others as required
+- **Block attributes:**
+  - Visible: TAG, DESC (Spanish)
+  - Hidden: COMP_ID, IEC_REF, NMX_REF
+  - Function-specific with units: RATING_A, VOLT_V, PMAX_W, etc. (per device type)
+  - Hidden attribute `SOURCE_STANDARD` (e.g., "CFE G0100-04 Appendix C", "IEC 60617-2", "NMX-J-136-ANCE") or XDATA app `pvsld` record format 3 with source metadata
+- **XDATA per ADR-0003:** Block record, INSERT, and conductor formats; library version semantic version (e.g., `0.4.0`)
+- **Legend layout:** Paper-space layout named `Legend` with:
+  - Table / structured list: Símbolo (block thumbnail or INSERT), Designación (DESC), Fuente (SOURCE_STANDARD)
+  - Title block or header: "pvsld Symbol Library v0.4.0 – CFE G0100-04 Appendix C & IEC 60617"
+  - Suitable for A3 or A4 printout
+- **Audit result:** `doc.audit()` returns (0 errors, 0 fixes)
+- **Regeneration script:** `scripts/regenerate_symbol_library.py`
+  - Input: canonical definition (YAML file `symbols/cfe_symbols_0.4.0.yaml` or inline Python dataclass)
+  - Output: deterministic DXF (same bytes across runs, Windows/Linux/macOS)
+  - Validation: script is idempotent; regenerating the library produces the same file hash
+  - Test: CI runs the regeneration, compares file hash, and confirms 0 changes (or detects intentional edits)
+
+**Tests:**
+
+- `test_library_audit_clean`: `doc.audit()` returns (0, 0)
+- `test_all_blocks_have_required_attributes`: every block has TAG, DESC, COMP_ID, IEC_REF, NMX_REF (hidden), and at least one function-specific attribute (if applicable)
+- `test_block_ports_defined`: each block has ports in XDATA format per ADR-0003
+- `test_legend_layout_renders`: legend layout exists and all block references are valid
+- `test_regeneration_idempotent`: running the regeneration script twice produces identical file hashes
+- `test_library_cross_platform`: CI runs regeneration on Windows and Linux; hashes match
+- Manual inspection (owner): Open the DXF in AutoCAD, visually verify each symbol matches Appendix C or IEC standard, audit 0/0
+
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
+
+**As built (deviations from the plan above):**
+
+- The canonical definition is a Python module (`src/pvsld/symbols/cfe/definitions.py`), not YAML; the builder is `pvsld symbols build` (`scripts/build_symbol_library.py` wraps it). The library DXF is `symbols/pvsld-symbols.dxf`, version 0.4.0.
+- 22 blocks in v0.4.0 and 56 in v0.5.0 (round 2: the 28 components of the symbol map plus the IEC thermomagnetic breaker and the RCD; three Legend layouts by family). v0.4.0 blocks: the 13 Appendix C symbols (names follow ADR-0003: `PVSLD_PV_MODULE`, `PVSLD_SPD`, `PVSLD_CB`, `PVSLD_INV`, `PVSLD_METER`, `PVSLD_GRID`, `PVSLD_ENCLOSURE`, `PVSLD_DIODE`, `PVSLD_LOAD_LIGHT`, `PVSLD_CT`, `PVSLD_SWITCH`, `PVSLD_XFMR_ISO`, `PVSLD_LOAD_RECEPT`), `PVSLD_GND`, `PVSLD_COND_MARK`, `PVSLD_POL_POS`, `PVSLD_POL_NEG`, `PVSLD_JUNCTION`, and the Phase 2 blocks `PVSLD_PV_STRING`, `PVSLD_PANEL`, `PVSLD_PI`, `PVSLD_TTLB`.
+- Source priority CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617 (through the DGE norm and the UNE-EN 60617 sheet); every block records the clause, figure or code. `PVSLD_DC_DISCONNECT` and `PVSLD_FUSE` were added in v0.5.0. The inverter attribute `CERT` is dropped.
+- ezdxf's `Importer` does not copy block-record XDATA (the ports); `pvsld.symbols.cfe.loader.import_blocks` does, and Stage 4.3 should use it instead of `blocks.import_blocks`.
+- v0.6.0 (57 blocks), owner decisions of the v0.5.0 review (2026-10-08): the generator uses the CFE breaker `PVSLD_CB`; `PVSLD_FUSE_AC` added; the combiner box follows the string count, so Stage 4.3 calls `loader.ensure_combiner(doc, n)` (block `PVSLD_COMBINER_<n>S`, inputs `IN1`..`INn`) instead of inserting the two-string `PVSLD_COMBINER`.
+
+
+---
+
+### Stage 4.3: Generator Transition – Import from Library DXF
+
+**Goal:** Modify the diagram generator to import blocks from the library DXF instead of code-defined symbols. Remove code-defined symbol geometry. Validate that diagrams render identically. Regenerate and review the golden test DXF.
+
+**Success Criteria:**
+
+- **Generator code changes:**
+  - `src/pvsld/backends/ezdxf_backend.py` refactored to:
+    - Load the library DXF (`symbols/pvsld-symbols.dxf`)
+    - Import block definitions via `dwg.blocks.import_blocks(library_dwg)` or equivalent
+    - Insert blocks by reference, no code-defined geometry
+  - Remove `src/pvsld/symbols/catalogue.py` or refactor to a library loader; remove old block definitions
+  - Remove the CERT hidden attribute from PVSLD_INV (owner requirement; certification scope is out of Phase 4)
+- **Golden test regeneration:**
+  - Run `tests/test_spike_s1.py` with the new generator
+  - The output DXF will differ from the old golden (block definitions now imported, possibly slight geometric differences from CFE-based redraw)
+  - Owner visually reviews the new DXF in AutoCAD; confirms it renders correctly and passes AUDIT 0/0
+  - Commit the new golden DXF with a reviewed flag in the commit message (e.g., "Approved by owner, 2026-10-07")
+  - Update the test to use the new golden file
+- **Rendering parity:** 
+  - `test_diagram_renders_same`: the same parametric spec (`examples/residential_7p7kwp.yaml`) rendered with the new library produces a valid, audit-clean DXF
+  - Attribute round-trip: all COMP_ID and function-specific attributes match the model
+  - Port connectivity: 0 dangling ports, all conductors reach their intended ports
+- **CI integration:** Golden test passes on Windows and Linux; artifact upload of the new golden for owner review (optional)
+
+**Tests:**
+
+- `test_ezdxf_backend_imports_library`: library DXF is successfully loaded and blocks are imported
+- `test_golden_regeneration_audit_clean`: regenerated golden passes AUDIT 0/0
+- `test_golden_attribute_round_trip`: all 147+ attributes in the example round-trip correctly
+- `test_no_dangling_ports`: 0 dangling ports in regenerated golden
+- `test_no_code_defined_symbols`: grep confirms no references to old symbol definitions in the backend code
+- Manual (owner): Open regenerated golden in AutoCAD, visually confirm it looks correct, run AUDIT
+
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
+
+**As built (deviations from the plan above):**
+
+- The backend is `src/pvsld/backends/dxf.py`; `define_symbol_blocks` imports the used blocks, in sorted order, from `loader.library_document()` with `loader.import_blocks` (port XDATA included). `pvsld.symbols` is now the interface over the CFE library (`SYMBOLS`, `get_symbol`, `symbol_catalogue`); `src/pvsld/symbols/catalogue.py` and `render_symbol_library()` are gone. The nine Phase 2 blocks keep their tags and port ids (frozen as `PHASE2_CONTRACT` in `tests/test_cfe_definitions.py`).
+- `get_symbol("PVSLD_COMBINER_<n>S")` resolves the combiner for `n` strings and the backend defines it with `ensure_combiner`; the residential template has no combiner yet, so this is covered by unit tests.
+- Every instance also carries `SOURCE_STANDARD`; `CERT` is gone (157 attributes in the sample instead of 147). The symbology table cites the short source (`CFE G0100-04 Ap. C`).
+- Layout: the CFE inverter is 50 mm wide with its DC ports at ±10 mm, so the inverter moved 5 mm left and the string wires bend 7.5 mm before it (clear of the string callouts); the meter description is `Medidor MF` (the legend spells it out). The golden `tests/golden/residential_7p7kwp.dxf` was regenerated.
+
+---
+
+### Stage 4.3b: Owner's sheet template (`a3_plantilla_v1`)
+
+**Goal:** Draw every design on the owner's A3 sheet template, its content adapted to the design, with no personal data.
+
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
+
+- `pvsld sheet import` turns the owner's DWG into a neutral template DXF. `sheet_templates/` is git-ignored until the owner approves publishing it.
+- `layout_sheet.build_sheet_diagram` fills the 76 fields. Location, address, installer, owner and licence fields stay blank; the title block reads "COMPAÑÍA INSTALADORA".
+- The schematic placement is shared with v1 through `layout.Placement` and `build_schematic`; the v1 golden is unchanged.
+- Not in the model yet: altitude, inverter apparent power (VA), module type/dimensions, inverter certifications, estimated energy (blank or "—").
+
+---
+
+### Stage 4.4: DWG Export & Library Finalization via Core Console
+
+**Goal:** Convert the library DXF to a DWG 2018 using Core Console, finalize the library, and prepare for diagram generation in Phase 5.
+
+**Success Criteria:**
+
+- **Core Console finisher output:**
+  - `symbols/pvsld-symbols.dwg` (TrustedDWG 2018, produced via `pvsld finish` on owner's licensed workstation)
+  - Audit result (automated headless check): 0 errors, 0 fixes
+  - File metadata: "last saved by" field cleared (privacy per owner request)
+- **Library committed:**
+  - `symbols/pvsld-symbols.dxf` (source, R2018)
+  - `symbols/pvsld-symbols.dwg` (finalized, TrustedDWG 2018)
+  - Both files committed to the repository with README pointing to each
+- **CI validation:**
+  - Script checks that the DWG exists and is TrustedDWG 2018 format
+  - Automated headless AUDIT against the DWG (if Core Console is available in CI; if not, manual check by owner)
+  - Warning if DWG is stale (commits to DXF without updating DWG)
+- **Phase 4 version & release:**
+  - `CHANGELOG.md` updated with Phase 4 summary (library sourced from CFE, blocks imported, deterministic regeneration)
+  - Tag `v0.4.0-symbols` on main (via GitFlow release branch)
+
+**Tests:**
+
+- `test_library_dwg_exists`: file `symbols/pvsld-symbols.dwg` exists
+- `test_library_dwg_is_trustedacad`: DWG header confirms TrustedDWG and AC1032 (2018)
+- `test_library_dwg_audit_clean`: if headless AUDIT available, (0, 0); otherwise manual check recorded
+- Manual (owner): Open DWG in AutoCAD, AUDIT, confirm 0/0; review metadata privacy
+
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
+
+**As built:** the DWG is `symbols/pvsld-symbols.dwg` (owner request: a plain library name), exported by `pvsld symbols dwg` through the finisher. Staleness is checked offline with `symbols/pvsld-symbols.dwg.json` (DXF SHA-256, library version) and `pvsld symbols dwg --check`. AutoCAD writes the Windows login name as "last saved by" and it cannot be removed without breaking TrustedDWG. No local paths are stored.
+
+---
+
+### Stage 4.5: Extend Symbol Library – Battery, Transformer, Fuse, SPD, DC Disconnect
+
+**Goal:** Extend the CFE symbol set with additional symbols needed for diverse topologies (hybrid/battery systems, transformer configurations, advanced protection). Maintain the CFE-first approach and deterministic regeneration.
+
+**Success Criteria:**
+
+- **New symbols added (≥5):**
+  - PVSLD_BATTERY (NMX or IEC, if CFE does not define)
+  - PVSLD_TRAFO (isolation transformer, distinct from PVSLD_TRAFO_ISO if both are needed; determine from topologies in Phase 5)
+  - PVSLD_FUSE (DC-rated fuse, class gPV per NMX-J-136-ANCE; PVSLD_FUSE_DC or variant)
+  - PVSLD_SPD (surge protection device, distinct from varistor; determine from Phase 3 rule PROT-NNN requirements)
+  - PVSLD_DC_DISCONNECT (if not complete in Stage 4.2)
+  - Conductor markers (// for multi-conductor, +/− for polarity) as block symbols or documented as text/line styles
+- **Library regeneration updated:** `scripts/regenerate_symbol_library.py` includes new symbols; canonical definition (`symbols/cfe_symbols_0.4.0.yaml`) is extended
+- **Audit and test:** New blocks pass the same AUDIT, attribute, and port tests as Stage 4.2
+- **Owner review:** Each new symbol visually verified in AutoCAD and traced to its source (NMX, IEC, or CFE)
+
+**Tests:**
+
+- `test_library_audit_clean` (rerun): extended library still audits 0/0
+- `test_new_symbol_attributes`: each new block has required attributes
+- `test_new_symbol_ports`: new blocks have sensible port definitions (if applicable)
+- Manual (owner): Inspect each new symbol in AutoCAD
+
+**Status:** Not Started
+
+---
+
+## Phase 5: Layout Templates & Diagram Rendering for Diverse Topologies
+
+**Goal:** Implement layout templates for common PV configurations (single string, multi-string, multi-inverter, three-phase, battery), integrate with Phase 3's parametric sizing engine, and produce PDF/DWG exports via Core Console.
+
+**Proposed scope (Phase 4 completion triggers Phase 5 planning):**
+
+- **Layout templates:** Beyond `bt_string_residential_v1`, add templates for 2–4 strings, multiple MPPTs, several inverters, three-phase, hybrid/battery, and later microinverters
+- **Deterministic diagram generation:** Generator selects layout template based on parametric spec; Claude elicits trade-offs and approves
+- **DWG & PDF finalization:** Core Console export with batching, non-ASCII path support, and metadata privacy
+- **Diagram annotations:** Integration of Phase 3's `get_diagram_summary` for system kWp, inverter, string configuration labels
+
+**Status:** To be defined (depends on Phase 4 completion; owner confirmation pending)
 
 **Estimated Stages:** 5.1–5.4
 
 ---
 
-**Last updated:** 2026-10-06 (Stage 2.5 spike review)
+## Phase 5: Validation, Plugin Packaging & Production Release
+
+**Tentative Intent:** Validate diagram output against Mexican electrical standards and professional reviewers. Harden and distribute the Claude Code plugin started in Stage 3.6 (signed .NET plug-in if needed, public marketplace or GitHub Releases). Release `v1.0.0`.
+
+**Proposed scope (Phase 2 review, tentative, pending Phase 3 and Phase 4 completion):**
+
+- **Regulatory validation (trigger T3, open item Z1):** Gather feedback from UVIE inspection units and CFE on whether DXF and ezdxf PDFs are accepted, or if native DWG and AutoCAD PDFs are required. This feeds the plugin packaging decision.
+- **Package validator:** Implement TOP and DRW rules (post-drawing checks), validator for MX-I01…I07, and end-to-end test suite that exercises all diagram types.
+- **Claude Code plugin packaging:** Bundle the MCP server (`pvsld-mcp` executable), the configuration, and optional frontend skill/slash command into a `.claude-plugin` package compatible with the Claude Code plugin system. Decide whether to include the .NET plug-in (Phase 4 B2) in the distribution: if regulatory feedback requires native DWG, include it with a signed `.bundle` and installer; otherwise, distribute B1 (ezdxf) only. Host the plugin on a public registry or GitHub Releases.
+- **Distribution variants:** 
+  - **v1.0.0-core**: MCP server + ezdxf B1, no AutoCAD plug-in, works on any OS with Python 3.11+
+  - **v1.0.0-plugin** (conditional): includes the signed .NET 10 plug-in + B2 backend (Windows only), requires AutoCAD 2027
+  - Documentation in Spanish and English
+- **Claude Desktop support (optional):** Test a full end-to-end run on Claude Desktop (150k character limit, 240 s timeout).
+
+**Status:** To be defined (depends on Phase 4 and regulatory feedback; owner confirmation pending)
+
+**Estimated Stages:** 5.1–5.4
+
+---
+
+**Last updated:** 2026-10-07 (Phase 4 kickoff: symbol library versioning & deterministic DXF regeneration)
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD

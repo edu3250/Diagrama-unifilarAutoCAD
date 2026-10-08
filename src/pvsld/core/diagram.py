@@ -24,11 +24,11 @@ from dataclasses import dataclass
 from typing import Literal
 
 from pvsld.core import layers
-from pvsld.symbols import SYMBOLS, get_symbol
-from pvsld.symbols.catalogue import Circle, Label, Line, Polyline
+from pvsld.symbols import get_symbol
 
 Space = Literal["model", "paper"]
 ConnectionKind = Literal["pv_source", "inverter_output", "ac_network", "grounding"]
+Align = Literal["left", "center"]
 
 PORT_TOLERANCE_MM = 0.01
 """A wire end must lie within this distance of the port it connects (ADR-0001, S1 criteria)."""
@@ -169,30 +169,11 @@ class SymbolInstance:
     def boxes(self) -> list[tuple[str, Box]]:
         """Named boxes of this instance: its geometry and each visible attribute text."""
         symbol = get_symbol(self.symbol)
-        xs: list[float] = []
-        ys: list[float] = []
-        for item in symbol.geometry:
-            if isinstance(item, Line):
-                xs += [item.x1, item.x2]
-                ys += [item.y1, item.y2]
-            elif isinstance(item, Polyline):
-                xs += [p[0] for p in item.points]
-                ys += [p[1] for p in item.points]
-            elif isinstance(item, Circle):
-                xs += [item.cx - item.radius, item.cx + item.radius]
-                ys += [item.cy - item.radius, item.cy + item.radius]
-            elif isinstance(item, Label):
-                xs += [item.x, item.x + text_width_mm(item.text, item.height)]
-                ys += [item.y, item.y + item.height]
+        x0, y0, x1, y1 = symbol.bounds()
         result = [
             (
                 f"{self.comp_id} symbol",
-                Box(
-                    rnd(self.x + min(xs)),
-                    rnd(self.y + min(ys)),
-                    rnd(self.x + max(xs)),
-                    rnd(self.y + max(ys)),
-                ),
+                Box(rnd(self.x + x0), rnd(self.y + y0), rnd(self.x + x1), rnd(self.y + y1)),
             )
         ]
         values = self.values
@@ -238,7 +219,11 @@ class Connection:
 
 @dataclass(frozen=True)
 class TextItem:
-    """A single-line text, left-aligned on its baseline."""
+    """A single-line text: ``(x, y)`` is the left end of its baseline, or its centre if centred.
+
+    ``style`` names a text style of the sheet template (:attr:`Diagram.text_styles`); ``None`` is
+    the house style.
+    """
 
     layer: str
     x: float
@@ -246,14 +231,16 @@ class TextItem:
     height: float
     text: str
     space: Space = "model"
+    style: str | None = None
+    align: Align = "left"
 
     def box(self) -> Box:
-        return Box(
-            self.x,
-            self.y,
-            rnd(self.x + text_width_mm(self.text, self.height)),
-            self.y + self.height,
-        )
+        width = text_width_mm(self.text, self.height)
+        if self.align == "center":
+            x0, y0 = self.x - width / 2, self.y - self.height / 2
+        else:
+            x0, y0 = self.x, self.y
+        return Box(rnd(x0), rnd(y0), rnd(x0 + width), rnd(y0 + self.height))
 
 
 @dataclass(frozen=True)
@@ -277,6 +264,31 @@ class PolylineItem:
 
 
 @dataclass(frozen=True)
+class CircleItem:
+    layer: str
+    cx: float
+    cy: float
+    radius: float
+    space: Space = "model"
+
+
+@dataclass(frozen=True)
+class SymbolSample:
+    """A scaled INSERT of a library block with no identity (a symbology table entry).
+
+    Unlike a :class:`SymbolInstance` it stands for no component: no attribute values, no ports to
+    connect, not counted as equipment.
+    """
+
+    symbol: str
+    x: float
+    y: float
+    scale: float
+    layer: str
+    space: Space = "paper"
+
+
+@dataclass(frozen=True)
 class Table:
     """A ruled table: a title row, a header row and data rows, anchored at its top-left corner."""
 
@@ -291,6 +303,13 @@ class Table:
     row_height: float = 5.0
     text_height: float = 2.5
     space: Space = "model"
+    style: str | None = None
+    """Text style of the cells (``None``: the house style)."""
+    title_style: str | None = None
+    title_center: bool = False
+    """Centre the title in its row (the owner's sheet template boxes)."""
+    title_height: float | None = None
+    """Height of the title text (default ``text_height``)."""
 
     @property
     def width(self) -> float:
@@ -331,23 +350,43 @@ class Table:
 
     def texts(self) -> list[TextItem]:
         pad_x, pad_y = 1.5, (self.row_height - self.text_height) / 2
-        items = [
-            TextItem(
+        if self.title_center:
+            title = TextItem(
+                self.layer,
+                rnd(self.x + self.width / 2),
+                rnd(self.y_top - self.row_height / 2),
+                self.title_height or self.text_height,
+                self.title,
+                self.space,
+                style=self.title_style or self.style,
+                align="center",
+            )
+        else:
+            title = TextItem(
                 self.layer,
                 rnd(self.x + pad_x),
                 rnd(self.y_top - self.row_height + pad_y),
-                self.text_height,
+                self.title_height or self.text_height,
                 self.title,
                 self.space,
+                style=self.title_style or self.style,
             )
-        ]
+        items = [title]
         for index, row in enumerate((self.header, *self.rows), start=1):
             y = rnd(self.y_top - (index + 1) * self.row_height + pad_y)
             x = self.x
             for width, text in zip(self.col_widths, row, strict=True):
                 if text:
                     items.append(
-                        TextItem(self.layer, rnd(x + pad_x), y, self.text_height, text, self.space)
+                        TextItem(
+                            self.layer,
+                            rnd(x + pad_x),
+                            y,
+                            self.text_height,
+                            text,
+                            self.space,
+                            style=self.style,
+                        )
                     )
                 x = rnd(x + width)
         return items
@@ -391,6 +430,10 @@ class Diagram:
     polylines: tuple[PolylineItem, ...]
     tables: tuple[Table, ...]
     viewport: Viewport
+    circles: tuple[CircleItem, ...] = ()
+    samples: tuple[SymbolSample, ...] = ()
+    text_styles: tuple[tuple[str, str], ...] = ()
+    """Text styles of a sheet template as ``(name, font file)``."""
 
     def instance(self, comp_id: str) -> SymbolInstance:
         for item in self.instances:
@@ -399,15 +442,29 @@ class Diagram:
         raise KeyError(f"no component {comp_id!r}")
 
     def block_counts(self) -> dict[str, int]:
-        """Number of INSERTs per block name (the S1 criterion compares this with the DXF)."""
-        return dict(Counter(i.symbol for i in self.instances))
+        """Number of INSERTs per block name (the S1 criterion compares this with the DXF).
+
+        Symbology samples are INSERTs too; they carry no ``COMP_ID``.
+        """
+        return dict(
+            Counter([*(i.symbol for i in self.instances), *(s.symbol for s in self.samples)])
+        )
 
     def used_layers(self) -> set[str]:
         used = {i.layer for i in self.instances} | {c.layer for c in self.connections}
         used |= {t.layer for t in self.texts} | {item.layer for item in self.lines}
         used |= {p.layer for p in self.polylines} | {t.layer for t in self.tables}
+        used |= {c.layer for c in self.circles} | {s.layer for s in self.samples}
         used.add(self.viewport.layer)
         return used
+
+
+def _known(name: str) -> bool:
+    try:
+        get_symbol(name)
+    except KeyError:
+        return False
+    return True
 
 
 def check_diagram(diagram: Diagram) -> list[str]:
@@ -421,10 +478,11 @@ def check_diagram(diagram: Diagram) -> list[str]:
     problems += [f"duplicate COMP_ID {name}" for name, count in ids.items() if count > 1]
 
     for item in diagram.instances:
-        if item.symbol not in SYMBOLS:
+        try:
+            symbol = get_symbol(item.symbol)
+        except KeyError:
             problems.append(f"{item.comp_id}: unknown symbol {item.symbol}")
             continue
-        symbol = get_symbol(item.symbol)
         tags = [tag for tag, _ in item.attributes]
         if tags != list(symbol.tags):
             problems.append(f"{item.comp_id}: attributes {tags} differ from {list(symbol.tags)}")
@@ -454,6 +512,8 @@ def check_diagram(diagram: Diagram) -> list[str]:
                 problems.append(f"{conn.id}: diagonal segment {a} -> {b}")
 
     for item in diagram.instances:
+        if not _known(item.symbol):
+            continue
         for port in get_symbol(item.symbol).ports:
             if port.required and connected[f"{item.comp_id}.{port.id}"] == 0:
                 problems.append(f"{item.comp_id}.{port.id} is a dangling required port")

@@ -1,0 +1,41 @@
+# Test fixture: copy of datasheets/records/modules/etsolar-et-m672bh.yaml with the review flag set, so the sizing tests do not depend on later catalogue edits.
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per power level.
+# Awaiting owner review: reviewed_by stays null until every value has been compared with the datasheet.
+component_type: pv_module
+family_id: ETSOLAR-ET-M672BH
+manufacturer: ET Solar
+model_family: ET-M672BH520-550WW/WB
+cell_type: PERC mono-crystalline, 182x91 mm half-cut
+cells: 144
+bifacial: false
+dimensions_mm: [2279, 1134, 35]
+weight_kg: 28.9
+frame: anodized aluminium alloy
+front_cover: 3.2 mm tempered glass
+max_system_voltage_v: 1500
+max_series_fuse_a: 25
+operating_temp_c: [-40, 85]
+noct_c: 45                         # ±2 °C
+power_tolerance_w: [0, 5]            # 0 ~ +5 W (watts, not percent)
+temp_coef_pmax_pct_per_c: -0.35
+temp_coef_voc_pct_per_c: -0.28
+temp_coef_isc_pct_per_c: 0.048
+junction_box: IP67
+connector: MC4 compatible
+cable_mm2: 4.0
+certifications: []                 # not stated in the extracted text
+variants:   # STC (1000 W/m², 25 °C, AM1.5); Voc and Isc ±3 %; noct = 800 W/m², 20 °C ambient, 1 m/s
+  - {component_id: ETSOLAR-ET-M672BH520, pmax_w: 520, vmp_v: 40.44, imp_a: 12.86, voc_v: 49.10, isc_a: 13.57, efficiency_pct: 20.12, noct: {pmax_w: 387, vmp_v: 37.54, imp_a: 10.32, voc_v: 46.34, isc_a: 10.96}}
+  - {component_id: ETSOLAR-ET-M672BH530, pmax_w: 530, vmp_v: 40.54, imp_a: 13.08, voc_v: 49.26, isc_a: 13.71, efficiency_pct: 20.51, noct: {pmax_w: 394, vmp_v: 37.86, imp_a: 10.41, voc_v: 46.50, isc_a: 11.07}}
+  - {component_id: ETSOLAR-ET-M672BH540, pmax_w: 540, vmp_v: 40.71, imp_a: 13.27, voc_v: 49.42, isc_a: 13.85, efficiency_pct: 20.89, noct: {pmax_w: 402, vmp_v: 38.11, imp_a: 10.56, voc_v: 46.65, isc_a: 11.19}}
+  - {component_id: ETSOLAR-ET-M672BH550, pmax_w: 550, vmp_v: 40.83, imp_a: 13.48, voc_v: 49.60, isc_a: 14.04, efficiency_pct: 21.28, noct: {pmax_w: 410, vmp_v: 38.25, imp_a: 10.73, voc_v: 46.82, isc_a: 11.35}}
+source:
+  filename: ET-M672BH520-550WWWB.pdf
+  sha256: 7723ffc0243e1ef159b67ad8910233f39b757a52d3f4e688204bc0c789955249
+  title: ET-M672BH520-550WW/WB PLUS PV Module (M/ET-PD-EN-EU2019V4)
+  pages: [2]
+  extraction_method: markitdown
+  extraction_date: 2026-10-07
+  reviewed_by: "test fixture"
+  review_date: 2026-10-07
+  notes: WW/WB suffixes are frame/backsheet colour options with identical electrical data.

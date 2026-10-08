@@ -25,8 +25,13 @@ import yaml
 
 from pvsld.backends.dxf import write_dxf
 from pvsld.backends.readback import ReadBackReport, verify
+from pvsld.core.calc import Derived
+from pvsld.core.diagram import Diagram
 from pvsld.core.layout import build_diagram
+from pvsld.core.layout_sheet import TEMPLATE as SHEET_LAYOUT
+from pvsld.core.layout_sheet import build_sheet_diagram
 from pvsld.core.model import PvSystemSpec
+from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.validation import ValidationReport
 from pvsld.core.validation import validate_pv_design as _validate
 
@@ -43,9 +48,30 @@ class SpecFileError(ValueError):
     """A specification file cannot be read; the message says why and is safe to show the user."""
 
 
-def validate_pv_design(data: Mapping[str, Any] | PvSystemSpec) -> ValidationReport:
-    """Validate a PV design (a mapping as parsed from YAML or JSON, or a model object)."""
-    return _validate(data)
+def layout_diagram(spec: PvSystemSpec, derived: Derived) -> Diagram:
+    """Lay out ``spec`` with the layout template it names (``layout.template``).
+
+    Raises:
+        LayoutError: the spec is outside the template.
+        SheetTemplateError: the sheet template file is missing or does not match.
+    """
+    if spec.layout.template == SHEET_LAYOUT:
+        from pvsld.sheets import load_sheet_template
+
+        return build_sheet_diagram(spec, derived, load_sheet_template(spec.layout.template))
+    return build_diagram(spec, derived)
+
+
+def validate_pv_design(
+    data: Mapping[str, Any] | PvSystemSpec,
+    *,
+    dc_ac_policy: DcAcPolicy = DEFAULT_DC_AC_POLICY,
+) -> ValidationReport:
+    """Validate a PV design (a mapping as parsed from YAML or JSON, or a model object).
+
+    ``dc_ac_policy`` sets the DC/AC ratio thresholds of STR-007 (see :mod:`pvsld.core.policy`).
+    """
+    return _validate(data, dc_ac_policy=dc_ac_policy)
 
 
 def load_spec_file(path: Path) -> dict[str, Any]:
@@ -138,7 +164,7 @@ def generate_single_line_diagram(
         raise FileExistsError(f"{output} exists; pass overwrite=True to replace it")
 
     started = time.perf_counter()
-    diagram = build_diagram(report.spec, report.derived)
+    diagram = layout_diagram(report.spec, report.derived)
     timings["layout"] = _ms(started)
 
     started = time.perf_counter()

@@ -144,6 +144,14 @@ def next_standard_ocpd_a(amps: float, tables: NomTables | None = None) -> float:
     raise ValueError(f"{amps:g} A exceeds the largest standard OCPD rating")
 
 
+def max_ocpd_for_ampacity_a(ampacity_a: float, tables: NomTables | None = None) -> float:
+    """Largest OCPD that protects ``ampacity_a`` (NOM 240-4(b): next standard size up to 800 A)."""
+    tables = tables or get_tables("NOM-001-SEDE-2012")
+    if ampacity_a <= 800:
+        return next_standard_ocpd_a(ampacity_a, tables)
+    return max(r for r in tables.standard_ocpd_a if r <= ampacity_a)
+
+
 def ampacity_a(size: str, column_c: Literal[60, 75, 90], tables: NomTables | None = None) -> float:
     """Copper ampacity of ``size`` in the 60, 75 or 90 degC column (Table 310-15(b)(16))."""
     tables = tables or get_tables("NOM-001-SEDE-2012")

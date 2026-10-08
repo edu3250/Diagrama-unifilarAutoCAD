@@ -6,12 +6,23 @@ Usage::
     pvsld validate examples/residential_7p7kwp.yaml [--json]
     pvsld generate examples/residential_7p7kwp.yaml -o out/sld.dxf [--png]
     pvsld finish out/sld.dxf [-d out/finished] [--no-pdf] [--json]
+    pvsld catalogue validate [PATH] | list [--type T] | show ID
+    pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC.yaml] [--json]
+    pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
+    pvsld sheet import TEMPLATE.dwg [-o PATH] | check [PATH]
 
 ``validate`` parses the specification against the parameter model and runs the rule pack
 ``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
 again, writes the DXF R2018 sheet (and a PNG preview with ``--png``) and verifies the written file.
 ``finish`` turns a DXF into DWG 2018 and a PDF with the local AutoCAD Core Console (Windows, a
 licensed full AutoCAD); the exit code is 1 unless every output was produced and checked.
+``catalogue`` works with the component records in ``datasheets/records`` (see
+:mod:`pvsld.catalogue.cli`). ``size`` runs the sizing engine (:mod:`pvsld.sizing`) on a request
+file and prints the selection, the ranked alternatives and why every other configuration was
+rejected; the exit code is 1 when no configuration survives. ``-o`` writes the selected
+parameter specification, ready for ``validate`` and ``generate``. ``symbols`` builds, lists
+and validates the symbol library (``symbols/pvsld-symbols.dxf``, see
+:mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
 
@@ -24,7 +35,13 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
+import yaml
+
 from pvsld import __version__
+from pvsld.catalogue import ComponentRegistry, UnknownComponentError
+from pvsld.catalogue import cli as catalogue_cli
+from pvsld.catalogue.errors import CatalogueError
+from pvsld.core.policy import DEFAULT_DC_AC_ERROR_ABOVE, DEFAULT_DC_AC_WARN_ABOVE, DcAcPolicy
 from pvsld.core.rules import Finding
 from pvsld.core.validation import ValidationReport
 from pvsld.finishers.core_console import (
@@ -43,6 +60,9 @@ from pvsld.service import (
     load_spec_file,
     validate_pv_design,
 )
+from pvsld.sheets import cli as sheet_cli
+from pvsld.sizing import SizingInputError, format_report, load_request, size_pv_system
+from pvsld.symbols.cfe import cli as symbols_cli
 
 
 def _finding_line(finding: Finding) -> str:
@@ -67,7 +87,12 @@ def _validate(args: argparse.Namespace) -> int:
     except SpecFileError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
-    report = validate_pv_design(data)
+    try:
+        policy = DcAcPolicy(warn_above=args.dc_ac_warn, error_above=args.dc_ac_error)
+    except ValueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    report = validate_pv_design(data, dc_ac_policy=policy)
     if args.json:
         print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
         return 0 if report.ok else 1
@@ -83,6 +108,49 @@ def _validate(args: argparse.Namespace) -> int:
     print(f"FAILED: {args.path} violates {report.rulepack} ({_summary(report)})", file=sys.stderr)
     _print_findings(report, sys.stderr)
     return 1
+
+
+def _write_spec(path: Path, spec: dict[str, object]) -> None:
+    """Write the specification as JSON (``.json``) or YAML (anything else)."""
+    if path.suffix.lower() == ".json":
+        text = json.dumps(spec, ensure_ascii=False, indent=2) + "\n"
+    else:
+        text = yaml.safe_dump(spec, allow_unicode=True, sort_keys=False)
+    path.write_text(text, encoding="utf-8")
+
+
+def _size(args: argparse.Namespace) -> int:
+    try:
+        request = load_request(args.path)
+        registry = ComponentRegistry.load(
+            args.catalogue, include_unreviewed=args.include_unreviewed
+        )
+        result = size_pv_system(request, registry)
+    except (CatalogueError, SizingInputError, UnknownComponentError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    data = result.to_dict()
+    if args.output is not None and result.spec is not None:
+        try:
+            _write_spec(args.output, data["selected"]["spec"])
+        except OSError as error:
+            print(f"error: cannot write {args.output}: {error}", file=sys.stderr)
+            return 1
+    if args.json:
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+        return 0 if result.ok else 1
+    notes = []
+    if registry.skipped_unreviewed:
+        notes.append(f"skipped unreviewed records: {', '.join(registry.skipped_unreviewed)}")
+    if args.include_unreviewed:
+        notes.append(
+            "WARNING: records the owner has not reviewed may be in use (--include-unreviewed)"
+        )
+    text = "\n".join([format_report(result), *notes])
+    if args.output is not None and result.spec is not None:
+        text += f"\nwrote {args.output}"
+    print(text, file=sys.stdout if result.ok else sys.stderr)
+    return 0 if result.ok else 1
 
 
 def _describe(result: GenerationResult) -> str:
@@ -206,6 +274,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate.add_argument("path", type=Path, metavar="PATH", help="parameter YAML or JSON file")
     validate.add_argument("--json", action="store_true", help="print the report as JSON")
+    validate.add_argument(
+        "--dc-ac-warn",
+        type=float,
+        default=DEFAULT_DC_AC_WARN_ABOVE,
+        metavar="RATIO",
+        help=f"STR-007: warn above this DC/AC ratio (default {DEFAULT_DC_AC_WARN_ABOVE:g})",
+    )
+    validate.add_argument(
+        "--dc-ac-error",
+        type=float,
+        default=DEFAULT_DC_AC_ERROR_ABOVE,
+        metavar="RATIO",
+        help=f"STR-007: fail above this DC/AC ratio (default {DEFAULT_DC_AC_ERROR_ABOVE:g})",
+    )
     validate.set_defaults(run=_validate)
 
     generate = subcommands.add_parser(
@@ -284,6 +366,43 @@ def build_parser() -> argparse.ArgumentParser:
     )
     finish_cmd.add_argument("--json", action="store_true", help="print the result as JSON")
     finish_cmd.set_defaults(run=_finish)
+
+    size = subcommands.add_parser(
+        "size",
+        help="size strings, protection and conductors from the catalogue (Stage 3.4)",
+        description=(
+            "Read a sizing request (YAML or JSON: module, inverters, target, template; see "
+            "examples/sizing_jinko_growatt.yaml), enumerate the string configurations, reject "
+            "those that break a rule, rank the rest and print the selection. Exit code 1 when no "
+            "configuration survives."
+        ),
+    )
+    size.add_argument("path", type=Path, metavar="REQUEST", help="sizing request YAML or JSON file")
+    size.add_argument(
+        "--catalogue",
+        type=Path,
+        default=catalogue_cli.DEFAULT_RECORDS,
+        metavar="DIR",
+        help="component records folder (default datasheets/records)",
+    )
+    size.add_argument(
+        "--include-unreviewed",
+        action="store_true",
+        help="also use records the owner has not reviewed (development only)",
+    )
+    size.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=None,
+        metavar="SPEC",
+        help="write the selected parameter specification (.yaml or .json)",
+    )
+    size.add_argument("--json", action="store_true", help="print the full result as JSON")
+    size.set_defaults(run=_size)
+    catalogue_cli.register(subcommands)
+    symbols_cli.register(subcommands)
+    sheet_cli.register(subcommands)
     return parser
 
 

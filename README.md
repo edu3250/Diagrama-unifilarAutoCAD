@@ -94,6 +94,7 @@ pytest --cov             # tests with coverage (floor: 60 %)
 pvsld --version
 pvsld validate examples/residential_7p7kwp.yaml
 pvsld generate examples/residential_7p7kwp.yaml -o out/residential.dxf --png
+pvsld size examples/sizing_jinko_growatt.yaml --include-unreviewed -o out/sized.yaml
 ```
 
 **MCP server for Claude Code.** The repository's `.mcp.json` registers the stdio server `pvsld` (`pvsld-mcp`, tools `validate_pv_design` and `generate_single_line_diagram`). Start Claude Code in the repository root and approve the project server once; `claude mcp list` should show `pvsld ... Connected`. The committed command only finds `pvsld-mcp` when the virtual environment is active in the shell that starts Claude Code. Otherwise, point the `PVSLD_MCP_COMMAND` variable at the venv executable before starting it:
