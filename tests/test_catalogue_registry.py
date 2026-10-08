@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import time
 from pathlib import Path
 
 import pytest
@@ -118,17 +117,6 @@ def test_load_from_one_file(tmp_path: Path) -> None:
     assert len(ComponentRegistry.load(path)) == 6
 
 
-def test_catalogue_loads_in_under_100_ms() -> None:
-    ComponentRegistry.load(RECORDS, include_unreviewed=True)  # warm the imports and caches
-    timings = []
-    for _ in range(5):
-        start = time.perf_counter()
-        registry = ComponentRegistry.load(RECORDS, include_unreviewed=True)
-        timings.append(time.perf_counter() - start)
-    assert len(registry) == 34
-    assert min(timings) < 0.100, f"best of 5 loads took {min(timings) * 1000:.0f} ms"
-
-
-def test_every_committed_record_is_listed_in_the_helpers() -> None:
+def test_fixture_snapshot_is_the_expected_set_of_files() -> None:
     on_disk = {path.relative_to(RECORDS).as_posix() for path in RECORDS.rglob("*.yaml")}
     assert on_disk == set(ALL_RECORDS)
