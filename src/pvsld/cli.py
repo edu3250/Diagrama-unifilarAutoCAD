@@ -7,6 +7,7 @@ Usage::
     pvsld generate examples/residential_7p7kwp.yaml -o out/sld.dxf [--png]
     pvsld finish out/sld.dxf [-d out/finished] [--no-pdf] [--json]
     pvsld catalogue validate [PATH] | list [--type T] | show ID
+    pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
 
 ``validate`` parses the specification against the parameter model and runs the rule pack
 ``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
@@ -14,7 +15,8 @@ again, writes the DXF R2018 sheet (and a PNG preview with ``--png``) and verifie
 ``finish`` turns a DXF into DWG 2018 and a PDF with the local AutoCAD Core Console (Windows, a
 licensed full AutoCAD); the exit code is 1 unless every output was produced and checked.
 ``catalogue`` works with the component records in ``datasheets/records`` (see
-:mod:`pvsld.catalogue.cli`).
+:mod:`pvsld.catalogue.cli`). ``symbols`` builds, lists and validates the CFE symbol library
+(``symbols/pvsld-symbols-cfe.dxf``, see :mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
 
@@ -47,6 +49,7 @@ from pvsld.service import (
     load_spec_file,
     validate_pv_design,
 )
+from pvsld.symbols.cfe import cli as symbols_cli
 
 
 def _finding_line(finding: Finding) -> str:
@@ -289,6 +292,7 @@ def build_parser() -> argparse.ArgumentParser:
     finish_cmd.add_argument("--json", action="store_true", help="print the result as JSON")
     finish_cmd.set_defaults(run=_finish)
     catalogue_cli.register(subcommands)
+    symbols_cli.register(subcommands)
     return parser
 
 
