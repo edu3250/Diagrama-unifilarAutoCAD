@@ -28,6 +28,7 @@ from pvsld.symbols import get_symbol
 
 Space = Literal["model", "paper"]
 ConnectionKind = Literal["pv_source", "inverter_output", "ac_network", "grounding"]
+Align = Literal["left", "center"]
 
 PORT_TOLERANCE_MM = 0.01
 """A wire end must lie within this distance of the port it connects (ADR-0001, S1 criteria)."""
@@ -218,7 +219,11 @@ class Connection:
 
 @dataclass(frozen=True)
 class TextItem:
-    """A single-line text, left-aligned on its baseline."""
+    """A single-line text: ``(x, y)`` is the left end of its baseline, or its centre if centred.
+
+    ``style`` names a text style of the sheet template (:attr:`Diagram.text_styles`); ``None`` is
+    the house style.
+    """
 
     layer: str
     x: float
@@ -226,14 +231,16 @@ class TextItem:
     height: float
     text: str
     space: Space = "model"
+    style: str | None = None
+    align: Align = "left"
 
     def box(self) -> Box:
-        return Box(
-            self.x,
-            self.y,
-            rnd(self.x + text_width_mm(self.text, self.height)),
-            self.y + self.height,
-        )
+        width = text_width_mm(self.text, self.height)
+        if self.align == "center":
+            x0, y0 = self.x - width / 2, self.y - self.height / 2
+        else:
+            x0, y0 = self.x, self.y
+        return Box(rnd(x0), rnd(y0), rnd(x0 + width), rnd(y0 + self.height))
 
 
 @dataclass(frozen=True)
@@ -254,6 +261,31 @@ class PolylineItem:
     closed: bool = False
     space: Space = "model"
     lineweight: int | None = None
+
+
+@dataclass(frozen=True)
+class CircleItem:
+    layer: str
+    cx: float
+    cy: float
+    radius: float
+    space: Space = "model"
+
+
+@dataclass(frozen=True)
+class SymbolSample:
+    """A scaled INSERT of a library block with no identity (a symbology table entry).
+
+    Unlike a :class:`SymbolInstance` it stands for no component: no attribute values, no ports to
+    connect, not counted as equipment.
+    """
+
+    symbol: str
+    x: float
+    y: float
+    scale: float
+    layer: str
+    space: Space = "paper"
 
 
 @dataclass(frozen=True)
@@ -371,6 +403,10 @@ class Diagram:
     polylines: tuple[PolylineItem, ...]
     tables: tuple[Table, ...]
     viewport: Viewport
+    circles: tuple[CircleItem, ...] = ()
+    samples: tuple[SymbolSample, ...] = ()
+    text_styles: tuple[tuple[str, str], ...] = ()
+    """Text styles of a sheet template as ``(name, font file)``."""
 
     def instance(self, comp_id: str) -> SymbolInstance:
         for item in self.instances:
@@ -379,13 +415,19 @@ class Diagram:
         raise KeyError(f"no component {comp_id!r}")
 
     def block_counts(self) -> dict[str, int]:
-        """Number of INSERTs per block name (the S1 criterion compares this with the DXF)."""
-        return dict(Counter(i.symbol for i in self.instances))
+        """Number of INSERTs per block name (the S1 criterion compares this with the DXF).
+
+        Symbology samples are INSERTs too; they carry no ``COMP_ID``.
+        """
+        return dict(
+            Counter([*(i.symbol for i in self.instances), *(s.symbol for s in self.samples)])
+        )
 
     def used_layers(self) -> set[str]:
         used = {i.layer for i in self.instances} | {c.layer for c in self.connections}
         used |= {t.layer for t in self.texts} | {item.layer for item in self.lines}
         used |= {p.layer for p in self.polylines} | {t.layer for t in self.tables}
+        used |= {c.layer for c in self.circles} | {s.layer for s in self.samples}
         used.add(self.viewport.layer)
         return used
 

@@ -104,3 +104,7 @@ datasheets/inbox/
 # Markitdown markdown cache: never commit (derived, token-heavy)
 datasheets/cache/
 # Committed component records: stored in datasheets/records/ (extracted facts only, no full text)
+
+# Sheet templates of the owner (neutral DXF written by `pvsld sheet import`); publish only on approval
+sheet_templates/*.dxf
+sheet_templates/*.dwg

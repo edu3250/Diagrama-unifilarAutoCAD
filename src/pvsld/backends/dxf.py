@@ -31,6 +31,7 @@ from typing import Any
 
 import ezdxf
 from ezdxf.document import Drawing
+from ezdxf.enums import TextEntityAlignment
 from ezdxf.layouts import BaseLayout
 from ezdxf.lldxf import const
 
@@ -148,15 +149,34 @@ def _draw_table(target: BaseLayout, table: Table) -> None:
         _add_text(target, text.layer, text.x, text.y, text.height, text.text)
 
 
-def _add_text(target: BaseLayout, layer: str, x: float, y: float, height: float, text: str) -> None:
-    target.add_text(
-        text, height=height, dxfattribs={"layer": layer, "style": TEXT_STYLE}
-    ).set_placement((x, y))
+def _add_text(
+    target: BaseLayout,
+    layer: str,
+    x: float,
+    y: float,
+    height: float,
+    text: str,
+    *,
+    style: str | None = None,
+    align: str = "left",
+) -> None:
+    entity = target.add_text(
+        text, height=height, dxfattribs={"layer": layer, "style": style or TEXT_STYLE}
+    )
+    if align == "center":
+        entity.set_placement((x, y), align=TextEntityAlignment.MIDDLE_CENTER)
+    else:
+        entity.set_placement((x, y))
 
 
 def _build_document(diagram: Diagram) -> Drawing:
     doc = _new_document()
-    define_symbol_blocks(doc, (item.symbol for item in diagram.instances))
+    for name, font in diagram.text_styles:
+        if name not in doc.styles:
+            doc.styles.add(name, font=font)
+    define_symbol_blocks(
+        doc, [*(item.symbol for item in diagram.instances), *(s.symbol for s in diagram.samples)]
+    )
 
     model = doc.modelspace()
     doc.layouts.rename("Layout1", LAYOUT_NAME)
@@ -218,7 +238,31 @@ def _build_document(diagram: Diagram) -> Drawing:
         )
 
     for text in diagram.texts:
-        _add_text(spaces[text.space], text.layer, text.x, text.y, text.height, text.text)
+        _add_text(
+            spaces[text.space],
+            text.layer,
+            text.x,
+            text.y,
+            text.height,
+            text.text,
+            style=text.style,
+            align=text.align,
+        )
+    for circle in diagram.circles:
+        spaces[circle.space].add_circle(
+            (circle.cx, circle.cy), circle.radius, dxfattribs=_attribs(circle.layer)
+        )
+    for sample in diagram.samples:
+        spaces[sample.space].add_blockref(
+            sample.symbol,
+            (sample.x, sample.y),
+            dxfattribs={
+                "layer": sample.layer,
+                "xscale": sample.scale,
+                "yscale": sample.scale,
+                "zscale": sample.scale,
+            },
+        )
     for line in diagram.lines:
         spaces[line.space].add_line(
             (line.x1, line.y1),

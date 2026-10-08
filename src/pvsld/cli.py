@@ -9,6 +9,7 @@ Usage::
     pvsld catalogue validate [PATH] | list [--type T] | show ID
     pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC.yaml] [--json]
     pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
+    pvsld sheet import TEMPLATE.dwg [-o PATH] | check [PATH]
 
 ``validate`` parses the specification against the parameter model and runs the rule pack
 ``mx-gd-2026.10``; the exit code is 1 when a rule of severity ``E`` fails. ``generate`` validates
@@ -59,6 +60,7 @@ from pvsld.service import (
     load_spec_file,
     validate_pv_design,
 )
+from pvsld.sheets import cli as sheet_cli
 from pvsld.sizing import SizingInputError, format_report, load_request, size_pv_system
 from pvsld.symbols.cfe import cli as symbols_cli
 
@@ -400,6 +402,7 @@ def build_parser() -> argparse.ArgumentParser:
     size.set_defaults(run=_size)
     catalogue_cli.register(subcommands)
     symbols_cli.register(subcommands)
+    sheet_cli.register(subcommands)
     return parser
 
 
