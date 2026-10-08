@@ -351,26 +351,26 @@ INVERTER = _spec(
     SOURCE_CFE_C,
     _EQ_AC,
     (
-        Polyline(_rect(0, -22.5, 50, 22.5), _EQ_AC, closed=True),
-        Line(0, -22.5, 50, 22.5, _EQ_AC),
-        Line(8, 15, 18, 15, _EQ_AC),
-        Line(8, 12, 18, 12, _EQ_AC),
-        Polyline(_sine(38, -13, 10, 2.5), _EQ_AC),
-        Label(1.5, 11.5, TEXT_HEIGHT_MM, "A"),
-        Label(1.5, -14, TEXT_HEIGHT_MM, "B"),
+        Polyline(_rect(0, -15, 30, 15), _EQ_AC, closed=True),
+        Line(0, -15, 30, 15, _EQ_AC),
+        Line(5, 9.5, 11, 9.5, _EQ_AC),
+        Line(5, 7.5, 11, 7.5, _EQ_AC),
+        Polyline(_sine(23, -8, 6, 1.5), _EQ_AC),
+        Label(1, 11.5, TEXT_HEIGHT_MM, "A"),
+        Label(1, -13.5, TEXT_HEIGHT_MM, "B"),
     ),
     (
         Port("A", 0, 10, "left", "DC"),
         Port("B", 0, -10, "left", "DC", required=False),
-        Port("AC", 50, 0, "right", "AC"),
-        Port("PE", 25, -22.5, "down", "PE"),
+        Port("AC", 30, 0, "right", "AC"),
+        Port("PE", 15, -15, "down", "PE"),
     ),
     iec_ref="IEC 60617 S00896",
-    tag_xy=(0, 36.5),
-    desc_xy=(0, 32.5),
+    tag_xy=(0, 29),
+    desc_xy=(0, 25),
     extra=(
-        AttDef("MFR", "Fabricante", 0, 28.5),
-        AttDef("MODEL", "Modelo", 0, 24.5),
+        AttDef("MFR", "Fabricante", 0, 21),
+        AttDef("MODEL", "Modelo", 0, 17),
         *_hidden(
             ("PAC_W", "Potencia CA nominal (W)"),
             ("VAC_V", "Tensión CA nominal (V)"),
@@ -388,7 +388,8 @@ INVERTER = _spec(
     family=F_CONV,
     note=(
         "Box with the diagonal from lower left to upper right, '=' upper left, '~' lower right. "
-        "Nearly square as in the crop; the former 'CD'/'CA' captions are replaced by the symbols."
+        "Square, 30 x 30 mm since 0.7.0 (owner request: smaller); the former 'CD'/'CA' captions "
+        "are replaced by the symbols."
     ),
 )
 
@@ -589,12 +590,14 @@ SWITCH = _spec(
     _EQ_AC,
     _cfe_manual_switch(_EQ_AC),
     (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
-    tag_xy=(15, 5),
-    desc_xy=(0, -10),
+    tag_xy=(0, 9.5),
+    desc_xy=(0, -9.5),
     extra=(
-        AttDef("ROLE", "Función", 15, 9),
         *_hidden(
-            ("POLES", "Polos"), ("RATING_A", "Corriente nominal (A)"), ("VOLT_V", "Tensión (V)")
+            ("ROLE", "Función"),
+            ("POLES", "Polos"),
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión (V)"),
         ),
     ),
     nmx_ref="NMX-J-136-ANCE-2019 4.2.94 y 4.2.121",
@@ -793,22 +796,22 @@ LOAD_CENTER = _spec(
     SOURCE_CFE_D,
     _EQ_AC,
     (
-        Polyline(_rect(0, -27.5, 45, 27.5), _ENCL, closed=True),
-        Line(0, 0, 45, 0, _EQ_AC),
-        Line(22.5, -15, 22.5, 22.5, layers.AC_CONDUCTORS, lineweight=70),
-        Line(12.5, -22.5, 32.5, -22.5, layers.GROUNDING, linetype=_SOLID),
-        Line(22.5, -27.5, 22.5, -22.5, layers.GROUNDING, linetype=_SOLID),
+        Polyline(_rect(0, -17.5, 30, 17.5), _ENCL, closed=True),
+        Line(0, 0, 30, 0, _EQ_AC),
+        Line(15, -10, 15, 12.5, layers.AC_CONDUCTORS, lineweight=70),
+        Line(7.5, -14, 22.5, -14, layers.GROUNDING, linetype=_SOLID),
+        Line(15, -17.5, 15, -14, layers.GROUNDING, linetype=_SOLID),
     ),
     (
         Port("LEFT", 0, 0, "left", "AC"),
-        Port("RIGHT", 45, 0, "right", "AC"),
-        Port("PE", 22.5, -27.5, "down", "PE"),
+        Port("RIGHT", 30, 0, "right", "AC"),
+        Port("PE", 15, -17.5, "down", "PE"),
     ),
     iec_ref="IEC 60617 S00062",
-    tag_xy=(0, 40),
-    desc_xy=(0, 35.5),
+    tag_xy=(0, 30),
+    desc_xy=(0, 25.5),
     extra=(
-        AttDef("SPEC", "Datos de la barra", 0, 31),
+        AttDef("SPEC", "Datos de la barra", 0, 21),
         *_hidden(
             ("NAME", "Nombre del tablero"),
             ("BUS_A", "Barra (A)"),
@@ -822,7 +825,7 @@ LOAD_CENTER = _spec(
     family=F_GRID,
     note=(
         "'Centro de carga' of figures D1 and D2: the CFE enclosure (dash-dot) around a bus and "
-        "a ground bar. Geometry and ports are those of Phase 2."
+        "a ground bar; 30 x 35 mm since 0.7.0 (owner request: smaller)."
     ),
 )
 
@@ -1365,6 +1368,34 @@ def _iec_breaker() -> tuple[Primitive, ...]:
     )
 
 
+BREAKER_DC = _spec(
+    "PVSLD_CB_DC",
+    "Interruptor termomagnético de CD (ITM CD)",
+    "CFE G0100-04 Apéndice C (interruptor termomagnético), en un circuito de CD",
+    _EQ_DC,
+    _cfe_breaker(0, 0, _EQ_DC),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 20, 0, "right", "DC")),
+    iec_ref="IEC 60617 S00287",
+    tag_xy=(0, 9.5),
+    desc_xy=(0, -6),
+    extra=(
+        AttDef("ROLE", "Función", 0, 5.5),
+        *_hidden(
+            ("POLES", "Polos"),
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión CD (V)"),
+            ("KAIC_KA", "Capacidad interruptiva (kA)"),
+        ),
+    ),
+    nmx_ref="NMX-J-136-ANCE-2019 4.2.15 (forma distinta)",
+    family=F_PROT,
+    note=(
+        "The CFE thermomagnetic breaker on the DC equipment layer with DC ports: the string "
+        "breaker of the DC protection box (owner decision 2026-10-08)."
+    ),
+)
+
+
 BREAKER_IEC = _spec(
     "PVSLD_CB_IEC",
     "Interruptor termomagnético (forma IEC/UNE)",
@@ -1586,11 +1617,11 @@ DC_DISCONNECT = _spec(
     _cfe_manual_switch(_EQ_DC),
     (Port("IN", 0, 0, "left", "DC"), Port("OUT", 25, 0, "right", "DC")),
     nmx_ref=_nmx("4.2.94 y 4.2.119 (con carga)"),
-    tag_xy=(15, 5),
-    desc_xy=(0, -10),
+    tag_xy=(0, 9.5),
+    desc_xy=(0, -9.5),
     extra=(
-        AttDef("ROLE", "Función", 15, 9),
         *_hidden(
+            ("ROLE", "Función"),
             ("POLES", "Polos"),
             ("RATING_A", "Corriente nominal (A)"),
             ("VOLT_V", "Tensión (V)"),
@@ -2056,6 +2087,7 @@ LIBRARY: tuple[SymbolSpec, ...] = (
     ISOLATION_TRANSFORMER,
     # protection
     BREAKER,
+    BREAKER_DC,
     BREAKER_IEC,
     RESIDUAL_CURRENT_DEVICE,
     FUSE,

@@ -143,7 +143,7 @@ def test_size_needs_reviewed_records_unless_asked(
         (FIXTURE_RECORDS / "inverters" / "yi-6000.yaml").read_text(encoding="utf-8"),
         encoding="utf-8",
     )
-    request = _request(tmp_path)
+    request = _request(tmp_path, dc_ocpd="auto")  # these records hold no DC breaker
     records = tmp_path / "records"
     assert main(["size", str(request), "--catalogue", str(records)]) == 1
     assert "unknown component_id 'XM-550'" in capsys.readouterr().err

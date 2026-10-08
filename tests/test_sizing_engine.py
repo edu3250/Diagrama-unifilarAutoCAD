@@ -257,7 +257,7 @@ def test_schneider_20_a_cannot_protect_the_jinko_650_so_every_configuration_fail
 
 
 def test_no_string_breaker_is_selected_for_one_string_per_input() -> None:
-    selected = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000).selected
+    selected = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000, dc_ocpd="auto").selected
     assert selected is not None
     assert not selected.bos.dc_ocpd.required
     assert "NOM 690-9(a)" in selected.bos.dc_ocpd.reason_es

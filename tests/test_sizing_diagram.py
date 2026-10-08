@@ -100,7 +100,11 @@ def test_every_size_in_the_spec_and_the_drawing_is_the_designed_one(
 ) -> None:
     # The v1 title block states "<kWp> kWp / <kWac> kWac"; the sheet template is checked below.
     result = size(
-        module, [inverter], target_dc_power_w=9000, layout_template="bt_string_residential_v1"
+        module,
+        [inverter],
+        target_dc_power_w=9000,
+        layout_template="bt_string_residential_v1",
+        dc_ocpd="auto",  # v1's lower-left band holds no breaker rows with the long Jinko names
     )
     selected = result.selected
     assert selected is not None

@@ -13,7 +13,7 @@ target_dc_power_w: 9000              # the best configuration within the limits 
 # module_count_min: 10               # alternatively, bound the total number of modules
 # module_count_max: 16
 optimizers_on_all_modules: false     # true only if every module has an optimizer (raises the Pdc limit)
-dc_ocpd: auto                        # auto: a string breaker only where NOM 690-9(a) needs one; or always
+dc_ocpd: always                      # always (default): a DC breaker per string; auto: only where NOM 690-9(a) needs one
 # dc_breakers: [SUNTREE-SL7N-63-32A] # restrict the catalogue breakers considered (default: all)
 cell_temp_rise_c: 35                 # cell temperature above the maximum ambient (rooftop array)
 dc_ac_policy:                        # project policy, not regulation (owner decision pending)

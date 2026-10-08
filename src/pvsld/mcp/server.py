@@ -562,8 +562,11 @@ def create_server(
         ] = None,
         dc_ocpd: Annotated[
             Literal["auto", "always"],
-            Field(description="auto: a string breaker only where NOM 690-9(a) needs one."),
-        ] = "auto",
+            Field(
+                description="always (default): one DC breaker per string in the DC protection "
+                "box; auto: only where NOM 690-9(a) needs one."
+            ),
+        ] = "always",
         layout_template: Annotated[
             Literal["a3_plantilla_v1", "bt_string_residential_v1"],
             Field(description="Sheet of the drawing (default the owner's A3 template)."),
