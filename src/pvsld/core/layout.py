@@ -85,7 +85,7 @@ NOTES_X, NOTES_Y_TOP = 290.0, 187.0
 NOTES_MAX_WIDTH_MM = 112.0
 MIN_REVISION_ROWS, MAX_REVISION_ROWS = 3, 5
 CALLOUT_LINE_MM = 3.5
-SPD_DROP_MM = 7.5
+SPD_DROP_MM = 3.5
 SPD_OFFSET_MM = 2.0
 """The DC SPD hangs this far right of the breaker output, clear of the breaker's description."""
 """How far below the string conductor the DC SPD hangs."""
@@ -131,6 +131,10 @@ class Placement:
     inverter; ``None`` draws the strings straight into the inverter (template v1)."""
     dc_disconnect_x: float | None = None
     """Left end of the DC disconnect drawn on each string conductor before the inverter."""
+    dc_scale: float = 1.0
+    dc_spd_scale: float = 1.0
+    """Scale of the DC SPD; smaller than the breakers so its tag stays inside the box."""
+    """Scale of the DC breakers, disconnects and SPD (0.6 fits the box to the load centre)."""
     full_strings: bool = False
     """Draw every module of each string (``PVSLD_PV_STRING_<n>M_UP|DN``), level with its MPPT
     input; otherwise the two-module convention ``PVSLD_PV_STRING``."""
@@ -199,6 +203,7 @@ def _instance(
     values: dict[str, str],
     *,
     space: str = "model",
+    scale: float = 1.0,
 ) -> SymbolInstance:
     return SymbolInstance(
         comp_id=comp_id,
@@ -208,6 +213,7 @@ def _instance(
         layer=get_symbol(symbol_name).layer,
         attributes=_attributes(symbol_name, comp_id, values),
         space="paper" if space == "paper" else "model",
+        scale=scale,
     )
 
 
@@ -962,7 +968,7 @@ def _dc_devices(
                 _instance(
                     "PVSLD_CB_DC",
                     b.id,
-                    placement.dc_box_x,
+                    placement.dc_box_x + DC_BOX_INSET_MM,
                     y,
                     {
                         "TAG": b.id,
@@ -973,6 +979,7 @@ def _dc_devices(
                         "VOLT_V": _g(b.ue_v),
                         "KAIC_KA": NO_VALUE,
                     },
+                    scale=placement.dc_scale,
                 )
             )
             chain.append(b.id)
@@ -994,47 +1001,59 @@ def _dc_devices(
                         "VOLT_V": _g(d.ue_v),
                         "LOAD_BREAK": "SI",
                     },
+                    scale=placement.dc_scale,
                 )
             )
             chain.append(comp_id)
         chains[string.id] = _DcChain(tuple(chain))
     spd_instance = tap = None
     tap_port = "OUT"
-    lowest = min(strings, key=lambda s: inv_ports.port(s.mppt).y) if strings else None
-    if dc.spds and lowest is not None and chains[lowest.id].devices:
+    # The SPD hangs from the upper string, between the string conductors, inside the box.
+    upper = max(strings, key=lambda s: inv_ports.port(s.mppt).y) if strings else None
+    if dc.spds and upper is not None and chains[upper.id].devices:
         spd = dc.spds[0]
-        tap = chains[lowest.id].devices[0]
+        tap = chains[upper.id].devices[0]
         tap_item = next(i for i in instances if i.comp_id == tap)
         # After a string breaker; before a disconnect (the SPD must not hang by the inverter).
         breaker = tap_item.symbol == "PVSLD_CB_DC"
         tap_port = "OUT" if breaker else "IN"
         point = tap_item.port_xy(tap_port)
-        offset = SPD_OFFSET_MM if breaker else -SPD_OFFSET_MM
+        k = placement.dc_spd_scale
+        # After a breaker: just right of it. Before a disconnect: where the box would be, on the
+        # string conductor (the tap runs back along it), clear of the disconnect.
+        spd_x = point.x + SPD_OFFSET_MM
+        if not breaker:
+            spd_x = (placement.dc_box_x or point.x - DC_BOX_SIZE_MM[0]) + DC_BOX_SIZE_MM[0] / 2
         volts = spd.ucpv_v if spd.ucpv_v is not None else spd.uc_v
         spd_instance = _instance(
             "PVSLD_SPD",
             spd.id,
-            point.x + offset,
-            point.y - SPD_DROP_MM,
+            spd_x,
+            point.y - SPD_DROP_MM * k,
             {
                 "TAG": spd.id,
                 "DESC": f"DPS CD {spd.spd_type}",
-                "SPEC": f"{_g(volts)} V, {_g(spd.in_ka)} kA" if volts else f"{_g(spd.in_ka)} kA",
+                "SPEC": "",  # Uc and In are in the protection schedule
                 "SPD_TYPE": spd.spd_type,
                 "UC_V": _g(volts) if volts else NO_VALUE,
                 "UP_KV": NO_VALUE,
                 "IN_KA": _g(spd.in_ka),
             },
+            scale=k,
         )
     return instances, chains, spd_instance, (tap, tap_port) if tap else None
 
 
-DC_BOX_CAPTIONS = ("CAJA DE PROTECCIONES CD", "PROTECCIONES CD")
-DC_BOX_CAPTION_MM = 2.0
+DC_BOX_CAPTIONS = ("CAJA DE PROTECCIONES CD", "CAJA DE PROT. CD", "PROTECCIONES CD")
+DC_BOX_CAPTION_MM = 1.5
+DC_BOX_INSET_MM = 1.0
+"""Gap between the left side of the DC protection box and the string breakers."""
+DC_BOX_SIZE_MM = (30.0, 35.0)
+"""Width and height of the DC protection box: the size of the load centre (owner request)."""
 
 
 def _dc_box_outline(
-    instances: Sequence[SymbolInstance], limit_x: float
+    instances: Sequence[SymbolInstance], placement: Placement
 ) -> tuple[PolylineItem, TextItem] | None:
     """The dashed enclosure around the string breakers and the SPD, with its caption."""
     boxed = [
@@ -1042,16 +1061,18 @@ def _dc_box_outline(
     ]
     if not any(i.symbol == "PVSLD_CB_DC" for i in boxed):  # no breakers, no box
         return None
-    boxes = [box for item in boxed for _name, box in item.boxes()]
-    x0 = rnd(min(b.x0 for b in boxes) - 2.5)
-    x1 = rnd(max(b.x1 for b in boxes) + 2.5)
-    y0 = rnd(min(b.y0 for b in boxes) - 2.5)
-    y1 = rnd(max(b.y1 for b in boxes) + 2.5)
+    width, height = DC_BOX_SIZE_MM
+    x0 = rnd(placement.dc_box_x or 0)
+    x1 = rnd(x0 + width)
+    # 1 mm above centre: the upper breaker's tag rises higher than the lower one's description.
+    y0 = rnd(placement.inverter[1] - height / 2 + 1)
+    y1 = rnd(placement.inverter[1] + height / 2 + 1)
     outline = PolylineItem(
         layers.ENCLOSURES,
         (Point(x0, y0), Point(x1, y0), Point(x1, y1), Point(x0, y1)),
         closed=True,
     )
+    limit_x = placement.dc_disconnect_x or placement.inverter[0]
     # The longest caption that ends before the inverter.
     text = next(
         (c for c in DC_BOX_CAPTIONS if x0 + text_width_mm(c, DC_BOX_CAPTION_MM) < limit_x - 1),
@@ -1311,7 +1332,7 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
     gec_ac = f"GEC CA: {spec.grounding.gec_ac} Cu desnudo"
     texts.append(TextItem(layers.TAGS, *placement.gec_dc_text, 2.5, gec_dc))
     texts.append(TextItem(layers.TAGS, *placement.gec_ac_text, 2.5, gec_ac))
-    outline = _dc_box_outline(instances, placement.inverter[0])
+    outline = _dc_box_outline(instances, placement)
     polylines: tuple[PolylineItem, ...] = ()
     if outline is not None:
         polylines = (outline[0],)

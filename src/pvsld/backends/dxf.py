@@ -215,20 +215,24 @@ def _build_document(diagram: Diagram) -> Drawing:
     for item in diagram.instances:
         symbol = get_symbol(item.symbol)
         target = spaces[item.space]
-        ref = target.add_blockref(item.symbol, (item.x, item.y), dxfattribs={"layer": item.layer})
+        k = item.scale
+        insert_attribs: dict[str, Any] = {"layer": item.layer}
+        if k != 1:
+            insert_attribs.update(xscale=k, yscale=k, zscale=k)
+        ref = target.add_blockref(item.symbol, (item.x, item.y), dxfattribs=insert_attribs)
         values = item.values
         for attdef in symbol.attdefs:
             attribs: dict[str, Any] = {
                 "layer": attdef.layer,
                 "style": TEXT_STYLE,
-                "height": attdef.height,
+                "height": rnd(attdef.height * k),
             }
             if not attdef.visible:
                 attribs["flags"] = const.ATTRIB_INVISIBLE
             ref.add_attrib(
                 attdef.tag,
                 values[attdef.tag],
-                insert=(rnd(item.x + attdef.x), rnd(item.y + attdef.y)),
+                insert=(rnd(item.x + attdef.x * k), rnd(item.y + attdef.y * k)),
                 dxfattribs=attribs,
             )
         ref.set_xdata(APP_ID, [(1000, INSTANCE_FORMAT), (1000, item.comp_id)])

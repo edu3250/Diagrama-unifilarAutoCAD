@@ -329,7 +329,11 @@ def test_the_sheet_renders_reads_back_and_is_deterministic(diagram: Diagram) -> 
     assert render_dxf(diagram).data == first.data
     doc = first.document
     assert doc.styles.get("OpenSans").dxf.font == "arial.ttf"
-    samples = [e for e in doc.modelspace() if e.dxftype() == "INSERT" and e.dxf.xscale < 1]
+    samples = [
+        e
+        for e in doc.modelspace()
+        if e.dxftype() == "INSERT" and e.dxf.xscale < 1 and not e.attribs
+    ]
     assert len(samples) == len(diagram.samples)
 
 
@@ -440,14 +444,20 @@ def test_each_string_goes_through_its_breaker_and_the_disconnect_to_the_inverter
     first = next(c for c in diagram.connections if c.circuit_id == "C-S1")
     assert (first.start.comp_id, first.end.comp_id) == ("S1", "DCB-S1")
     spd = next(c for c in diagram.connections if c.end.comp_id == "DPS-CD1")
-    assert (spd.start.comp_id, spd.start.port) == ("DCB-S2", "OUT")  # after the lower breaker
+    assert (spd.start.comp_id, spd.start.port) == ("DCB-S1", "OUT")  # between the conductors
     assert any(c.start.comp_id == "DPS-CD1" and c.kind == "grounding" for c in diagram.connections)
     captions = [t.text for t in diagram.texts if t.text.endswith("PROTECCIONES CD")]
     assert captions == ["CAJA DE PROTECCIONES CD"]
     box = next(p for p in diagram.polylines if p.layer == "E-ANNO-ENCL" and p.space == "model")
     xs = [p.x for p in box.points]
-    dcb = next(i for i in diagram.instances if i.comp_id == "DCB-S1")
-    assert min(xs) < dcb.x < max(xs)
+    ys = [p.y for p in box.points]
+    assert (max(xs) - min(xs), max(ys) - min(ys)) == (30, 35)  # the size of the load centre
+    inside = Box(min(xs), min(ys), max(xs), max(ys))
+    for item in diagram.instances:
+        if item.comp_id in ("DCB-S1", "DCB-S2", "DPS-CD1"):
+            assert item.scale < 1
+            for name, part in item.boxes():
+                assert inside.contains(part), f"{name} {part} leaves the box"
 
 
 def test_without_string_breakers_the_spd_hangs_before_the_disconnect(
@@ -455,7 +465,7 @@ def test_without_string_breakers_the_spd_hangs_before_the_disconnect(
 ) -> None:
     diagram = _build(template)  # the sample: DCD-1 integrated in the inverter, no breakers
     spd = next(c for c in diagram.connections if c.end.comp_id == "DPS-CD1")
-    assert (spd.start.comp_id, spd.start.port) == ("DCD-1/S2", "IN")
+    assert (spd.start.comp_id, spd.start.port) == ("DCD-1/S1", "IN")
     assert not any(t.text.endswith("PROTECCIONES CD") for t in diagram.texts)  # no box
 
 

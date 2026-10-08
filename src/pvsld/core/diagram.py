@@ -156,6 +156,8 @@ class SymbolInstance:
     layer: str
     attributes: tuple[tuple[str, str], ...]
     space: Space = "model"
+    scale: float = 1.0
+    """Uniform scale of the INSERT (geometry, ports and attribute texts); 1 is the library size."""
 
     @property
     def values(self) -> dict[str, str]:
@@ -164,32 +166,38 @@ class SymbolInstance:
     def port_xy(self, port_id: str) -> Point:
         """World position of a port (blocks are inserted unrotated at scale 1)."""
         port = get_symbol(self.symbol).port(port_id)
-        return Point(rnd(self.x + port.x), rnd(self.y + port.y))
+        return Point(rnd(self.x + port.x * self.scale), rnd(self.y + port.y * self.scale))
 
     def boxes(self) -> list[tuple[str, Box]]:
         """Named boxes of this instance: its geometry and each visible attribute text."""
         symbol = get_symbol(self.symbol)
+        k = self.scale
         x0, y0, x1, y1 = symbol.bounds()
         result = [
             (
                 f"{self.comp_id} symbol",
-                Box(rnd(self.x + x0), rnd(self.y + y0), rnd(self.x + x1), rnd(self.y + y1)),
+                Box(
+                    rnd(self.x + x0 * k),
+                    rnd(self.y + y0 * k),
+                    rnd(self.x + x1 * k),
+                    rnd(self.y + y1 * k),
+                ),
             )
         ]
         values = self.values
         for attdef in symbol.attdefs:
             text = values.get(attdef.tag)
             if attdef.visible and text:
-                x0 = self.x + attdef.x
-                y0 = self.y + attdef.y
+                x0 = self.x + attdef.x * k
+                y0 = self.y + attdef.y * k
                 result.append(
                     (
                         f"{self.comp_id}.{attdef.tag}",
                         Box(
                             rnd(x0),
                             rnd(y0),
-                            rnd(x0 + text_width_mm(text, attdef.height)),
-                            rnd(y0 + attdef.height),
+                            rnd(x0 + text_width_mm(text, attdef.height * k)),
+                            rnd(y0 + attdef.height * k),
                         ),
                     )
                 )

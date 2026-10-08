@@ -79,8 +79,10 @@ PLACEMENT = Placement(
     gec_ac_text=(220.0, 152.0),
     callouts=False,
     pi_description="",
-    dc_box_x=68.0,
-    dc_disconnect_x=92.0,
+    dc_box_x=66.0,
+    dc_disconnect_x=101.0,
+    dc_scale=0.6,
+    dc_spd_scale=0.5,
     full_strings=True,
 )
 PROTECTIONS_CORNER = (309.0, 102.0)

@@ -590,11 +590,11 @@ SWITCH = _spec(
     _EQ_AC,
     _cfe_manual_switch(_EQ_AC),
     (Port("IN", 0, 0, "left", "AC"), Port("OUT", 25, 0, "right", "AC")),
-    tag_xy=(0, 9.5),
-    desc_xy=(0, -9.5),
+    tag_xy=(15, 5),
+    desc_xy=(0, -10),
     extra=(
+        AttDef("ROLE", "Función", 15, 9),
         *_hidden(
-            ("ROLE", "Función"),
             ("POLES", "Polos"),
             ("RATING_A", "Corriente nominal (A)"),
             ("VOLT_V", "Tensión (V)"),
@@ -1617,7 +1617,7 @@ DC_DISCONNECT = _spec(
     _cfe_manual_switch(_EQ_DC),
     (Port("IN", 0, 0, "left", "DC"), Port("OUT", 25, 0, "right", "DC")),
     nmx_ref=_nmx("4.2.94 y 4.2.119 (con carga)"),
-    tag_xy=(0, 9.5),
+    tag_xy=(0, 10),
     desc_xy=(0, -9.5),
     extra=(
         *_hidden(

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- DC protection box on the sheet template (owner decision 2026-10-08): each string runs through its DC breaker (`PVSLD_CB_DC`) and the DC disconnect to the inverter; the DC SPD hangs after the lower breaker (before the disconnect when there is no breaker) and goes to earth; a dashed enclosure "CAJA DE PROTECCIONES CD" surrounds the breakers and the SPD. `pvsld size` (and the MCP tool) now selects a DC breaker per string by default (`dc_ocpd: always`); the protection schedule names them "ITM de CD (cadena)" in "Caja CD"
+- DC protection box on the sheet template (owner decision 2026-10-08): each string runs through its DC breaker (`PVSLD_CB_DC`) and the DC disconnect to the inverter; the DC SPD hangs after the lower breaker (before the disconnect when there is no breaker) and goes to earth; a dashed enclosure "CAJA DE PROTECCIONES CD" of the load centre's size (30 x 35 mm) holds the breakers and the SPD, drawn at 60 % and 50 % with their texts (`SymbolInstance.scale`, read back with the INSERT scale). `pvsld size` (and the MCP tool) now selects a DC breaker per string by default (`dc_ocpd: always`); the protection schedule names them "ITM de CD (cadena)" in "Caja CD"
 - Symbol library 0.7.0: `PVSLD_CB_DC` (the CFE breaker with DC ports); the inverter is 30 x 30 mm and the load centre 30 x 35 mm (owner request: smaller); the DC disconnect shows its tag above and its description below
 
 ### Fixed
