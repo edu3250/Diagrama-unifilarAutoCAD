@@ -26,6 +26,7 @@ routing:                             # data no catalogue provides
   tilt_deg: 20
   azimuth_deg: 180
 max_candidates: 10
+layout_template: a3_plantilla_v1       # the owner's sheet (default); bt_string_residential_v1: earlier layout
 # Site (project.site: T_min, T_max), service (utility), grounding, title block, layout, panel and
 # point of connection come from this file; the engine replaces modules, inverters, strings,
 # circuits, dc_bos.disconnects and ac_bos.ocpds.

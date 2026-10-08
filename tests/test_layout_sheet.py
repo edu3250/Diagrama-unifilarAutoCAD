@@ -382,3 +382,22 @@ def test_dwg_conversion_script_and_missing_core_console(tmp_path: Path) -> None:
     ]
     with pytest.raises(SheetTemplateError, match="accoreconsole"):
         dwg_to_dxf(tmp_path / "a.dwg", tmp_path / "a.dxf", accoreconsole=tmp_path / "none.exe")
+
+
+# --- The committed neutral template ------------------------------------------------------------
+
+
+@pytest.mark.parametrize("change", LAYOUTS, ids=LAYOUT_IDS)
+def test_the_committed_template_holds_the_schematic_without_touching_its_texts(
+    change: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv(ENV_SHEET_TEMPLATE, raising=False)
+    real = load_sheet_template("a3_plantilla_v1")  # sheet_templates/a3_plantilla_v1.dxf
+    assert set(real.fields) == set(definition.FIELDS)
+    assert len(real.texts) > 50
+    assert not any(SECRET in t.text for t in real.texts)
+    diagram = _build_any(real, change)
+    model = _model_boxes(diagram)
+    for text in (t for t in diagram.texts if t.space == "paper" and t.text):
+        for name, box in model:
+            assert not text.box().intersects(box), f"sheet text {text.text!r} overlaps {name}"
