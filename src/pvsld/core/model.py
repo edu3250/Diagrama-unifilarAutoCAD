@@ -386,7 +386,8 @@ class TitleBlock(_Strict):
 
 
 class Layout(_Strict):
-    template: Literal["bt_string_residential_v1"]
+    template: Literal["bt_string_residential_v1", "a3_plantilla_v1"]
+    """``a3_plantilla_v1`` places the schematic on the owner's sheet template (``pvsld.sheets``)."""
     sheet: Literal["A3"]
     flow: Literal["left_to_right"] = "left_to_right"
     symbol_style: Literal["IEC", "ANSI"] = "IEC"

@@ -25,7 +25,11 @@ import yaml
 
 from pvsld.backends.dxf import write_dxf
 from pvsld.backends.readback import ReadBackReport, verify
+from pvsld.core.calc import Derived
+from pvsld.core.diagram import Diagram
 from pvsld.core.layout import build_diagram
+from pvsld.core.layout_sheet import TEMPLATE as SHEET_LAYOUT
+from pvsld.core.layout_sheet import build_sheet_diagram
 from pvsld.core.model import PvSystemSpec
 from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.validation import ValidationReport
@@ -42,6 +46,20 @@ __all__ = [
 
 class SpecFileError(ValueError):
     """A specification file cannot be read; the message says why and is safe to show the user."""
+
+
+def layout_diagram(spec: PvSystemSpec, derived: Derived) -> Diagram:
+    """Lay out ``spec`` with the layout template it names (``layout.template``).
+
+    Raises:
+        LayoutError: the spec is outside the template.
+        SheetTemplateError: the sheet template file is missing or does not match.
+    """
+    if spec.layout.template == SHEET_LAYOUT:
+        from pvsld.sheets import load_sheet_template
+
+        return build_sheet_diagram(spec, derived, load_sheet_template(spec.layout.template))
+    return build_diagram(spec, derived)
 
 
 def validate_pv_design(
@@ -146,7 +164,7 @@ def generate_single_line_diagram(
         raise FileExistsError(f"{output} exists; pass overwrite=True to replace it")
 
     started = time.perf_counter()
-    diagram = build_diagram(report.spec, report.derived)
+    diagram = layout_diagram(report.spec, report.derived)
     timings["layout"] = _ms(started)
 
     started = time.perf_counter()

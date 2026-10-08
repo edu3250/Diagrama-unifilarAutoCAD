@@ -12,8 +12,12 @@ from pvsld.symbols.cfe import LIBRARY, SYMBOLS, get_symbol
 from pvsld.symbols.cfe.definitions import (
     FAMILIES,
     MAX_COMBINER_STRINGS,
+    MAX_STRING_MODULES,
+    MODULES_PER_ROW,
     combiner_box,
     combiner_name,
+    pv_string,
+    pv_string_name,
 )
 from pvsld.symbols.cfe.model import (
     COMMON_TAGS,
@@ -423,3 +427,42 @@ def test_the_library_combiner_is_the_two_string_form() -> None:
     assert library.geometry == two.geometry
     assert library.ports == two.ports
     assert "PVSLD_COMBINER_<n>S" in library.note
+
+
+# --- Strings with every module (owner decision 2026-10-07) ----------------------------------
+
+
+@pytest.mark.parametrize("n", [1, 5, 6, 7, 12, 13, MAX_STRING_MODULES])
+@pytest.mark.parametrize("extend", ["up", "down"])
+def test_a_full_string_draws_every_module_and_ends_on_its_output(n: int, extend: str) -> None:
+    spec = pv_string(n, extend)
+    assert spec.name == pv_string_name(n, extend)
+    assert get_symbol(spec.name) == spec
+    modules = [g for g in spec.geometry if getattr(g, "closed", False)]
+    assert len(modules) == n
+    out = spec.port("OUT")
+    assert (out.y, out.direction, out.kind) == (0, "right", "DC")
+    assert out.x % GRID_MM == 0
+    assert port_distance(spec, out) < 0.01
+    _x0, y0, x1, y1 = spec.bounds()
+    assert x1 <= out.x + 1.25  # the output is at the right edge
+    rows = -(-n // MODULES_PER_ROW)
+    if extend == "up":
+        assert (y0, y1) == (-5, (rows - 1) * 15 + 5)
+    else:
+        assert (y0, y1) == (-((rows - 1) * 15 + 5), 5)
+    assert spec.tags == get_symbol("PVSLD_PV_STRING").tags  # same attributes as the convention
+
+
+@pytest.mark.parametrize(("n", "extend"), [(0, "up"), (MAX_STRING_MODULES + 1, "up"), (5, "left")])
+def test_a_full_string_rejects_bad_arguments(n: int, extend: str) -> None:
+    with pytest.raises(ValueError, match=r"string|extend"):
+        pv_string(n, extend)
+
+
+@pytest.mark.parametrize(
+    "name", ["PVSLD_PV_STRING_0M_UP", "PVSLD_PV_STRING_31M_UP", "PVSLD_PV_STRING_5M"]
+)
+def test_get_symbol_rejects_malformed_string_names(name: str) -> None:
+    with pytest.raises(KeyError):
+        get_symbol(name)

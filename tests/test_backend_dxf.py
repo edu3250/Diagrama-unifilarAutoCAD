@@ -548,10 +548,13 @@ def test_a_combiner_is_defined_for_its_string_count_next_to_library_blocks() -> 
     from pvsld.backends.dxf import _new_document, define_symbol_blocks
 
     doc = _new_document()
-    define_symbol_blocks(doc, ["PVSLD_COMBINER_3S", "PVSLD_CB", "PVSLD_CB"])
+    define_symbol_blocks(
+        doc, ["PVSLD_COMBINER_3S", "PVSLD_CB", "PVSLD_CB", "PVSLD_PV_STRING_7M_DN"]
+    )
     assert {b.name for b in doc.blocks if b.name.startswith("PVSLD_")} == {
         "PVSLD_CB",
         "PVSLD_COMBINER_3S",
+        "PVSLD_PV_STRING_7M_DN",
     }
     xdata = doc.blocks.get("PVSLD_COMBINER_3S").block_record.get_xdata("PVSLD")
     assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.6.0", 5]  # IN1-IN3, OUT, PE

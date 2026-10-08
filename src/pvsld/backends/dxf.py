@@ -31,6 +31,7 @@ from typing import Any
 
 import ezdxf
 from ezdxf.document import Drawing
+from ezdxf.enums import TextEntityAlignment
 from ezdxf.layouts import BaseLayout
 from ezdxf.lldxf import const
 
@@ -106,18 +107,18 @@ def _new_document() -> Drawing:
 def define_symbol_blocks(doc: Drawing, names: Iterable[str]) -> None:
     """Import the blocks ``names`` from the symbol library, in sorted order (stable handles).
 
-    Library blocks come from :func:`~pvsld.symbols.cfe.loader.library_document`; a combiner box
-    ``PVSLD_COMBINER_<n>S`` is rendered for its string count. Port XDATA comes along.
+    Library blocks come from :func:`~pvsld.symbols.cfe.loader.library_document`; generated blocks
+    (``PVSLD_COMBINER_<n>S``, ``PVSLD_PV_STRING_<n>M_UP|DN``) are rendered from their definition.
+    Port XDATA comes along.
     """
     # Imported here: the library builder reuses this module's document set-up.
-    from pvsld.symbols.cfe.loader import ensure_combiner, import_blocks, library_document
+    from pvsld.symbols.cfe.loader import ensure_symbol, import_blocks, library_document
 
     wanted = sorted(set(names))
     import_blocks(library_document(), doc, [name for name in wanted if name in SYMBOLS])
     for name in wanted:
         if name not in SYMBOLS:
-            spec = get_symbol(name)  # KeyError for an unknown block
-            ensure_combiner(doc, len([p for p in spec.ports if p.id.startswith("IN")]))
+            ensure_symbol(doc, name)  # KeyError for an unknown block
 
 
 def _sort_class_registration(doc: Drawing) -> None:
@@ -145,18 +146,46 @@ def _draw_table(target: BaseLayout, table: Table) -> None:
             (line.x1, line.y1), (line.x2, line.y2), dxfattribs=_attribs(line.layer, weight=None)
         )
     for text in table.texts():
-        _add_text(target, text.layer, text.x, text.y, text.height, text.text)
+        _add_text(
+            target,
+            text.layer,
+            text.x,
+            text.y,
+            text.height,
+            text.text,
+            style=text.style,
+            align=text.align,
+        )
 
 
-def _add_text(target: BaseLayout, layer: str, x: float, y: float, height: float, text: str) -> None:
-    target.add_text(
-        text, height=height, dxfattribs={"layer": layer, "style": TEXT_STYLE}
-    ).set_placement((x, y))
+def _add_text(
+    target: BaseLayout,
+    layer: str,
+    x: float,
+    y: float,
+    height: float,
+    text: str,
+    *,
+    style: str | None = None,
+    align: str = "left",
+) -> None:
+    entity = target.add_text(
+        text, height=height, dxfattribs={"layer": layer, "style": style or TEXT_STYLE}
+    )
+    if align == "center":
+        entity.set_placement((x, y), align=TextEntityAlignment.MIDDLE_CENTER)
+    else:
+        entity.set_placement((x, y))
 
 
 def _build_document(diagram: Diagram) -> Drawing:
     doc = _new_document()
-    define_symbol_blocks(doc, (item.symbol for item in diagram.instances))
+    for name, font in diagram.text_styles:
+        if name not in doc.styles:
+            doc.styles.add(name, font=font)
+    define_symbol_blocks(
+        doc, [*(item.symbol for item in diagram.instances), *(s.symbol for s in diagram.samples)]
+    )
 
     model = doc.modelspace()
     doc.layouts.rename("Layout1", LAYOUT_NAME)
@@ -218,7 +247,31 @@ def _build_document(diagram: Diagram) -> Drawing:
         )
 
     for text in diagram.texts:
-        _add_text(spaces[text.space], text.layer, text.x, text.y, text.height, text.text)
+        _add_text(
+            spaces[text.space],
+            text.layer,
+            text.x,
+            text.y,
+            text.height,
+            text.text,
+            style=text.style,
+            align=text.align,
+        )
+    for circle in diagram.circles:
+        spaces[circle.space].add_circle(
+            (circle.cx, circle.cy), circle.radius, dxfattribs=_attribs(circle.layer)
+        )
+    for sample in diagram.samples:
+        spaces[sample.space].add_blockref(
+            sample.symbol,
+            (sample.x, sample.y),
+            dxfattribs={
+                "layer": sample.layer,
+                "xscale": sample.scale,
+                "yscale": sample.scale,
+                "zscale": sample.scale,
+            },
+        )
     for line in diagram.lines:
         spaces[line.space].add_line(
             (line.x1, line.y1),

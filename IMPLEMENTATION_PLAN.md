@@ -688,6 +688,19 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 ---
 
+### Stage 4.3b: Owner's sheet template (`a3_plantilla_v1`)
+
+**Goal:** Draw every design on the owner's A3 sheet template, its content adapted to the design, with no personal data.
+
+**Status:** In Progress (implemented in PR; owner review and the decision to publish the neutral template pending)
+
+- `pvsld sheet import` turns the owner's DWG into a neutral template DXF. `sheet_templates/` is git-ignored until the owner approves publishing it.
+- `layout_sheet.build_sheet_diagram` fills the 76 fields. Location, address, installer, owner and licence fields stay blank; the title block reads "COMPAÑÍA INSTALADORA".
+- The schematic placement is shared with v1 through `layout.Placement` and `build_schematic`; the v1 golden is unchanged.
+- Not in the model yet: altitude, inverter apparent power (VA), module type/dimensions, inverter certifications, estimated energy (blank or "—").
+
+---
+
 ### Stage 4.4: DWG Export & Library Finalization via Core Console
 
 **Goal:** Convert the library DXF to a DWG 2018 using Core Console, finalize the library, and prepare for diagram generation in Phase 5.
