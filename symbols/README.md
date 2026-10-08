@@ -28,6 +28,15 @@ conductors and annotation).
   committed bytes must equal what the definitions render (a test and `pvsld symbols build --check`
   enforce it).
 
+## DWG
+
+`pvsld-symbols.dwg` is the same library saved by AutoCAD as DWG 2018 (TrustedDWG, AUDIT 0/0), for opening and inserting the blocks directly in AutoCAD. `pvsld-symbols.dwg.json` records the SHA-256 of the DXF and the library version it was exported from; a test fails when the DXF changes and the DWG is not exported again. The DXF remains the source of truth.
+
+```powershell
+pvsld symbols dwg            # export with the Core Console (licensed AutoCAD)
+pvsld symbols dwg --check    # verify the committed DWG (no AutoCAD needed)
+```
+
 ## Regenerate and validate
 
 ```powershell

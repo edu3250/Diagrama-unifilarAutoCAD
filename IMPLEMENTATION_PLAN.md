@@ -730,7 +730,9 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_library_dwg_audit_clean`: if headless AUDIT available, (0, 0); otherwise manual check recorded
 - Manual (owner): Open DWG in AutoCAD, AUDIT, confirm 0/0; review metadata privacy
 
-**Status:** Not Started
+**Status:** In Progress (DWG committed in PR; release pending)
+
+**As built:** the DWG is `symbols/pvsld-symbols.dwg` (owner request: a plain library name), exported by `pvsld symbols dwg` through the finisher. Staleness is checked offline with `symbols/pvsld-symbols.dwg.json` (DXF SHA-256, library version) and `pvsld symbols dwg --check`. AutoCAD writes the Windows login name as "last saved by" and it cannot be removed without breaking TrustedDWG. No local paths are stored.
 
 ---
 
