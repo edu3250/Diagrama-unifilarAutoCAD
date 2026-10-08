@@ -98,7 +98,10 @@ def _dxf_texts(path: Path) -> list[str]:
 def test_every_size_in_the_spec_and_the_drawing_is_the_designed_one(
     tmp_path: Path, module: str, inverter: str
 ) -> None:
-    result = size(module, [inverter], target_dc_power_w=9000)
+    # The v1 title block states "<kWp> kWp / <kWac> kWac"; the sheet template is checked below.
+    result = size(
+        module, [inverter], target_dc_power_w=9000, layout_template="bt_string_residential_v1"
+    )
     selected = result.selected
     assert selected is not None
     kwp = f"{selected.metrics.p_dc_w / 1000:.2f}"
@@ -122,3 +125,20 @@ def test_every_size_in_the_spec_and_the_drawing_is_the_designed_one(
     }
     assert any(f"{kwp} kWp / {kwac} kWac" in text for text in texts)
     assert not any("7.70" in text for text in texts)
+
+
+@pytest.mark.parametrize(("module", "inverter"), [(ET_550, GROWATT_5K), (JINKO_650, GROWATT_5K)])
+def test_sized_designs_use_the_sheet_template_and_state_the_designed_size(
+    tmp_path: Path, module: str, inverter: str
+) -> None:
+    result = size(module, [inverter], target_dc_power_w=9000)
+    selected = result.selected
+    assert selected is not None
+    assert selected.spec["layout"]["template"] == "a3_plantilla_v1"  # the default
+    generated = generate_single_line_diagram(selected.spec, tmp_path / "sld.dxf")
+    assert generated.ok
+    texts = _dxf_texts(tmp_path / "sld.dxf")
+    exact = f"{selected.metrics.p_dc_w / 1000:.3f}".rstrip("0").rstrip(".")
+    assert f"SISTEMA FOTOVOLTAICO INTERCONECTADO A LA RED DE {exact} kWp" in texts
+    assert f"{selected.metrics.p_dc_w:,.0f} Wp" in texts
+    assert not any("7.70" in text or "7,700" in text for text in texts)

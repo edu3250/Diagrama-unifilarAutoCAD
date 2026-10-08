@@ -268,6 +268,7 @@ def _build_spec(
 
     spec = copy.deepcopy(request.template)
     spec["schema_version"] = SCHEMA_VERSION
+    spec["layout"] = {**spec["layout"], "template": request.layout_template}
     spec["standards"] = standards.model_dump(mode="json")
     spec["modules"] = [spec_module.model_dump(mode="json")]
     spec["inverters"] = [spec_inverter.model_dump(mode="json")]

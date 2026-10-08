@@ -92,6 +92,10 @@ class SizingRequest(BaseModel):
     dc_ac_policy: DcAcPolicy = DEFAULT_DC_AC_POLICY
     routing: Routing = Routing()
     max_candidates: int = Field(default=10, ge=1, le=50)
+    layout_template: Literal["a3_plantilla_v1", "bt_string_residential_v1"] = Field(
+        default="a3_plantilla_v1",
+        description="Layout template of the specifications produced (default the owner's sheet)",
+    )
 
     @model_validator(mode="after")
     def _check_template_and_range(self) -> SizingRequest:

@@ -22,8 +22,8 @@ pvsld sheet check                                 # loads sheet_templates/a3_pla
 - no drawing metadata;
 - Open Sans replaced by Arial / Arial Narrow Bold, because Open Sans is not installed with AutoCAD, which would fall back to `simplex.shx` and overflow the boxes.
 
-The DXF files here are git-ignored until the owner approves publishing the neutral template.
+The neutral `a3_plantilla_v1.dxf` is committed (owner approval, 2026-10-07); the owner's source DWG stays out of the repository (`*.dwg` is git-ignored).
 
 ## Use it in a design
 
-Set `layout.template: a3_plantilla_v1` in the specification (or in the `template_file` of a sizing request).
+`pvsld size` produces specifications on this sheet by default (`layout_template` of the sizing request; `bt_string_residential_v1` keeps the earlier layout). A hand-written specification sets `layout.template: a3_plantilla_v1`.
