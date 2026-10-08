@@ -553,7 +553,7 @@ $SPLINESEGS
   9
 $HANDSEED
   5
-6E8
+703
   9
 $SURFTAB1
  70
@@ -2455,7 +2455,7 @@ AcAecLayerStandard
   0
 APPID
   5
-6E5
+700
 330
 3
 100
@@ -2469,7 +2469,7 @@ HATCHBACKGROUNDCOLOR
   0
 APPID
   5
-6E6
+701
 330
 3
 100
@@ -2645,7 +2645,7 @@ BLOCK_RECORD
 100
 AcDbSymbolTable
  70
-60
+61
   0
 BLOCK_RECORD
   5
@@ -2711,7 +2711,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -2765,7 +2765,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -2807,7 +2807,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -2861,7 +2861,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -2887,7 +2887,7 @@ left
 1040
 -7.5
 1070
-0
+1
 1000
 OUT
 1000
@@ -2939,7 +2939,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -2993,7 +2993,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -3071,7 +3071,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -3149,7 +3149,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3203,7 +3203,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3257,7 +3257,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3311,7 +3311,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -3389,7 +3389,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3443,7 +3443,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3497,7 +3497,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3551,7 +3551,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3591,6 +3591,60 @@ AcDbSymbolTableRecord
 100
 AcDbBlockTableRecord
   2
+PVSLD_FUSE_AC
+340
+0
+ 70
+0
+280
+1
+281
+0
+1001
+PVSLD
+1000
+pvsld.block/1
+1000
+0.6.0
+1070
+2
+1000
+IN
+1000
+AC
+1000
+left
+1040
+0.0
+1040
+0.0
+1070
+1
+1000
+OUT
+1000
+AC
+1000
+right
+1040
+22.5
+1040
+0.0
+1070
+1
+1000
+NMX-J-136-ANCE-2019 4.2.21 (FUS, forma nacional 1)
+  0
+BLOCK_RECORD
+  5
+1D3
+330
+9
+100
+AcDbSymbolTableRecord
+100
+AcDbBlockTableRecord
+  2
 PVSLD_SPD
 340
 0
@@ -3605,7 +3659,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3637,7 +3691,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-1D3
+1E5
 330
 9
 100
@@ -3659,7 +3713,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3691,7 +3745,7 @@ CFE G0100-04 Apéndice C (varistor), usado en CA en Apéndice D
   0
 BLOCK_RECORD
   5
-1E5
+1F7
 330
 9
 100
@@ -3713,7 +3767,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3745,7 +3799,7 @@ CFE G0100-04 Apéndice D, fig. D1 (detector de falla a tierra)
   0
 BLOCK_RECORD
   5
-1F4
+206
 330
 9
 100
@@ -3767,7 +3821,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3799,7 +3853,7 @@ CFE G0100-04 Apéndice D, fig. D2 (monitor de aislamiento)
   0
 BLOCK_RECORD
   5
-202
+214
 330
 9
 100
@@ -3821,7 +3875,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3853,7 +3907,7 @@ pvsld (composición); bloque rotulado al estilo de CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-210
+222
 330
 9
 100
@@ -3875,7 +3929,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3907,7 +3961,7 @@ DGE (basada en IEC 60617) 07-73-01; números ANSI de NMX-J-136-ANCE-2019, Tabla 
   0
 BLOCK_RECORD
   5
-21E
+230
 330
 9
 100
@@ -3929,7 +3983,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -3961,7 +4015,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-232
+244
 330
 9
 100
@@ -3983,7 +4037,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4015,7 +4069,7 @@ CFE G0100-04 Apéndice C (interruptor manual), usado como desconectador de CD en
   0
 BLOCK_RECORD
   5
-247
+259
 330
 9
 100
@@ -4037,7 +4091,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4069,7 +4123,7 @@ NMX-J-136-ANCE-2019 4.2.176 (FUS-SECC, IEC S00369)
   0
 BLOCK_RECORD
   5
-259
+26B
 330
 9
 100
@@ -4091,7 +4145,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4123,7 +4177,7 @@ NMX-J-136-ANCE-2019 4.2.128 (IS, forma unifilar)
   0
 BLOCK_RECORD
   5
-26F
+281
 330
 9
 100
@@ -4145,7 +4199,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 3
 1000
@@ -4189,7 +4243,7 @@ DGE (basada en IEC 60617) 07-71-03; dispositivos 43 y 83 de NMX-J-136-ANCE-2019,
   0
 BLOCK_RECORD
   5
-281
+293
 330
 9
 100
@@ -4211,7 +4265,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4243,7 +4297,7 @@ NMX-J-136-ANCE-2019 4.2.168 (contacto, IEC S00284)
   0
 BLOCK_RECORD
   5
-292
+2A4
 330
 9
 100
@@ -4265,7 +4319,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4297,7 +4351,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-2A5
+2B7
 330
 9
 100
@@ -4319,7 +4373,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4351,7 +4405,7 @@ NMX-J-136-ANCE-2019 4.2.126 (equipo de medición, M)
   0
 BLOCK_RECORD
   5
-2B4
+2C6
 330
 9
 100
@@ -4373,7 +4427,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -4429,7 +4483,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-2C7
+2D9
 330
 9
 100
@@ -4451,7 +4505,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4471,7 +4525,7 @@ CFE G0100-04 Apéndice D, figs. D1 y D2 (subsistema de control y monitoreo)
   0
 BLOCK_RECORD
   5
-2D4
+2E6
 330
 9
 100
@@ -4493,7 +4547,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4513,7 +4567,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-2E5
+2F7
 330
 9
 100
@@ -4535,7 +4589,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4567,7 +4621,7 @@ pvsld (sin símbolo en CFE G0100-04 ni IEC 60617)
   0
 BLOCK_RECORD
   5
-2F3
+305
 330
 9
 100
@@ -4589,7 +4643,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 3
 1000
@@ -4633,7 +4687,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-308
+31A
 330
 9
 100
@@ -4655,7 +4709,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4675,7 +4729,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-319
+32B
 330
 9
 100
@@ -4697,7 +4751,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4717,7 +4771,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-328
+33A
 330
 9
 100
@@ -4739,7 +4793,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4759,7 +4813,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-339
+34B
 330
 9
 100
@@ -4781,7 +4835,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 1
 1000
@@ -4801,7 +4855,7 @@ NMX-J-136-ANCE-2019 4.2.117 (TPT, IEC S00202)
   0
 BLOCK_RECORD
   5
-348
+35A
 330
 9
 100
@@ -4823,7 +4877,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4855,7 +4909,7 @@ NMX-J-136-ANCE-2019 4.2.130 (BPT)
   0
 BLOCK_RECORD
   5
-355
+367
 330
 9
 100
@@ -4877,7 +4931,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4909,7 +4963,7 @@ NMX-J-136-ANCE-2019 4.2.129
   0
 BLOCK_RECORD
   5
-362
+374
 330
 9
 100
@@ -4931,7 +4985,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -4963,7 +5017,7 @@ NMX-J-136-ANCE-2019 4.2.123 (TR)
   0
 BLOCK_RECORD
   5
-37B
+38D
 330
 9
 100
@@ -4985,7 +5039,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5017,7 +5071,7 @@ NMX-J-136-ANCE-2019 4.2.122 (FUS-DES, IEC S00368)
   0
 BLOCK_RECORD
   5
-38C
+39E
 330
 9
 100
@@ -5039,7 +5093,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5071,7 +5125,7 @@ NMX-J-136-ANCE-2019 4.2.178 (AR, IEC S00373)
   0
 BLOCK_RECORD
   5
-39C
+3AE
 330
 9
 100
@@ -5093,7 +5147,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5125,7 +5179,7 @@ NMX-J-136-ANCE-2019 4.2.118 (DSSC)
   0
 BLOCK_RECORD
   5
-3AE
+3C0
 330
 9
 100
@@ -5147,7 +5201,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5179,7 +5233,7 @@ NMX-J-136-ANCE-2019 4.2.124 (TC)
   0
 BLOCK_RECORD
   5
-3BD
+3CF
 330
 9
 100
@@ -5201,7 +5255,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5233,7 +5287,7 @@ NMX-J-136-ANCE-2019 4.2.75 (TP)
   0
 BLOCK_RECORD
   5
-3CE
+3E0
 330
 9
 100
@@ -5255,7 +5309,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5287,7 +5341,7 @@ CFE G0100-04 Apéndice D, figs. D1 y D2 (barra de ramas)
   0
 BLOCK_RECORD
   5
-3DD
+3EF
 330
 9
 100
@@ -5309,7 +5363,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 2
 1000
@@ -5341,7 +5395,7 @@ NMX-J-136-ANCE-2019 4.2.140 (IEC S00017)
   0
 BLOCK_RECORD
   5
-3E8
+3FA
 330
 9
 100
@@ -5363,7 +5417,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 4
 1000
@@ -5419,7 +5473,7 @@ NMX-J-136-ANCE-2019 4.2.12
   0
 BLOCK_RECORD
   5
-3F3
+405
 330
 9
 100
@@ -5441,7 +5495,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5449,7 +5503,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-3FD
+40F
 330
 9
 100
@@ -5471,7 +5525,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5479,7 +5533,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-409
+41B
 330
 9
 100
@@ -5501,7 +5555,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5509,7 +5563,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-414
+426
 330
 9
 100
@@ -5531,7 +5585,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5539,7 +5593,7 @@ CFE G0100-04 Apéndice D
   0
 BLOCK_RECORD
   5
-41E
+430
 330
 9
 100
@@ -5561,7 +5615,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5569,7 +5623,7 @@ CFE G0100-04 Apéndice C
   0
 BLOCK_RECORD
   5
-429
+43B
 330
 9
 100
@@ -5591,7 +5645,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5599,7 +5653,7 @@ pvsld (composición); línea punto-punto-raya con los rótulos CFE y USUARIO
   0
 BLOCK_RECORD
   5
-435
+447
 330
 9
 100
@@ -5621,7 +5675,7 @@ PVSLD
 1000
 pvsld.block/1
 1000
-0.5.0
+0.6.0
 1070
 0
 1000
@@ -5629,7 +5683,7 @@ pvsld (sin símbolo en CFE G0100-04 ni IEC 60617)
   0
 BLOCK_RECORD
   5
-566
+581
 330
 9
 100
@@ -5639,7 +5693,7 @@ AcDbBlockTableRecord
   2
 *Paper_Space0
 340
-569
+584
  70
 0
 280
@@ -5649,7 +5703,7 @@ AcDbBlockTableRecord
   0
 BLOCK_RECORD
   5
-648
+663
 330
 9
 100
@@ -5659,7 +5713,7 @@ AcDbBlockTableRecord
   2
 *Paper_Space1
 340
-64B
+666
  70
 0
 280
@@ -8137,33 +8191,9 @@ AcDbLine
  31
 0.0
   0
-LINE
-  5
-98
-330
-83
-100
-AcDbEntity
-  8
-E-PVDC-EQPM
-100
-AcDbLine
- 10
-35.0
- 20
-0.0
- 30
-0.0
- 11
-60.0
- 21
-0.0
- 31
-0.0
-  0
 HATCH
   5
-99
+98
 330
 83
 100
@@ -8210,6 +8240,66 @@ SOLID
 35.8
  20
 7.5
+ 42
+1.0
+ 97
+0
+ 75
+0
+ 76
+1
+ 98
+0
+  0
+HATCH
+  5
+99
+330
+83
+100
+AcDbEntity
+  8
+E-PVDC-COND
+100
+AcDbHatch
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+210
+0.0
+220
+0.0
+230
+1.0
+  2
+SOLID
+ 70
+1
+ 71
+0
+ 91
+1
+ 92
+3
+ 72
+1
+ 73
+1
+ 93
+2
+ 10
+34.2
+ 20
+0.0
+ 42
+1.0
+ 10
+35.8
+ 20
+0.0
  42
 1.0
  97
@@ -8263,13 +8353,13 @@ SOLID
  10
 34.2
  20
-0.0
+-7.5
  42
 1.0
  10
 35.8
  20
-0.0
+-7.5
  42
 1.0
  97
@@ -8281,7 +8371,7 @@ SOLID
  98
 0
   0
-HATCH
+LINE
   5
 9B
 330
@@ -8289,57 +8379,21 @@ HATCH
 100
 AcDbEntity
   8
-E-PVDC-COND
+E-PVDC-EQPM
 100
-AcDbHatch
+AcDbLine
  10
-0.0
+35.0
  20
 0.0
  30
 0.0
-210
+ 11
+60.0
+ 21
 0.0
-220
+ 31
 0.0
-230
-1.0
-  2
-SOLID
- 70
-1
- 71
-0
- 91
-1
- 92
-3
- 72
-1
- 73
-1
- 93
-2
- 10
-34.2
- 20
--7.5
- 42
-1.0
- 10
-35.8
- 20
--7.5
- 42
-1.0
- 97
-0
- 75
-0
- 76
-1
- 98
-0
   0
 HATCH
   5
@@ -8749,7 +8803,7 @@ AcDbText
  40
 2.5
   1
-
+2
   7
 PVSLD_STD
 100
@@ -17019,7 +17073,7 @@ AcDbText
  40
 2.5
   1
-Fusible
+Fusible (CD)
   7
 PVSLD_STD
 100
@@ -17347,7 +17401,7 @@ AcDbEntity
 100
 AcDbBlockBegin
   2
-PVSLD_SPD
+PVSLD_FUSE_AC
  70
 2
  10
@@ -17357,7 +17411,7 @@ PVSLD_SPD
  30
 0.0
   3
-PVSLD_SPD
+PVSLD_FUSE_AC
   1
 
   0
@@ -17369,7 +17423,7 @@ LINE
 100
 AcDbEntity
   8
-E-PVDC-EQPM
+E-PVAC-EQPM
 100
 AcDbLine
  10
@@ -17379,9 +17433,9 @@ AcDbLine
  30
 0.0
  11
-0.0
+5.0
  21
--5.0
+0.0
  31
 0.0
   0
@@ -17393,7 +17447,7 @@ LWPOLYLINE
 100
 AcDbEntity
   8
-E-PVDC-EQPM
+E-PVAC-EQPM
 100
 AcDbPolyline
  90
@@ -17401,21 +17455,21 @@ AcDbPolyline
  70
 1
  10
--2.5
+5.0
  20
--15.0
+-3.75
  10
-2.5
+17.5
  20
--15.0
+-3.75
  10
-2.5
+17.5
  20
--5.0
+3.75
  10
--2.5
+5.0
  20
--5.0
+3.75
   0
 LINE
   5
@@ -17425,23 +17479,23 @@ LINE
 100
 AcDbEntity
   8
-E-PVDC-EQPM
+E-PVAC-EQPM
 100
 AcDbLine
  10
-0.0
+7.5
  20
--15.0
+-3.75
  30
 0.0
  11
-0.0
+7.5
  21
--20.0
+3.75
  31
 0.0
   0
-LWPOLYLINE
+LINE
   5
 1C7
 330
@@ -17449,33 +17503,49 @@ LWPOLYLINE
 100
 AcDbEntity
   8
-E-PVDC-EQPM
+E-PVAC-EQPM
 100
-AcDbPolyline
- 90
-4
- 70
-0
+AcDbLine
  10
--4.0
+15.0
  20
--15.0
+-3.75
+ 30
+0.0
+ 11
+15.0
+ 21
+3.75
+ 31
+0.0
+  0
+LINE
+  5
+1C8
+330
+1C1
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
  10
--4.0
+17.5
  20
--11.5
- 10
-4.0
- 20
--8.5
- 10
-4.0
- 20
--5.0
+0.0
+ 30
+0.0
+ 11
+22.5
+ 21
+0.0
+ 31
+0.0
   0
 ATTDEF
   5
-1C8
+1C9
 330
 1C1
 100
@@ -17485,9 +17555,9 @@ E-ANNO-TAGS
 100
 AcDbText
  10
-7.0
+0.0
  20
--6.0
+6.25
  30
 0.0
  40
@@ -17511,7 +17581,7 @@ TAG
   0
 ATTDEF
   5
-1C9
+1CA
 330
 1C1
 100
@@ -17521,15 +17591,15 @@ E-ANNO-TAGS
 100
 AcDbText
  10
-7.0
+0.0
  20
--10.0
+-8.25
  30
 0.0
  40
 2.5
   1
-Varistor (dispositivo de protección contra sobretensiones)
+Fusible (CA)
   7
 PVSLD_STD
 100
@@ -17547,7 +17617,7 @@ DESC
   0
 ATTDEF
   5
-1CA
+1CB
 330
 1C1
 100
@@ -17583,7 +17653,7 @@ COMP_ID
   0
 ATTDEF
   5
-1CB
+1CC
 330
 1C1
 100
@@ -17619,42 +17689,6 @@ IEC_REF
   0
 ATTDEF
   5
-1CC
-330
-1C1
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.308 (SPD, forma distinta)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia NMX-J-136-ANCE
-  2
-NMX_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
 1CD
 330
 1C1
@@ -17673,15 +17707,15 @@ AcDbText
  40
 2.5
   1
-CFE G0100-04 Apéndice C
+NMX-J-136-ANCE-2019 4.2.21 (alt. 4.2.174, IEC S00362)
   7
 PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Norma de origen del símbolo
+Referencia NMX-J-136-ANCE
   2
-SOURCE_STANDARD
+NMX_REF
  70
 1
  71
@@ -17701,25 +17735,25 @@ E-ANNO-TAGS
 100
 AcDbText
  10
-7.0
+0.0
  20
--14.0
+0.0
  30
 0.0
  40
 2.5
   1
-
+NMX-J-136-ANCE-2019 4.2.21 (FUS, forma nacional 1)
   7
 PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Datos del varistor
+Norma de origen del símbolo
   2
-SPEC
+SOURCE_STANDARD
  70
-0
+1
  71
 1
  72
@@ -17751,9 +17785,9 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Tipo (1, 2, 3)
+Corriente nominal (A)
   2
-SPD_TYPE
+RATING_A
  70
 1
  71
@@ -17787,9 +17821,9 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Tensión máxima de operación continua (V)
+Tensión (V)
   2
-UC_V
+VOLT_V
  70
 1
  71
@@ -17823,9 +17857,9 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Nivel de protección (kV)
+Clase (gG, gL)
   2
-UP_KV
+FUSE_CLASS
  70
 1
  71
@@ -17859,9 +17893,9 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Corriente nominal de descarga (kA)
+Capacidad interruptiva (kA)
   2
-IN_KA
+KAIC_KA
  70
 1
  71
@@ -17893,7 +17927,7 @@ AcDbEntity
 100
 AcDbBlockBegin
   2
-PVSLD_SPD_AC
+PVSLD_SPD
  70
 2
  10
@@ -17903,7 +17937,7 @@ PVSLD_SPD_AC
  30
 0.0
   3
-PVSLD_SPD_AC
+PVSLD_SPD
   1
 
   0
@@ -17915,7 +17949,7 @@ LINE
 100
 AcDbEntity
   8
-E-PVAC-EQPM
+E-PVDC-EQPM
 100
 AcDbLine
  10
@@ -17939,7 +17973,7 @@ LWPOLYLINE
 100
 AcDbEntity
   8
-E-PVAC-EQPM
+E-PVDC-EQPM
 100
 AcDbPolyline
  90
@@ -17971,7 +18005,7 @@ LINE
 100
 AcDbEntity
   8
-E-PVAC-EQPM
+E-PVDC-EQPM
 100
 AcDbLine
  10
@@ -17995,7 +18029,7 @@ LWPOLYLINE
 100
 AcDbEntity
   8
-E-PVAC-EQPM
+E-PVDC-EQPM
 100
 AcDbPolyline
  90
@@ -18075,7 +18109,7 @@ AcDbText
  40
 2.5
   1
-Varistor en CA (dispositivo de protección contra sobretensiones)
+Varistor (dispositivo de protección contra sobretensiones)
   7
 PVSLD_STD
 100
@@ -18219,7 +18253,7 @@ AcDbText
  40
 2.5
   1
-CFE G0100-04 Apéndice C (varistor), usado en CA en Apéndice D
+CFE G0100-04 Apéndice C
   7
 PVSLD_STD
 100
@@ -18439,7 +18473,7 @@ AcDbEntity
 100
 AcDbBlockBegin
   2
-PVSLD_GFDI
+PVSLD_SPD_AC
  70
 2
  10
@@ -18449,11 +18483,11 @@ PVSLD_GFDI
  30
 0.0
   3
-PVSLD_GFDI
+PVSLD_SPD_AC
   1
 
   0
-LWPOLYLINE
+LINE
   5
 1E8
 330
@@ -18461,31 +18495,23 @@ LWPOLYLINE
 100
 AcDbEntity
   8
-E-PVDC-EQPM
+E-PVAC-EQPM
 100
-AcDbPolyline
- 90
-4
- 70
-1
+AcDbLine
  10
 0.0
  20
--15.0
- 10
-30.0
- 20
--15.0
- 10
-30.0
- 20
 0.0
- 10
+ 30
 0.0
- 20
+ 11
+0.0
+ 21
+-5.0
+ 31
 0.0
   0
-TEXT
+LWPOLYLINE
   5
 1E9
 330
@@ -18493,31 +18519,31 @@ TEXT
 100
 AcDbEntity
   8
-E-ANNO-TAGS
+E-PVAC-EQPM
 100
-AcDbText
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+-2.5
+ 20
+-15.0
  10
 2.5
  20
--4.75
- 30
-0.0
- 40
+-15.0
+ 10
 2.5
-  1
-Detector
-  7
-PVSLD_STD
- 11
-2.5
- 21
--4.75
- 31
-0.0
-100
-AcDbText
+ 20
+-5.0
+ 10
+-2.5
+ 20
+-5.0
   0
-TEXT
+LINE
   5
 1EA
 330
@@ -18525,31 +18551,23 @@ TEXT
 100
 AcDbEntity
   8
-E-ANNO-TAGS
+E-PVAC-EQPM
 100
-AcDbText
+AcDbLine
  10
-2.5
+0.0
  20
--8.75
+-15.0
  30
 0.0
- 40
-2.5
-  1
-de falla a
-  7
-PVSLD_STD
  11
-2.5
+0.0
  21
--8.75
+-20.0
  31
 0.0
-100
-AcDbText
   0
-TEXT
+LWPOLYLINE
   5
 1EB
 330
@@ -18557,29 +18575,29 @@ TEXT
 100
 AcDbEntity
   8
-E-ANNO-TAGS
+E-PVAC-EQPM
 100
-AcDbText
+AcDbPolyline
+ 90
+4
+ 70
+0
  10
-2.5
+-4.0
  20
--12.75
- 30
-0.0
- 40
-2.5
-  1
-tierra
-  7
-PVSLD_STD
- 11
-2.5
- 21
--12.75
- 31
-0.0
-100
-AcDbText
+-15.0
+ 10
+-4.0
+ 20
+-11.5
+ 10
+4.0
+ 20
+-8.5
+ 10
+4.0
+ 20
+-5.0
   0
 ATTDEF
   5
@@ -18593,9 +18611,9 @@ E-ANNO-TAGS
 100
 AcDbText
  10
-0.0
+7.0
  20
-2.5
+-6.0
  30
 0.0
  40
@@ -18629,15 +18647,15 @@ E-ANNO-TAGS
 100
 AcDbText
  10
-0.0
+7.0
  20
--19.5
+-10.0
  30
 0.0
  40
 2.5
   1
-Detector de falla a tierra
+Varistor en CA (dispositivo de protección contra sobretensiones)
   7
 PVSLD_STD
 100
@@ -18745,7 +18763,7 @@ AcDbText
  40
 2.5
   1
-NMX-J-136-ANCE (pendiente)
+NMX-J-136-ANCE-2019 4.2.308 (SPD, forma distinta)
   7
 PVSLD_STD
 100
@@ -18781,7 +18799,7 @@ AcDbText
  40
 2.5
   1
-CFE G0100-04 Apéndice D, fig. D1 (detector de falla a tierra)
+CFE G0100-04 Apéndice C (varistor), usado en CA en Apéndice D
   7
 PVSLD_STD
 100
@@ -18802,6 +18820,568 @@ ATTDEF
 1F2
 330
 1E5
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+7.0
+ 20
+-14.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Datos del varistor
+  2
+SPEC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+1F3
+330
+1E5
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tipo (1, 2, 3)
+  2
+SPD_TYPE
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+1F4
+330
+1E5
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión máxima de operación continua (V)
+  2
+UC_V
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+1F5
+330
+1E5
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Nivel de protección (kV)
+  2
+UP_KV
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+1F6
+330
+1E5
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Corriente nominal de descarga (kA)
+  2
+IN_KA
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ENDBLK
+  5
+1E7
+330
+1E5
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+1F8
+330
+1F7
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+PVSLD_GFDI
+ 70
+2
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+PVSLD_GFDI
+  1
+
+  0
+LWPOLYLINE
+  5
+1FA
+330
+1F7
+100
+AcDbEntity
+  8
+E-PVDC-EQPM
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+0.0
+ 20
+-15.0
+ 10
+30.0
+ 20
+-15.0
+ 10
+30.0
+ 20
+0.0
+ 10
+0.0
+ 20
+0.0
+  0
+TEXT
+  5
+1FB
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+2.5
+ 20
+-4.75
+ 30
+0.0
+ 40
+2.5
+  1
+Detector
+  7
+PVSLD_STD
+ 11
+2.5
+ 21
+-4.75
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+1FC
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+2.5
+ 20
+-8.75
+ 30
+0.0
+ 40
+2.5
+  1
+de falla a
+  7
+PVSLD_STD
+ 11
+2.5
+ 21
+-8.75
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+1FD
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+2.5
+ 20
+-12.75
+ 30
+0.0
+ 40
+2.5
+  1
+tierra
+  7
+PVSLD_STD
+ 11
+2.5
+ 21
+-12.75
+ 31
+0.0
+100
+AcDbText
+  0
+ATTDEF
+  5
+1FE
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+2.5
+ 30
+0.0
+ 40
+3.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador
+  2
+TAG
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+1FF
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+-19.5
+ 30
+0.0
+ 40
+2.5
+  1
+Detector de falla a tierra
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Descripción
+  2
+DESC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+200
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador en el modelo
+  2
+COMP_ID
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+201
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+-
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia IEC 60617
+  2
+IEC_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+202
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE (pendiente)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia NMX-J-136-ANCE
+  2
+NMX_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+203
+330
+1F7
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+CFE G0100-04 Apéndice D, fig. D1 (detector de falla a tierra)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Norma de origen del símbolo
+  2
+SOURCE_STANDARD
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+204
+330
+1F7
 100
 AcDbEntity
   8
@@ -18835,9 +19415,9 @@ TRIP_MA
   0
 ATTDEF
   5
-1F3
+205
 330
-1E5
+1F7
 100
 AcDbEntity
   8
@@ -18871,9 +19451,9 @@ GFDI_TYPE
   0
 ENDBLK
   5
-1E7
+1F9
 330
-1E5
+1F7
 100
 AcDbEntity
   8
@@ -18883,9 +19463,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-1F5
+207
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -18909,9 +19489,9 @@ PVSLD_INS_MONITOR
   0
 LWPOLYLINE
   5
-1F7
+209
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -18941,9 +19521,9 @@ AcDbPolyline
   0
 TEXT
   5
-1F8
+20A
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -18973,9 +19553,9 @@ AcDbText
   0
 TEXT
   5
-1F9
+20B
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19005,9 +19585,9 @@ AcDbText
   0
 TEXT
   5
-1FA
+20C
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19037,9 +19617,9 @@ AcDbText
   0
 ATTDEF
   5
-1FB
+20D
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19073,9 +19653,9 @@ TAG
   0
 ATTDEF
   5
-1FC
+20E
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19109,9 +19689,9 @@ DESC
   0
 ATTDEF
   5
-1FD
+20F
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19145,9 +19725,9 @@ COMP_ID
   0
 ATTDEF
   5
-1FE
+210
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19181,9 +19761,9 @@ IEC_REF
   0
 ATTDEF
   5
-1FF
+211
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19217,9 +19797,9 @@ NMX_REF
   0
 ATTDEF
   5
-200
+212
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19253,9 +19833,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-201
+213
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19289,9 +19869,9 @@ TRIP_KOHM
   0
 ENDBLK
   5
-1F6
+208
 330
-1F4
+206
 100
 AcDbEntity
   8
@@ -19301,9 +19881,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-203
+215
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19327,9 +19907,9 @@ PVSLD_AFCI
   0
 LWPOLYLINE
   5
-205
+217
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19359,9 +19939,9 @@ AcDbPolyline
   0
 TEXT
   5
-206
+218
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19391,9 +19971,9 @@ AcDbText
   0
 TEXT
   5
-207
+219
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19423,9 +20003,9 @@ AcDbText
   0
 TEXT
   5
-208
+21A
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19455,9 +20035,9 @@ AcDbText
   0
 ATTDEF
   5
-209
+21B
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19491,9 +20071,9 @@ TAG
   0
 ATTDEF
   5
-20A
+21C
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19527,9 +20107,9 @@ DESC
   0
 ATTDEF
   5
-20B
+21D
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19563,9 +20143,9 @@ COMP_ID
   0
 ATTDEF
   5
-20C
+21E
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19599,9 +20179,9 @@ IEC_REF
   0
 ATTDEF
   5
-20D
+21F
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19635,9 +20215,9 @@ NMX_REF
   0
 ATTDEF
   5
-20E
+220
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19671,9 +20251,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-20F
+221
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19707,9 +20287,9 @@ AFCI_TYPE
   0
 ENDBLK
   5
-204
+216
 330
-202
+214
 100
 AcDbEntity
   8
@@ -19719,9 +20299,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-211
+223
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19745,9 +20325,9 @@ PVSLD_RELAY
   0
 LWPOLYLINE
   5
-213
+225
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19777,9 +20357,9 @@ AcDbPolyline
   0
 ATTDEF
   5
-214
+226
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19813,9 +20393,9 @@ TAG
   0
 ATTDEF
   5
-215
+227
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19849,9 +20429,9 @@ DESC
   0
 ATTDEF
   5
-216
+228
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19885,9 +20465,9 @@ COMP_ID
   0
 ATTDEF
   5
-217
+229
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19921,9 +20501,9 @@ IEC_REF
   0
 ATTDEF
   5
-218
+22A
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19957,9 +20537,9 @@ NMX_REF
   0
 ATTDEF
   5
-219
+22B
 330
-210
+222
 100
 AcDbEntity
   8
@@ -19993,9 +20573,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-21A
+22C
 330
-210
+222
 100
 AcDbEntity
   8
@@ -20029,9 +20609,9 @@ FUNCTION
   0
 ATTDEF
   5
-21B
+22D
 330
-210
+222
 100
 AcDbEntity
   8
@@ -20065,9 +20645,9 @@ ANSI_NO
   0
 ATTDEF
   5
-21C
+22E
 330
-210
+222
 100
 AcDbEntity
   8
@@ -20101,9 +20681,9 @@ SETTING
   0
 ATTDEF
   5
-21D
+22F
 330
-210
+222
 100
 AcDbEntity
   8
@@ -20137,9 +20717,9 @@ DELAY_S
   0
 ENDBLK
   5
-212
+224
 330
-210
+222
 100
 AcDbEntity
   8
@@ -20149,9 +20729,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-21F
+231
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20175,9 +20755,9 @@ PVSLD_SWITCH
   0
 LINE
   5
-221
+233
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20199,9 +20779,9 @@ AcDbLine
   0
 LINE
   5
-222
+234
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20223,9 +20803,9 @@ AcDbLine
   0
 LINE
   5
-223
+235
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20247,9 +20827,9 @@ AcDbLine
   0
 LINE
   5
-224
+236
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20273,9 +20853,9 @@ AcDbLine
   0
 LINE
   5
-225
+237
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20299,9 +20879,9 @@ AcDbLine
   0
 LINE
   5
-226
+238
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20323,9 +20903,9 @@ AcDbLine
   0
 LINE
   5
-227
+239
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20347,9 +20927,9 @@ AcDbLine
   0
 ATTDEF
   5
-228
+23A
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20383,9 +20963,9 @@ TAG
   0
 ATTDEF
   5
-229
+23B
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20419,9 +20999,9 @@ DESC
   0
 ATTDEF
   5
-22A
+23C
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20455,9 +21035,9 @@ COMP_ID
   0
 ATTDEF
   5
-22B
+23D
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20491,9 +21071,9 @@ IEC_REF
   0
 ATTDEF
   5
-22C
+23E
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20527,9 +21107,9 @@ NMX_REF
   0
 ATTDEF
   5
-22D
+23F
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20563,9 +21143,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-22E
+240
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20599,9 +21179,9 @@ ROLE
   0
 ATTDEF
   5
-22F
+241
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20635,9 +21215,9 @@ POLES
   0
 ATTDEF
   5
-230
+242
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20671,9 +21251,9 @@ RATING_A
   0
 ATTDEF
   5
-231
+243
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20707,9 +21287,9 @@ VOLT_V
   0
 ENDBLK
   5
-220
+232
 330
-21E
+230
 100
 AcDbEntity
   8
@@ -20719,9 +21299,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-233
+245
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20745,9 +21325,9 @@ PVSLD_DC_DISCONNECT
   0
 LINE
   5
-235
+247
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20769,9 +21349,9 @@ AcDbLine
   0
 LINE
   5
-236
+248
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20793,9 +21373,9 @@ AcDbLine
   0
 LINE
   5
-237
+249
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20817,9 +21397,9 @@ AcDbLine
   0
 LINE
   5
-238
+24A
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20843,9 +21423,9 @@ AcDbLine
   0
 LINE
   5
-239
+24B
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20869,9 +21449,9 @@ AcDbLine
   0
 LINE
   5
-23A
+24C
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20893,9 +21473,9 @@ AcDbLine
   0
 LINE
   5
-23B
+24D
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20917,9 +21497,9 @@ AcDbLine
   0
 ATTDEF
   5
-23C
+24E
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20953,9 +21533,9 @@ TAG
   0
 ATTDEF
   5
-23D
+24F
 330
-232
+244
 100
 AcDbEntity
   8
@@ -20989,9 +21569,9 @@ DESC
   0
 ATTDEF
   5
-23E
+250
 330
-232
+244
 100
 AcDbEntity
   8
@@ -21025,9 +21605,9 @@ COMP_ID
   0
 ATTDEF
   5
-23F
+251
 330
-232
+244
 100
 AcDbEntity
   8
@@ -21061,9 +21641,9 @@ IEC_REF
   0
 ATTDEF
   5
-240
+252
 330
-232
+244
 100
 AcDbEntity
   8
@@ -21097,9 +21677,9 @@ NMX_REF
   0
 ATTDEF
   5
-241
+253
 330
-232
+244
 100
 AcDbEntity
   8
@@ -21133,9 +21713,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-242
+254
 330
-232
+244
 100
 AcDbEntity
   8
@@ -21169,535 +21749,9 @@ ROLE
   0
 ATTDEF
   5
-243
-330
-232
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Polos
-  2
-POLES
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-244
-330
-232
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Corriente nominal (A)
-  2
-RATING_A
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-245
-330
-232
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Tensión (V)
-  2
-VOLT_V
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-246
-330
-232
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Con capacidad de corte con carga
-  2
-LOAD_BREAK
- 70
-1
- 71
-1
- 72
-0
-  0
-ENDBLK
-  5
-234
-330
-232
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockEnd
-  0
-BLOCK
-  5
-248
-330
-247
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-PVSLD_FUSE_DISC
- 70
-2
- 10
-0.0
- 20
-0.0
- 30
-0.0
-  3
-PVSLD_FUSE_DISC
-  1
-
-  0
-LINE
-  5
-24A
-330
-247
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 11
-5.0
- 21
-0.0
- 31
-0.0
-  0
-LINE
-  5
-24B
-330
-247
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-17.5
- 20
-0.0
- 30
-0.0
- 11
-5.0
- 21
--5.5
- 31
-0.0
-  0
-LWPOLYLINE
-  5
-24C
-330
-247
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbPolyline
- 90
-4
- 70
-1
- 10
-14.2534
- 20
--2.7941
- 10
-9.0034
- 20
--5.1041
- 10
-7.9966
- 20
--2.8159
- 10
-13.2466
- 20
--0.5059
-  0
-LINE
-  5
-24D
-330
-247
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-17.5
- 20
-0.0
- 30
-0.0
- 11
-25.0
- 21
-0.0
- 31
-0.0
-  0
-LINE
-  5
-24E
-330
-247
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-5.0
- 20
--2.5
- 30
-0.0
- 11
-5.0
- 21
-2.5
- 31
-0.0
-  0
-ATTDEF
-  5
-24F
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-5.0
- 30
-0.0
- 40
-3.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador
-  2
-TAG
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-250
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
--10.0
- 30
-0.0
- 40
-2.5
-  1
-Fusible-seccionador
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Descripción
-  2
-DESC
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-251
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador en el modelo
-  2
-COMP_ID
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-252
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-IEC 60617 S00369
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia IEC 60617
-  2
-IEC_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-253
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.176 (alt. 4.2.177, S00370)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia NMX-J-136-ANCE
-  2
-NMX_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-254
-330
-247
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.176 (FUS-SECC, IEC S00369)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Norma de origen del símbolo
-  2
-SOURCE_STANDARD
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
 255
 330
-247
+244
 100
 AcDbEntity
   8
@@ -21733,7 +21787,7 @@ ATTDEF
   5
 256
 330
-247
+244
 100
 AcDbEntity
   8
@@ -21769,7 +21823,7 @@ ATTDEF
   5
 257
 330
-247
+244
 100
 AcDbEntity
   8
@@ -21805,7 +21859,533 @@ ATTDEF
   5
 258
 330
-247
+244
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Con capacidad de corte con carga
+  2
+LOAD_BREAK
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ENDBLK
+  5
+246
+330
+244
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+25A
+330
+259
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+PVSLD_FUSE_DISC
+ 70
+2
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+PVSLD_FUSE_DISC
+  1
+
+  0
+LINE
+  5
+25C
+330
+259
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 11
+5.0
+ 21
+0.0
+ 31
+0.0
+  0
+LINE
+  5
+25D
+330
+259
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+17.5
+ 20
+0.0
+ 30
+0.0
+ 11
+5.0
+ 21
+-5.5
+ 31
+0.0
+  0
+LWPOLYLINE
+  5
+25E
+330
+259
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbPolyline
+ 90
+4
+ 70
+1
+ 10
+14.2534
+ 20
+-2.7941
+ 10
+9.0034
+ 20
+-5.1041
+ 10
+7.9966
+ 20
+-2.8159
+ 10
+13.2466
+ 20
+-0.5059
+  0
+LINE
+  5
+25F
+330
+259
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+17.5
+ 20
+0.0
+ 30
+0.0
+ 11
+25.0
+ 21
+0.0
+ 31
+0.0
+  0
+LINE
+  5
+260
+330
+259
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+5.0
+ 20
+-2.5
+ 30
+0.0
+ 11
+5.0
+ 21
+2.5
+ 31
+0.0
+  0
+ATTDEF
+  5
+261
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+5.0
+ 30
+0.0
+ 40
+3.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador
+  2
+TAG
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+262
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+-10.0
+ 30
+0.0
+ 40
+2.5
+  1
+Fusible-seccionador
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Descripción
+  2
+DESC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+263
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador en el modelo
+  2
+COMP_ID
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+264
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+IEC 60617 S00369
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia IEC 60617
+  2
+IEC_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+265
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.176 (alt. 4.2.177, S00370)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia NMX-J-136-ANCE
+  2
+NMX_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+266
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.176 (FUS-SECC, IEC S00369)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Norma de origen del símbolo
+  2
+SOURCE_STANDARD
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+267
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Polos
+  2
+POLES
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+268
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Corriente nominal (A)
+  2
+RATING_A
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+269
+330
+259
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión (V)
+  2
+VOLT_V
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+26A
+330
+259
 100
 AcDbEntity
   8
@@ -21839,9 +22419,9 @@ FUSE_A
   0
 ENDBLK
   5
-249
+25B
 330
-247
+259
 100
 AcDbEntity
   8
@@ -21851,9 +22431,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-25A
+26C
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -21877,9 +22457,9 @@ PVSLD_SAFETY_SWITCH
   0
 LWPOLYLINE
   5
-25C
+26E
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -21909,9 +22489,9 @@ AcDbPolyline
   0
 LINE
   5
-25D
+26F
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -21933,9 +22513,9 @@ AcDbLine
   0
 HATCH
   5
-25E
+270
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -21993,9 +22573,9 @@ SOLID
   0
 HATCH
   5
-25F
+271
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22053,9 +22633,9 @@ SOLID
   0
 LINE
   5
-260
+272
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22077,9 +22657,9 @@ AcDbLine
   0
 LINE
   5
-261
+273
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22101,9 +22681,9 @@ AcDbLine
   0
 ARC
   5
-262
+274
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22127,9 +22707,9 @@ AcDbArc
   0
 ARC
   5
-263
+275
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22153,9 +22733,9 @@ AcDbArc
   0
 LINE
   5
-264
+276
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22177,9 +22757,9 @@ AcDbLine
   0
 ATTDEF
   5
-265
+277
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22213,9 +22793,9 @@ TAG
   0
 ATTDEF
   5
-266
+278
 330
-259
+26B
 100
 AcDbEntity
   8
@@ -22249,527 +22829,9 @@ DESC
   0
 ATTDEF
   5
-267
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador en el modelo
-  2
-COMP_ID
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-268
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
--
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia IEC 60617
-  2
-IEC_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-269
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.128 (IS, forma unifilar)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia NMX-J-136-ANCE
-  2
-NMX_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-26A
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.128 (IS, forma unifilar)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Norma de origen del símbolo
-  2
-SOURCE_STANDARD
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-26B
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Polos
-  2
-POLES
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-26C
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Corriente nominal (A)
-  2
-RATING_A
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-26D
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Tensión (V)
-  2
-VOLT_V
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-26E
-330
-259
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Fusibles (A)
-  2
-FUSE_A
- 70
-1
- 71
-1
- 72
-0
-  0
-ENDBLK
-  5
-25B
-330
-259
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockEnd
-  0
-BLOCK
-  5
-270
-330
-26F
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-PVSLD_TRANSFER_SW
- 70
-2
- 10
-0.0
- 20
-0.0
- 30
-0.0
-  3
-PVSLD_TRANSFER_SW
-  1
-
-  0
-LINE
-  5
-272
-330
-26F
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
--5.0
- 20
-0.0
- 30
-0.0
- 11
--5.0
- 21
--7.5
- 31
-0.0
-  0
-LINE
-  5
-273
-330
-26F
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
--5.0
- 20
--7.5
- 30
-0.0
- 11
--2.5
- 21
--7.5
- 31
-0.0
-  0
-LINE
-  5
-274
-330
-26F
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 11
-0.0
- 21
--7.5
- 31
-0.0
-  0
-LINE
-  5
-275
-330
-26F
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-0.0
- 20
--15.0
- 30
-0.0
- 11
--3.75
- 21
--7.5
- 31
-0.0
-  0
-LINE
-  5
-276
-330
-26F
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-0.0
- 20
--15.0
- 30
-0.0
- 11
-0.0
- 21
--22.5
- 31
-0.0
-  0
-ATTDEF
-  5
-277
-330
-26F
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-3.0
- 20
--12.0
- 30
-0.0
- 40
-3.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador
-  2
-TAG
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-278
-330
-26F
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-3.0
- 20
--16.0
- 30
-0.0
- 40
-2.5
-  1
-Interruptor de transferencia
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Descripción
-  2
-DESC
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
 279
 330
-26F
+26B
 100
 AcDbEntity
   8
@@ -22805,7 +22867,7 @@ ATTDEF
   5
 27A
 330
-26F
+26B
 100
 AcDbEntity
   8
@@ -22841,7 +22903,525 @@ ATTDEF
   5
 27B
 330
-26F
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.128 (IS, forma unifilar)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia NMX-J-136-ANCE
+  2
+NMX_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+27C
+330
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.128 (IS, forma unifilar)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Norma de origen del símbolo
+  2
+SOURCE_STANDARD
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+27D
+330
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Polos
+  2
+POLES
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+27E
+330
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Corriente nominal (A)
+  2
+RATING_A
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+27F
+330
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión (V)
+  2
+VOLT_V
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+280
+330
+26B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Fusibles (A)
+  2
+FUSE_A
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ENDBLK
+  5
+26D
+330
+26B
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+282
+330
+281
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+PVSLD_TRANSFER_SW
+ 70
+2
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+PVSLD_TRANSFER_SW
+  1
+
+  0
+LINE
+  5
+284
+330
+281
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+-5.0
+ 20
+0.0
+ 30
+0.0
+ 11
+-5.0
+ 21
+-7.5
+ 31
+0.0
+  0
+LINE
+  5
+285
+330
+281
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+-5.0
+ 20
+-7.5
+ 30
+0.0
+ 11
+-2.5
+ 21
+-7.5
+ 31
+0.0
+  0
+LINE
+  5
+286
+330
+281
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 11
+0.0
+ 21
+-7.5
+ 31
+0.0
+  0
+LINE
+  5
+287
+330
+281
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+0.0
+ 20
+-15.0
+ 30
+0.0
+ 11
+-3.75
+ 21
+-7.5
+ 31
+0.0
+  0
+LINE
+  5
+288
+330
+281
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+0.0
+ 20
+-15.0
+ 30
+0.0
+ 11
+0.0
+ 21
+-22.5
+ 31
+0.0
+  0
+ATTDEF
+  5
+289
+330
+281
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+3.0
+ 20
+-12.0
+ 30
+0.0
+ 40
+3.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador
+  2
+TAG
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+28A
+330
+281
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+3.0
+ 20
+-16.0
+ 30
+0.0
+ 40
+2.5
+  1
+Interruptor de transferencia
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Descripción
+  2
+DESC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+28B
+330
+281
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador en el modelo
+  2
+COMP_ID
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+28C
+330
+281
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+-
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia IEC 60617
+  2
+IEC_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+28D
+330
+281
 100
 AcDbEntity
   8
@@ -22875,9 +23455,9 @@ NMX_REF
   0
 ATTDEF
   5
-27C
+28E
 330
-26F
+281
 100
 AcDbEntity
   8
@@ -22911,9 +23491,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-27D
+28F
 330
-26F
+281
 100
 AcDbEntity
   8
@@ -22947,538 +23527,6 @@ ROLE
   0
 ATTDEF
   5
-27E
-330
-26F
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Polos
-  2
-POLES
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-27F
-330
-26F
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Corriente nominal (A)
-  2
-RATING_A
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-280
-330
-26F
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Tensión (V)
-  2
-VOLT_V
- 70
-1
- 71
-1
- 72
-0
-  0
-ENDBLK
-  5
-271
-330
-26F
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockEnd
-  0
-BLOCK
-  5
-282
-330
-281
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-PVSLD_CONTACTOR
- 70
-2
- 10
-0.0
- 20
-0.0
- 30
-0.0
-  3
-PVSLD_CONTACTOR
-  1
-
-  0
-LINE
-  5
-284
-330
-281
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 11
-7.5
- 21
-0.0
- 31
-0.0
-  0
-ARC
-  5
-285
-330
-281
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbCircle
- 10
-5.75
- 20
-0.0
- 30
-0.0
- 40
-1.75
-100
-AcDbArc
- 50
-180.0
- 51
-0.0
-  0
-LINE
-  5
-286
-330
-281
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-15.0
- 20
-0.0
- 30
-0.0
- 11
-7.5
- 21
--5.0
- 31
-0.0
-  0
-LINE
-  5
-287
-330
-281
-100
-AcDbEntity
-  8
-E-PVAC-EQPM
-100
-AcDbLine
- 10
-15.0
- 20
-0.0
- 30
-0.0
- 11
-22.5
- 21
-0.0
- 31
-0.0
-  0
-ATTDEF
-  5
-288
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-2.5
- 30
-0.0
- 40
-3.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador
-  2
-TAG
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-289
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
--9.5
- 30
-0.0
- 40
-2.5
-  1
-Contactor
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Descripción
-  2
-DESC
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28A
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador en el modelo
-  2
-COMP_ID
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28B
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-IEC 60617 S00284
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia IEC 60617
-  2
-IEC_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28C
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.168 (contacto, IEC S00284)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia NMX-J-136-ANCE
-  2
-NMX_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28D
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.168 (contacto, IEC S00284)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Norma de origen del símbolo
-  2
-SOURCE_STANDARD
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28E
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Polos
-  2
-POLES
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-28F
-330
-281
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Corriente nominal (A)
-  2
-RATING_A
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
 290
 330
 281
@@ -23503,9 +23551,9 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Tensión (V)
+Polos
   2
-VOLT_V
+POLES
  70
 1
  71
@@ -23539,9 +23587,45 @@ PVSLD_STD
 100
 AcDbAttributeDefinition
   3
-Tensión de bobina (V)
+Corriente nominal (A)
   2
-COIL_V
+RATING_A
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+292
+330
+281
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión (V)
+  2
+VOLT_V
  70
 1
  71
@@ -23563,9 +23647,505 @@ AcDbBlockEnd
   0
 BLOCK
   5
-293
+294
 330
-292
+293
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+PVSLD_CONTACTOR
+ 70
+2
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+PVSLD_CONTACTOR
+  1
+
+  0
+LINE
+  5
+296
+330
+293
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 11
+7.5
+ 21
+0.0
+ 31
+0.0
+  0
+ARC
+  5
+297
+330
+293
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbCircle
+ 10
+5.75
+ 20
+0.0
+ 30
+0.0
+ 40
+1.75
+100
+AcDbArc
+ 50
+180.0
+ 51
+0.0
+  0
+LINE
+  5
+298
+330
+293
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+15.0
+ 20
+0.0
+ 30
+0.0
+ 11
+7.5
+ 21
+-5.0
+ 31
+0.0
+  0
+LINE
+  5
+299
+330
+293
+100
+AcDbEntity
+  8
+E-PVAC-EQPM
+100
+AcDbLine
+ 10
+15.0
+ 20
+0.0
+ 30
+0.0
+ 11
+22.5
+ 21
+0.0
+ 31
+0.0
+  0
+ATTDEF
+  5
+29A
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+2.5
+ 30
+0.0
+ 40
+3.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador
+  2
+TAG
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+29B
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+-9.5
+ 30
+0.0
+ 40
+2.5
+  1
+Contactor
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Descripción
+  2
+DESC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+29C
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador en el modelo
+  2
+COMP_ID
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+29D
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+IEC 60617 S00284
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia IEC 60617
+  2
+IEC_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+29E
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.168 (contacto, IEC S00284)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia NMX-J-136-ANCE
+  2
+NMX_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+29F
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.168 (contacto, IEC S00284)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Norma de origen del símbolo
+  2
+SOURCE_STANDARD
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+2A0
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Polos
+  2
+POLES
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+2A1
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Corriente nominal (A)
+  2
+RATING_A
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+2A2
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión (V)
+  2
+VOLT_V
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+2A3
+330
+293
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tensión de bobina (V)
+  2
+COIL_V
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ENDBLK
+  5
+295
+330
+293
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+2A5
+330
+2A4
 100
 AcDbEntity
   8
@@ -23589,9 +24169,9 @@ PVSLD_METER
   0
 LWPOLYLINE
   5
-295
+2A7
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23621,9 +24201,9 @@ AcDbPolyline
   0
 LINE
   5
-296
+2A8
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23645,9 +24225,9 @@ AcDbLine
   0
 LINE
   5
-297
+2A9
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23669,9 +24249,9 @@ AcDbLine
   0
 LWPOLYLINE
   5
-298
+2AA
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23697,9 +24277,9 @@ AcDbPolyline
   0
 LWPOLYLINE
   5
-299
+2AB
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23725,9 +24305,9 @@ AcDbPolyline
   0
 TEXT
   5
-29A
+2AC
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23757,9 +24337,9 @@ AcDbText
   0
 ATTDEF
   5
-29B
+2AD
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23793,9 +24373,9 @@ TAG
   0
 ATTDEF
   5
-29C
+2AE
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23829,9 +24409,9 @@ DESC
   0
 ATTDEF
   5
-29D
+2AF
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23865,9 +24445,9 @@ COMP_ID
   0
 ATTDEF
   5
-29E
+2B0
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23901,9 +24481,9 @@ IEC_REF
   0
 ATTDEF
   5
-29F
+2B1
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23937,9 +24517,9 @@ NMX_REF
   0
 ATTDEF
   5
-2A0
+2B2
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -23973,9 +24553,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2A1
+2B3
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -24009,9 +24589,9 @@ METER_TYPE
   0
 ATTDEF
   5
-2A2
+2B4
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -24045,9 +24625,9 @@ BIDIRECTIONAL
   0
 ATTDEF
   5
-2A3
+2B5
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -24081,9 +24661,9 @@ OWNER
   0
 ATTDEF
   5
-2A4
+2B6
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -24117,9 +24697,9 @@ METER_NO
   0
 ENDBLK
   5
-294
+2A6
 330
-292
+2A4
 100
 AcDbEntity
   8
@@ -24129,9 +24709,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2A6
+2B8
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24155,9 +24735,9 @@ PVSLD_METER_M
   0
 LWPOLYLINE
   5
-2A8
+2BA
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24187,9 +24767,9 @@ AcDbPolyline
   0
 TEXT
   5
-2A9
+2BB
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24219,9 +24799,9 @@ AcDbText
   0
 ATTDEF
   5
-2AA
+2BC
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24255,9 +24835,9 @@ TAG
   0
 ATTDEF
   5
-2AB
+2BD
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24291,9 +24871,9 @@ DESC
   0
 ATTDEF
   5
-2AC
+2BE
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24327,9 +24907,9 @@ COMP_ID
   0
 ATTDEF
   5
-2AD
+2BF
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24363,9 +24943,9 @@ IEC_REF
   0
 ATTDEF
   5
-2AE
+2C0
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24399,9 +24979,9 @@ NMX_REF
   0
 ATTDEF
   5
-2AF
+2C1
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24435,9 +25015,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2B0
+2C2
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24471,9 +25051,9 @@ METER_TYPE
   0
 ATTDEF
   5
-2B1
+2C3
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24507,9 +25087,9 @@ FUNCTION
   0
 ATTDEF
   5
-2B2
+2C4
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24543,9 +25123,9 @@ OWNER
   0
 ATTDEF
   5
-2B3
+2C5
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24579,9 +25159,9 @@ METER_NO
   0
 ENDBLK
   5
-2A7
+2B9
 330
-2A5
+2B7
 100
 AcDbEntity
   8
@@ -24591,9 +25171,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2B5
+2C7
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24617,9 +25197,9 @@ PVSLD_CT
   0
 LINE
   5
-2B7
+2C9
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24641,9 +25221,9 @@ AcDbLine
   0
 LINE
   5
-2B8
+2CA
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24665,9 +25245,9 @@ AcDbLine
   0
 LINE
   5
-2B9
+2CB
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24689,9 +25269,9 @@ AcDbLine
   0
 LINE
   5
-2BA
+2CC
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24713,9 +25293,9 @@ AcDbLine
   0
 ARC
   5
-2BB
+2CD
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24739,9 +25319,9 @@ AcDbArc
   0
 ARC
   5
-2BC
+2CE
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24765,9 +25345,9 @@ AcDbArc
   0
 ATTDEF
   5
-2BD
+2CF
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24801,9 +25381,9 @@ TAG
   0
 ATTDEF
   5
-2BE
+2D0
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24837,9 +25417,9 @@ DESC
   0
 ATTDEF
   5
-2BF
+2D1
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24873,9 +25453,9 @@ COMP_ID
   0
 ATTDEF
   5
-2C0
+2D2
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24909,9 +25489,9 @@ IEC_REF
   0
 ATTDEF
   5
-2C1
+2D3
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24945,9 +25525,9 @@ NMX_REF
   0
 ATTDEF
   5
-2C2
+2D4
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -24981,9 +25561,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2C3
+2D5
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -25017,9 +25597,9 @@ SPEC
   0
 ATTDEF
   5
-2C4
+2D6
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -25053,9 +25633,9 @@ RATIO
   0
 ATTDEF
   5
-2C5
+2D7
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -25089,9 +25669,9 @@ BURDEN_VA
   0
 ATTDEF
   5
-2C6
+2D8
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -25125,9 +25705,9 @@ CLASS
   0
 ENDBLK
   5
-2B6
+2C8
 330
-2B4
+2C6
 100
 AcDbEntity
   8
@@ -25137,9 +25717,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2C8
+2DA
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25163,9 +25743,9 @@ PVSLD_MONITOR
   0
 LWPOLYLINE
   5
-2CA
+2DC
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25195,9 +25775,9 @@ AcDbPolyline
   0
 TEXT
   5
-2CB
+2DD
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25227,9 +25807,9 @@ AcDbText
   0
 ATTDEF
   5
-2CC
+2DE
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25263,9 +25843,9 @@ TAG
   0
 ATTDEF
   5
-2CD
+2DF
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25299,9 +25879,9 @@ DESC
   0
 ATTDEF
   5
-2CE
+2E0
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25335,9 +25915,9 @@ COMP_ID
   0
 ATTDEF
   5
-2CF
+2E1
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25371,9 +25951,9 @@ IEC_REF
   0
 ATTDEF
   5
-2D0
+2E2
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25407,9 +25987,9 @@ NMX_REF
   0
 ATTDEF
   5
-2D1
+2E3
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25443,9 +26023,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2D2
+2E4
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25479,9 +26059,9 @@ PROTOCOL
   0
 ATTDEF
   5
-2D3
+2E5
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25515,9 +26095,9 @@ MODEL
   0
 ENDBLK
   5
-2C9
+2DB
 330
-2C7
+2D9
 100
 AcDbEntity
   8
@@ -25527,9 +26107,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2D5
+2E7
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25553,9 +26133,9 @@ PVSLD_GRID
   0
 CIRCLE
   5
-2D7
+2E9
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25573,9 +26153,9 @@ AcDbCircle
   0
 LWPOLYLINE
   5
-2D8
+2EA
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25689,9 +26269,9 @@ AcDbPolyline
   0
 ATTDEF
   5
-2D9
+2EB
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25725,9 +26305,9 @@ TAG
   0
 ATTDEF
   5
-2DA
+2EC
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25761,9 +26341,9 @@ DESC
   0
 ATTDEF
   5
-2DB
+2ED
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25797,9 +26377,9 @@ COMP_ID
   0
 ATTDEF
   5
-2DC
+2EE
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25833,9 +26413,9 @@ IEC_REF
   0
 ATTDEF
   5
-2DD
+2EF
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25869,9 +26449,9 @@ NMX_REF
   0
 ATTDEF
   5
-2DE
+2F0
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25905,9 +26485,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2DF
+2F1
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25941,9 +26521,9 @@ SPEC
   0
 ATTDEF
   5
-2E0
+2F2
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -25977,9 +26557,9 @@ VOLT_V
   0
 ATTDEF
   5
-2E1
+2F3
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -26013,9 +26593,9 @@ SYSTEM
   0
 ATTDEF
   5
-2E2
+2F4
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -26049,9 +26629,9 @@ FREQ_HZ
   0
 ATTDEF
   5
-2E3
+2F5
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -26085,9 +26665,9 @@ OWNER
   0
 ATTDEF
   5
-2E4
+2F6
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -26121,9 +26701,9 @@ ISC_KA
   0
 ENDBLK
   5
-2D6
+2E8
 330
-2D4
+2E6
 100
 AcDbEntity
   8
@@ -26133,9 +26713,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2E6
+2F8
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26159,9 +26739,9 @@ PVSLD_PI
   0
 CIRCLE
   5
-2E8
+2FA
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26179,9 +26759,9 @@ AcDbCircle
   0
 CIRCLE
   5
-2E9
+2FB
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26199,9 +26779,9 @@ AcDbCircle
   0
 ATTDEF
   5
-2EA
+2FC
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26235,9 +26815,9 @@ TAG
   0
 ATTDEF
   5
-2EB
+2FD
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26271,9 +26851,9 @@ DESC
   0
 ATTDEF
   5
-2EC
+2FE
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26307,9 +26887,9 @@ COMP_ID
   0
 ATTDEF
   5
-2ED
+2FF
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26343,9 +26923,9 @@ IEC_REF
   0
 ATTDEF
   5
-2EE
+300
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26379,9 +26959,9 @@ NMX_REF
   0
 ATTDEF
   5
-2EF
+301
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26415,9 +26995,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-2F0
+302
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26451,9 +27031,9 @@ PI_TYPE
   0
 ATTDEF
   5
-2F1
+303
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26487,9 +27067,9 @@ PANEL
   0
 ATTDEF
   5
-2F2
+304
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26523,9 +27103,9 @@ BREAKER
   0
 ENDBLK
   5
-2E7
+2F9
 330
-2E5
+2F7
 100
 AcDbEntity
   8
@@ -26535,9 +27115,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-2F4
+306
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26561,9 +27141,9 @@ PVSLD_PANEL
   0
 LWPOLYLINE
   5
-2F6
+308
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26593,9 +27173,9 @@ AcDbPolyline
   0
 LINE
   5
-2F7
+309
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26617,9 +27197,9 @@ AcDbLine
   0
 LINE
   5
-2F8
+30A
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26643,9 +27223,9 @@ AcDbLine
   0
 LINE
   5
-2F9
+30B
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26669,9 +27249,9 @@ AcDbLine
   0
 LINE
   5
-2FA
+30C
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26695,9 +27275,9 @@ AcDbLine
   0
 ATTDEF
   5
-2FB
+30D
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26731,9 +27311,9 @@ TAG
   0
 ATTDEF
   5
-2FC
+30E
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26767,9 +27347,9 @@ DESC
   0
 ATTDEF
   5
-2FD
+30F
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26803,9 +27383,9 @@ COMP_ID
   0
 ATTDEF
   5
-2FE
+310
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26839,9 +27419,9 @@ IEC_REF
   0
 ATTDEF
   5
-2FF
+311
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26875,9 +27455,9 @@ NMX_REF
   0
 ATTDEF
   5
-300
+312
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26911,9 +27491,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-301
+313
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26947,9 +27527,9 @@ SPEC
   0
 ATTDEF
   5
-302
+314
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -26983,9 +27563,9 @@ NAME
   0
 ATTDEF
   5
-303
+315
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27019,9 +27599,9 @@ BUS_A
   0
 ATTDEF
   5
-304
+316
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27055,9 +27635,9 @@ MAIN_ID
   0
 ATTDEF
   5
-305
+317
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27091,9 +27671,9 @@ MAIN_A
   0
 ATTDEF
   5
-306
+318
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27127,9 +27707,9 @@ SYSTEM
   0
 ATTDEF
   5
-307
+319
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27163,9 +27743,9 @@ KAIC_KA
   0
 ENDBLK
   5
-2F5
+307
 330
-2F3
+305
 100
 AcDbEntity
   8
@@ -27175,9 +27755,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-309
+31B
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27201,9 +27781,9 @@ PVSLD_LOAD_LIGHT
   0
 CIRCLE
   5
-30B
+31D
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27221,9 +27801,9 @@ AcDbCircle
   0
 LINE
   5
-30C
+31E
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27245,9 +27825,9 @@ AcDbLine
   0
 LINE
   5
-30D
+31F
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27269,9 +27849,9 @@ AcDbLine
   0
 LINE
   5
-30E
+320
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27293,9 +27873,9 @@ AcDbLine
   0
 LINE
   5
-30F
+321
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27317,9 +27897,9 @@ AcDbLine
   0
 ATTDEF
   5
-310
+322
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27353,9 +27933,9 @@ TAG
   0
 ATTDEF
   5
-311
+323
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27389,9 +27969,9 @@ DESC
   0
 ATTDEF
   5
-312
+324
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27425,9 +28005,9 @@ COMP_ID
   0
 ATTDEF
   5
-313
+325
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27461,9 +28041,9 @@ IEC_REF
   0
 ATTDEF
   5
-314
+326
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27497,9 +28077,9 @@ NMX_REF
   0
 ATTDEF
   5
-315
+327
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27533,9 +28113,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-316
+328
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27569,9 +28149,9 @@ LOAD_W
   0
 ATTDEF
   5
-317
+329
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27605,9 +28185,9 @@ VOLT_V
   0
 ATTDEF
   5
-318
+32A
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27641,9 +28221,9 @@ CIRCUIT
   0
 ENDBLK
   5
-30A
+31C
 330
-308
+31A
 100
 AcDbEntity
   8
@@ -27653,9 +28233,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-31A
+32C
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27679,9 +28259,9 @@ PVSLD_LOAD_RECEPT
   0
 CIRCLE
   5
-31C
+32E
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27699,9 +28279,9 @@ AcDbCircle
   0
 LINE
   5
-31D
+32F
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27723,9 +28303,9 @@ AcDbLine
   0
 LINE
   5
-31E
 330
-319
+330
+32B
 100
 AcDbEntity
   8
@@ -27747,9 +28327,9 @@ AcDbLine
   0
 ATTDEF
   5
-31F
+331
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27783,9 +28363,9 @@ TAG
   0
 ATTDEF
   5
-320
+332
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27819,9 +28399,9 @@ DESC
   0
 ATTDEF
   5
-321
+333
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27855,9 +28435,9 @@ COMP_ID
   0
 ATTDEF
   5
-322
+334
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27891,9 +28471,9 @@ IEC_REF
   0
 ATTDEF
   5
-323
+335
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27927,9 +28507,9 @@ NMX_REF
   0
 ATTDEF
   5
-324
+336
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27963,9 +28543,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-325
+337
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -27999,9 +28579,9 @@ LOAD_W
   0
 ATTDEF
   5
-326
+338
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -28035,9 +28615,9 @@ VOLT_V
   0
 ATTDEF
   5
-327
+339
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -28071,9 +28651,9 @@ CIRCUIT
   0
 ENDBLK
   5
-31B
+32D
 330
-319
+32B
 100
 AcDbEntity
   8
@@ -28083,9 +28663,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-329
+33B
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28109,9 +28689,9 @@ PVSLD_GND
   0
 LINE
   5
-32B
+33D
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28135,9 +28715,9 @@ AcDbLine
   0
 LINE
   5
-32C
+33E
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28161,9 +28741,9 @@ AcDbLine
   0
 LINE
   5
-32D
+33F
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28187,9 +28767,9 @@ AcDbLine
   0
 LINE
   5
-32E
+340
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28213,9 +28793,9 @@ AcDbLine
   0
 ATTDEF
   5
-32F
+341
 330
-328
+33A
 100
 AcDbEntity
   8
@@ -28249,9 +28829,9 @@ TAG
   0
 ATTDEF
   5
+342
 330
-330
-328
+33A
 100
 AcDbEntity
   8
@@ -28285,531 +28865,9 @@ DESC
   0
 ATTDEF
   5
-331
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador en el modelo
-  2
-COMP_ID
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-332
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-IEC 60617 S00200
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia IEC 60617
-  2
-IEC_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-333
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-NMX-J-136-ANCE-2019 4.2.13 (IEC S00200)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Referencia NMX-J-136-ANCE
-  2
-NMX_REF
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-334
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-CFE G0100-04 Apéndice D
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Norma de origen del símbolo
-  2
-SOURCE_STANDARD
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-335
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-9.0
- 20
--14.5
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Electrodo y resistencia
-  2
-SPEC
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-336
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Tipo de electrodo
-  2
-ELECTRODE
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-337
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Resistencia de diseño (Ω)
-  2
-R_OHM
- 70
-1
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-338
-330
-328
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 40
-2.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Calibre del conductor al electrodo
-  2
-GEC_SIZE
- 70
-1
- 71
-1
- 72
-0
-  0
-ENDBLK
-  5
-32A
-330
-328
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockEnd
-  0
-BLOCK
-  5
-33A
-330
-339
-100
-AcDbEntity
-  8
-0
-100
-AcDbBlockBegin
-  2
-PVSLD_PE
- 70
-2
- 10
-0.0
- 20
-0.0
- 30
-0.0
-  3
-PVSLD_PE
-  1
-
-  0
-CIRCLE
-  5
-33C
-330
-339
-100
-AcDbEntity
-  8
-E-GRND-COND
-100
-AcDbCircle
- 10
-0.0
- 20
--5.0
- 30
-0.0
- 40
-5.0
-  0
-LINE
-  5
-33D
-330
-339
-100
-AcDbEntity
-  8
-E-GRND-COND
-  6
-CONTINUOUS
-100
-AcDbLine
- 10
-0.0
- 20
-0.0
- 30
-0.0
- 11
-0.0
- 21
--5.5
- 31
-0.0
-  0
-LINE
-  5
-33E
-330
-339
-100
-AcDbEntity
-  8
-E-GRND-COND
-  6
-CONTINUOUS
-100
-AcDbLine
- 10
--3.7
- 20
--5.5
- 30
-0.0
- 11
-3.7
- 21
--5.5
- 31
-0.0
-  0
-LINE
-  5
-33F
-330
-339
-100
-AcDbEntity
-  8
-E-GRND-COND
-  6
-CONTINUOUS
-100
-AcDbLine
- 10
--2.6
- 20
--7.0
- 30
-0.0
- 11
-2.6
- 21
--7.0
- 31
-0.0
-  0
-LINE
-  5
-340
-330
-339
-100
-AcDbEntity
-  8
-E-GRND-COND
-  6
-CONTINUOUS
-100
-AcDbLine
- 10
--1.3
- 20
--8.5
- 30
-0.0
- 11
-1.3
- 21
--8.5
- 31
-0.0
-  0
-ATTDEF
-  5
-341
-330
-339
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-7.0
- 20
--4.0
- 30
-0.0
- 40
-3.5
-  1
-
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Identificador
-  2
-TAG
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
-342
-330
-339
-100
-AcDbEntity
-  8
-E-ANNO-TAGS
-100
-AcDbText
- 10
-7.0
- 20
--8.0
- 30
-0.0
- 40
-2.5
-  1
-Tierra de protección (conductor de puesta a tierra de equipos)
-  7
-PVSLD_STD
-100
-AcDbAttributeDefinition
-  3
-Descripción
-  2
-DESC
- 70
-0
- 71
-1
- 72
-0
-  0
-ATTDEF
-  5
 343
 330
-339
+33A
 100
 AcDbEntity
   8
@@ -28845,7 +28903,529 @@ ATTDEF
   5
 344
 330
-339
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+IEC 60617 S00200
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia IEC 60617
+  2
+IEC_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+345
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+NMX-J-136-ANCE-2019 4.2.13 (IEC S00200)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Referencia NMX-J-136-ANCE
+  2
+NMX_REF
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+346
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+CFE G0100-04 Apéndice D
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Norma de origen del símbolo
+  2
+SOURCE_STANDARD
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+347
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+9.0
+ 20
+-14.5
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Electrodo y resistencia
+  2
+SPEC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+348
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Tipo de electrodo
+  2
+ELECTRODE
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+349
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Resistencia de diseño (Ω)
+  2
+R_OHM
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+34A
+330
+33A
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Calibre del conductor al electrodo
+  2
+GEC_SIZE
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ENDBLK
+  5
+33C
+330
+33A
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockEnd
+  0
+BLOCK
+  5
+34C
+330
+34B
+100
+AcDbEntity
+  8
+0
+100
+AcDbBlockBegin
+  2
+PVSLD_PE
+ 70
+2
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+  3
+PVSLD_PE
+  1
+
+  0
+CIRCLE
+  5
+34E
+330
+34B
+100
+AcDbEntity
+  8
+E-GRND-COND
+100
+AcDbCircle
+ 10
+0.0
+ 20
+-5.0
+ 30
+0.0
+ 40
+5.0
+  0
+LINE
+  5
+34F
+330
+34B
+100
+AcDbEntity
+  8
+E-GRND-COND
+  6
+CONTINUOUS
+100
+AcDbLine
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 11
+0.0
+ 21
+-5.5
+ 31
+0.0
+  0
+LINE
+  5
+350
+330
+34B
+100
+AcDbEntity
+  8
+E-GRND-COND
+  6
+CONTINUOUS
+100
+AcDbLine
+ 10
+-3.7
+ 20
+-5.5
+ 30
+0.0
+ 11
+3.7
+ 21
+-5.5
+ 31
+0.0
+  0
+LINE
+  5
+351
+330
+34B
+100
+AcDbEntity
+  8
+E-GRND-COND
+  6
+CONTINUOUS
+100
+AcDbLine
+ 10
+-2.6
+ 20
+-7.0
+ 30
+0.0
+ 11
+2.6
+ 21
+-7.0
+ 31
+0.0
+  0
+LINE
+  5
+352
+330
+34B
+100
+AcDbEntity
+  8
+E-GRND-COND
+  6
+CONTINUOUS
+100
+AcDbLine
+ 10
+-1.3
+ 20
+-8.5
+ 30
+0.0
+ 11
+1.3
+ 21
+-8.5
+ 31
+0.0
+  0
+ATTDEF
+  5
+353
+330
+34B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+7.0
+ 20
+-4.0
+ 30
+0.0
+ 40
+3.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador
+  2
+TAG
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+354
+330
+34B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+7.0
+ 20
+-8.0
+ 30
+0.0
+ 40
+2.5
+  1
+Tierra de protección (conductor de puesta a tierra de equipos)
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Descripción
+  2
+DESC
+ 70
+0
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+355
+330
+34B
+100
+AcDbEntity
+  8
+E-ANNO-TAGS
+100
+AcDbText
+ 10
+0.0
+ 20
+0.0
+ 30
+0.0
+ 40
+2.5
+  1
+
+  7
+PVSLD_STD
+100
+AcDbAttributeDefinition
+  3
+Identificador en el modelo
+  2
+COMP_ID
+ 70
+1
+ 71
+1
+ 72
+0
+  0
+ATTDEF
+  5
+356
+330
+34B
 100
 AcDbEntity
   8
@@ -28879,9 +29459,9 @@ IEC_REF
   0
 ATTDEF
   5
-345
+357
 330
-339
+34B
 100
 AcDbEntity
   8
@@ -28915,9 +29495,9 @@ NMX_REF
   0
 ATTDEF
   5
-346
+358
 330
-339
+34B
 100
 AcDbEntity
   8
@@ -28951,9 +29531,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-347
+359
 330
-339
+34B
 100
 AcDbEntity
   8
@@ -28987,9 +29567,9 @@ EGC_SIZE
   0
 ENDBLK
   5
-33B
+34D
 330
-339
+34B
 100
 AcDbEntity
   8
@@ -28999,9 +29579,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-349
+35B
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29025,9 +29605,9 @@ PVSLD_GND_BUS
   0
 LINE
   5
-34B
+35D
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29053,9 +29633,9 @@ AcDbLine
   0
 TEXT
   5
-34C
+35E
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29085,9 +29665,9 @@ AcDbText
   0
 ATTDEF
   5
-34D
+35F
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29121,9 +29701,9 @@ TAG
   0
 ATTDEF
   5
-34E
+360
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29157,9 +29737,9 @@ DESC
   0
 ATTDEF
   5
-34F
+361
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29193,9 +29773,9 @@ COMP_ID
   0
 ATTDEF
   5
-350
+362
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29229,9 +29809,9 @@ IEC_REF
   0
 ATTDEF
   5
-351
+363
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29265,9 +29845,9 @@ NMX_REF
   0
 ATTDEF
   5
-352
+364
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29301,9 +29881,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-353
+365
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29337,9 +29917,9 @@ BUS_A
   0
 ATTDEF
   5
-354
+366
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29373,9 +29953,9 @@ MATERIAL
   0
 ENDBLK
   5
-34A
+35C
 330
-348
+35A
 100
 AcDbEntity
   8
@@ -29385,9 +29965,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-356
+368
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29411,9 +29991,9 @@ PVSLD_NEUTRAL_BUS
   0
 LINE
   5
-358
+36A
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29437,9 +30017,9 @@ AcDbLine
   0
 TEXT
   5
-359
+36B
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29469,9 +30049,9 @@ AcDbText
   0
 ATTDEF
   5
-35A
+36C
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29505,9 +30085,9 @@ TAG
   0
 ATTDEF
   5
-35B
+36D
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29541,9 +30121,9 @@ DESC
   0
 ATTDEF
   5
-35C
+36E
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29577,9 +30157,9 @@ COMP_ID
   0
 ATTDEF
   5
-35D
+36F
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29613,9 +30193,9 @@ IEC_REF
   0
 ATTDEF
   5
-35E
+370
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29649,9 +30229,9 @@ NMX_REF
   0
 ATTDEF
   5
-35F
+371
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29685,9 +30265,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-360
+372
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29721,9 +30301,9 @@ BUS_A
   0
 ATTDEF
   5
-361
+373
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29757,9 +30337,9 @@ MATERIAL
   0
 ENDBLK
   5
-357
+369
 330
-355
+367
 100
 AcDbEntity
   8
@@ -29769,9 +30349,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-363
+375
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29795,9 +30375,9 @@ PVSLD_XFMR
   0
 LINE
   5
-365
+377
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29819,9 +30399,9 @@ AcDbLine
   0
 ARC
   5
-366
+378
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29845,9 +30425,9 @@ AcDbArc
   0
 ARC
   5
-367
+379
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29871,9 +30451,9 @@ AcDbArc
   0
 ARC
   5
-368
+37A
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29897,9 +30477,9 @@ AcDbArc
   0
 ARC
   5
-369
+37B
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29923,9 +30503,9 @@ AcDbArc
   0
 ARC
   5
-36A
+37C
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29949,9 +30529,9 @@ AcDbArc
   0
 ARC
   5
-36B
+37D
 330
-362
+374
 100
 AcDbEntity
   8
@@ -29975,9 +30555,9 @@ AcDbArc
   0
 ARC
   5
-36C
+37E
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30001,9 +30581,9 @@ AcDbArc
   0
 ARC
   5
-36D
+37F
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30027,9 +30607,9 @@ AcDbArc
   0
 LINE
   5
-36E
+380
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30051,9 +30631,9 @@ AcDbLine
   0
 ATTDEF
   5
-36F
+381
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30087,9 +30667,9 @@ TAG
   0
 ATTDEF
   5
-370
+382
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30123,9 +30703,9 @@ DESC
   0
 ATTDEF
   5
-371
+383
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30159,9 +30739,9 @@ COMP_ID
   0
 ATTDEF
   5
-372
+384
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30195,9 +30775,9 @@ IEC_REF
   0
 ATTDEF
   5
-373
+385
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30231,9 +30811,9 @@ NMX_REF
   0
 ATTDEF
   5
-374
+386
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30267,9 +30847,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-375
+387
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30303,9 +30883,9 @@ SPEC
   0
 ATTDEF
   5
-376
+388
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30339,9 +30919,9 @@ KVA
   0
 ATTDEF
   5
-377
+389
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30375,9 +30955,9 @@ VOLT_PRI_V
   0
 ATTDEF
   5
-378
+38A
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30411,9 +30991,9 @@ VOLT_SEC_V
   0
 ATTDEF
   5
-379
+38B
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30447,9 +31027,9 @@ VECTOR_GROUP
   0
 ATTDEF
   5
-37A
+38C
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30483,9 +31063,9 @@ IMPEDANCE_PCT
   0
 ENDBLK
   5
-364
+376
 330
-362
+374
 100
 AcDbEntity
   8
@@ -30495,9 +31075,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-37C
+38E
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30521,9 +31101,9 @@ PVSLD_CUTOUT
   0
 LINE
   5
-37E
+390
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30545,9 +31125,9 @@ AcDbLine
   0
 LINE
   5
-37F
+391
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30569,9 +31149,9 @@ AcDbLine
   0
 LWPOLYLINE
   5
-380
+392
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30601,9 +31181,9 @@ AcDbPolyline
   0
 LINE
   5
-381
+393
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30625,9 +31205,9 @@ AcDbLine
   0
 ATTDEF
   5
-382
+394
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30661,9 +31241,9 @@ TAG
   0
 ATTDEF
   5
-383
+395
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30697,9 +31277,9 @@ DESC
   0
 ATTDEF
   5
-384
+396
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30733,9 +31313,9 @@ COMP_ID
   0
 ATTDEF
   5
-385
+397
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30769,9 +31349,9 @@ IEC_REF
   0
 ATTDEF
   5
-386
+398
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30805,9 +31385,9 @@ NMX_REF
   0
 ATTDEF
   5
-387
+399
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30841,9 +31421,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-388
+39A
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30877,9 +31457,9 @@ RATING_A
   0
 ATTDEF
   5
-389
+39B
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30913,9 +31493,9 @@ VOLT_KV
   0
 ATTDEF
   5
-38A
+39C
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30949,9 +31529,9 @@ FUSE_A
   0
 ATTDEF
   5
-38B
+39D
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30985,9 +31565,9 @@ KAIC_KA
   0
 ENDBLK
   5
-37D
+38F
 330
-37B
+38D
 100
 AcDbEntity
   8
@@ -30997,9 +31577,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-38D
+39F
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31023,9 +31603,9 @@ PVSLD_ARRESTER_MV
   0
 LINE
   5
-38F
+3A1
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31047,9 +31627,9 @@ AcDbLine
   0
 LWPOLYLINE
   5
-390
+3A2
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31079,9 +31659,9 @@ AcDbPolyline
   0
 HATCH
   5
-391
+3A3
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31139,9 +31719,9 @@ SOLID
   0
 LINE
   5
-392
+3A4
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31163,9 +31743,9 @@ AcDbLine
   0
 ATTDEF
   5
-393
+3A5
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31199,9 +31779,9 @@ TAG
   0
 ATTDEF
   5
-394
+3A6
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31235,9 +31815,9 @@ DESC
   0
 ATTDEF
   5
-395
+3A7
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31271,9 +31851,9 @@ COMP_ID
   0
 ATTDEF
   5
-396
+3A8
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31307,9 +31887,9 @@ IEC_REF
   0
 ATTDEF
   5
-397
+3A9
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31343,9 +31923,9 @@ NMX_REF
   0
 ATTDEF
   5
-398
+3AA
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31379,9 +31959,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-399
+3AB
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31415,9 +31995,9 @@ VOLT_KV
   0
 ATTDEF
   5
-39A
+3AC
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31451,9 +32031,9 @@ MCOV_KV
   0
 ATTDEF
   5
-39B
+3AD
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31487,9 +32067,9 @@ IN_KA
   0
 ENDBLK
   5
-38E
+3A0
 330
-38C
+39E
 100
 AcDbEntity
   8
@@ -31499,9 +32079,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-39D
+3AF
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31525,9 +32105,9 @@ PVSLD_DISCONNECT_MV
   0
 LINE
   5
-39F
+3B1
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31549,9 +32129,9 @@ AcDbLine
   0
 HATCH
   5
-3A0
+3B2
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31609,9 +32189,9 @@ SOLID
   0
 HATCH
   5
-3A1
+3B3
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31669,9 +32249,9 @@ SOLID
   0
 LINE
   5
-3A2
+3B4
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31693,9 +32273,9 @@ AcDbLine
   0
 LINE
   5
-3A3
+3B5
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31717,9 +32297,9 @@ AcDbLine
   0
 ATTDEF
   5
-3A4
+3B6
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31753,9 +32333,9 @@ TAG
   0
 ATTDEF
   5
-3A5
+3B7
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31789,9 +32369,9 @@ DESC
   0
 ATTDEF
   5
-3A6
+3B8
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31825,9 +32405,9 @@ COMP_ID
   0
 ATTDEF
   5
-3A7
+3B9
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31861,9 +32441,9 @@ IEC_REF
   0
 ATTDEF
   5
-3A8
+3BA
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31897,9 +32477,9 @@ NMX_REF
   0
 ATTDEF
   5
-3A9
+3BB
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31933,9 +32513,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-3AA
+3BC
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -31969,9 +32549,9 @@ POLES
   0
 ATTDEF
   5
-3AB
+3BD
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -32005,9 +32585,9 @@ RATING_A
   0
 ATTDEF
   5
-3AC
+3BE
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -32041,9 +32621,9 @@ VOLT_KV
   0
 ATTDEF
   5
-3AD
+3BF
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -32077,9 +32657,9 @@ LOAD_BREAK
   0
 ENDBLK
   5
-39E
+3B0
 330
-39C
+3AE
 100
 AcDbEntity
   8
@@ -32089,9 +32669,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3AF
+3C1
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32115,9 +32695,9 @@ PVSLD_CT_MV
   0
 LINE
   5
-3B1
+3C3
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32141,9 +32721,9 @@ AcDbLine
   0
 LWPOLYLINE
   5
-3B2
+3C4
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32177,9 +32757,9 @@ AcDbPolyline
   0
 ATTDEF
   5
-3B3
+3C5
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32213,9 +32793,9 @@ TAG
   0
 ATTDEF
   5
-3B4
+3C6
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32249,9 +32829,9 @@ DESC
   0
 ATTDEF
   5
-3B5
+3C7
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32285,9 +32865,9 @@ COMP_ID
   0
 ATTDEF
   5
-3B6
+3C8
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32321,9 +32901,9 @@ IEC_REF
   0
 ATTDEF
   5
-3B7
+3C9
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32357,9 +32937,9 @@ NMX_REF
   0
 ATTDEF
   5
-3B8
+3CA
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32393,9 +32973,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-3B9
+3CB
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32429,9 +33009,9 @@ SPEC
   0
 ATTDEF
   5
-3BA
+3CC
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32465,9 +33045,9 @@ RATIO
   0
 ATTDEF
   5
-3BB
+3CD
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32501,9 +33081,9 @@ BURDEN_VA
   0
 ATTDEF
   5
-3BC
+3CE
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32537,9 +33117,9 @@ CLASS
   0
 ENDBLK
   5
-3B0
+3C2
 330
-3AE
+3C0
 100
 AcDbEntity
   8
@@ -32549,9 +33129,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3BE
+3D0
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32575,9 +33155,9 @@ PVSLD_VT_MV
   0
 LINE
   5
-3C0
+3D2
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32601,9 +33181,9 @@ AcDbLine
   0
 LWPOLYLINE
   5
-3C1
+3D3
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32637,9 +33217,9 @@ AcDbPolyline
   0
 LWPOLYLINE
   5
-3C2
+3D4
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32673,9 +33253,9 @@ AcDbPolyline
   0
 LINE
   5
-3C3
+3D5
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32699,9 +33279,9 @@ AcDbLine
   0
 ATTDEF
   5
-3C4
+3D6
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32735,9 +33315,9 @@ TAG
   0
 ATTDEF
   5
-3C5
+3D7
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32771,9 +33351,9 @@ DESC
   0
 ATTDEF
   5
-3C6
+3D8
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32807,9 +33387,9 @@ COMP_ID
   0
 ATTDEF
   5
-3C7
+3D9
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32843,9 +33423,9 @@ IEC_REF
   0
 ATTDEF
   5
-3C8
+3DA
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32879,9 +33459,9 @@ NMX_REF
   0
 ATTDEF
   5
-3C9
+3DB
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32915,9 +33495,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-3CA
+3DC
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32951,9 +33531,9 @@ SPEC
   0
 ATTDEF
   5
-3CB
+3DD
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -32987,9 +33567,9 @@ RATIO
   0
 ATTDEF
   5
-3CC
+3DE
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -33023,9 +33603,9 @@ BURDEN_VA
   0
 ATTDEF
   5
-3CD
+3DF
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -33059,9 +33639,9 @@ CLASS
   0
 ENDBLK
   5
-3BF
+3D1
 330
-3BD
+3CF
 100
 AcDbEntity
   8
@@ -33071,9 +33651,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3CF
+3E1
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33097,9 +33677,9 @@ PVSLD_BUSBAR
   0
 LINE
   5
-3D1
+3E3
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33123,9 +33703,9 @@ AcDbLine
   0
 HATCH
   5
-3D2
+3E4
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33183,9 +33763,9 @@ SOLID
   0
 HATCH
   5
-3D3
+3E5
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33243,9 +33823,9 @@ SOLID
   0
 HATCH
   5
-3D4
+3E6
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33303,9 +33883,9 @@ SOLID
   0
 ATTDEF
   5
-3D5
+3E7
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33339,9 +33919,9 @@ TAG
   0
 ATTDEF
   5
-3D6
+3E8
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33375,9 +33955,9 @@ DESC
   0
 ATTDEF
   5
-3D7
+3E9
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33411,9 +33991,9 @@ COMP_ID
   0
 ATTDEF
   5
-3D8
+3EA
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33447,9 +34027,9 @@ IEC_REF
   0
 ATTDEF
   5
-3D9
+3EB
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33483,9 +34063,9 @@ NMX_REF
   0
 ATTDEF
   5
-3DA
+3EC
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33519,9 +34099,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-3DB
+3ED
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33555,9 +34135,9 @@ RATING_A
   0
 ATTDEF
   5
-3DC
+3EE
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33591,9 +34171,9 @@ VOLT_V
   0
 ENDBLK
   5
-3D0
+3E2
 330
-3CE
+3E0
 100
 AcDbEntity
   8
@@ -33603,9 +34183,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3DE
+3F0
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33629,9 +34209,9 @@ PVSLD_TERMINAL
   0
 CIRCLE
   5
-3E0
+3F2
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33649,9 +34229,9 @@ AcDbCircle
   0
 ATTDEF
   5
-3E1
+3F3
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33685,9 +34265,9 @@ TAG
   0
 ATTDEF
   5
-3E2
+3F4
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33721,9 +34301,9 @@ DESC
   0
 ATTDEF
   5
-3E3
+3F5
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33757,9 +34337,9 @@ COMP_ID
   0
 ATTDEF
   5
-3E4
+3F6
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33793,9 +34373,9 @@ IEC_REF
   0
 ATTDEF
   5
-3E5
+3F7
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33829,9 +34409,9 @@ NMX_REF
   0
 ATTDEF
   5
-3E6
+3F8
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33865,9 +34445,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-3E7
+3F9
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33901,9 +34481,9 @@ TERMINAL_NO
   0
 ENDBLK
   5
-3DF
+3F1
 330
-3DD
+3EF
 100
 AcDbEntity
   8
@@ -33913,9 +34493,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3E9
+3FB
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -33939,9 +34519,9 @@ PVSLD_CROSSING
   0
 LINE
   5
-3EB
+3FD
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -33963,9 +34543,9 @@ AcDbLine
   0
 LINE
   5
-3EC
+3FE
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -33987,9 +34567,9 @@ AcDbLine
   0
 ATTDEF
   5
-3ED
+3FF
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34023,9 +34603,9 @@ TAG
   0
 ATTDEF
   5
-3EE
+400
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34059,9 +34639,9 @@ DESC
   0
 ATTDEF
   5
-3EF
+401
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34095,9 +34675,9 @@ COMP_ID
   0
 ATTDEF
   5
-3F0
+402
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34131,9 +34711,9 @@ IEC_REF
   0
 ATTDEF
   5
-3F1
+403
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34167,9 +34747,9 @@ NMX_REF
   0
 ATTDEF
   5
-3F2
+404
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34203,9 +34783,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-3EA
+3FC
 330
-3E8
+3FA
 100
 AcDbEntity
   8
@@ -34215,9 +34795,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3F4
+406
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34241,9 +34821,9 @@ PVSLD_JUNCTION
   0
 HATCH
   5
-3F6
+408
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34301,9 +34881,9 @@ SOLID
   0
 ATTDEF
   5
-3F7
+409
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34337,9 +34917,9 @@ TAG
   0
 ATTDEF
   5
-3F8
+40A
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34373,9 +34953,9 @@ DESC
   0
 ATTDEF
   5
-3F9
+40B
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34409,9 +34989,9 @@ COMP_ID
   0
 ATTDEF
   5
-3FA
+40C
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34445,9 +35025,9 @@ IEC_REF
   0
 ATTDEF
   5
-3FB
+40D
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34481,9 +35061,9 @@ NMX_REF
   0
 ATTDEF
   5
-3FC
+40E
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34517,9 +35097,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-3F5
+407
 330
-3F3
+405
 100
 AcDbEntity
   8
@@ -34529,9 +35109,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-3FE
+410
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34555,9 +35135,9 @@ PVSLD_COND_MARK
   0
 LINE
   5
-400
+412
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34579,9 +35159,9 @@ AcDbLine
   0
 LINE
   5
-401
+413
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34603,9 +35183,9 @@ AcDbLine
   0
 ATTDEF
   5
-402
+414
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34639,9 +35219,9 @@ TAG
   0
 ATTDEF
   5
-403
+415
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34675,9 +35255,9 @@ DESC
   0
 ATTDEF
   5
-404
+416
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34711,9 +35291,9 @@ COMP_ID
   0
 ATTDEF
   5
-405
+417
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34747,9 +35327,9 @@ IEC_REF
   0
 ATTDEF
   5
-406
+418
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34783,9 +35363,9 @@ NMX_REF
   0
 ATTDEF
   5
-407
+419
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34819,9 +35399,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-408
+41A
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34855,9 +35435,9 @@ N_COND
   0
 ENDBLK
   5
-3FF
+411
 330
-3FD
+40F
 100
 AcDbEntity
   8
@@ -34867,9 +35447,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-40A
+41C
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -34893,9 +35473,9 @@ PVSLD_POL_POS
   0
 LINE
   5
-40C
+41E
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -34917,9 +35497,9 @@ AcDbLine
   0
 LINE
   5
-40D
+41F
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -34941,9 +35521,9 @@ AcDbLine
   0
 ATTDEF
   5
-40E
+420
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -34977,9 +35557,9 @@ TAG
   0
 ATTDEF
   5
-40F
+421
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35013,9 +35593,9 @@ DESC
   0
 ATTDEF
   5
-410
+422
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35049,9 +35629,9 @@ COMP_ID
   0
 ATTDEF
   5
-411
+423
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35085,9 +35665,9 @@ IEC_REF
   0
 ATTDEF
   5
-412
+424
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35121,9 +35701,9 @@ NMX_REF
   0
 ATTDEF
   5
-413
+425
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35157,9 +35737,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-40B
+41D
 330
-409
+41B
 100
 AcDbEntity
   8
@@ -35169,9 +35749,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-415
+427
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35195,9 +35775,9 @@ PVSLD_POL_NEG
   0
 LINE
   5
-417
+429
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35219,9 +35799,9 @@ AcDbLine
   0
 ATTDEF
   5
-418
+42A
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35255,9 +35835,9 @@ TAG
   0
 ATTDEF
   5
-419
+42B
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35291,9 +35871,9 @@ DESC
   0
 ATTDEF
   5
-41A
+42C
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35327,9 +35907,9 @@ COMP_ID
   0
 ATTDEF
   5
-41B
+42D
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35363,9 +35943,9 @@ IEC_REF
   0
 ATTDEF
   5
-41C
+42E
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35399,9 +35979,9 @@ NMX_REF
   0
 ATTDEF
   5
-41D
+42F
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35435,9 +36015,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-416
+428
 330
-414
+426
 100
 AcDbEntity
   8
@@ -35447,9 +36027,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-41F
+431
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35473,9 +36053,9 @@ PVSLD_ENCLOSURE
   0
 LWPOLYLINE
   5
-421
+433
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35507,9 +36087,9 @@ AcDbPolyline
   0
 ATTDEF
   5
-422
+434
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35543,9 +36123,9 @@ TAG
   0
 ATTDEF
   5
-423
+435
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35579,9 +36159,9 @@ DESC
   0
 ATTDEF
   5
-424
+436
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35615,9 +36195,9 @@ COMP_ID
   0
 ATTDEF
   5
-425
+437
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35651,9 +36231,9 @@ IEC_REF
   0
 ATTDEF
   5
-426
+438
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35687,9 +36267,9 @@ NMX_REF
   0
 ATTDEF
   5
-427
+439
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35723,9 +36303,9 @@ SOURCE_STANDARD
   0
 ATTDEF
   5
-428
+43A
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35759,9 +36339,9 @@ ENCL_TYPE
   0
 ENDBLK
   5
-420
+432
 330
-41E
+430
 100
 AcDbEntity
   8
@@ -35771,9 +36351,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-42A
+43C
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35797,9 +36377,9 @@ PVSLD_BOUNDARY
   0
 LINE
   5
-42C
+43E
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35823,9 +36403,9 @@ AcDbLine
   0
 TEXT
   5
-42D
+43F
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35855,9 +36435,9 @@ AcDbText
   0
 TEXT
   5
-42E
+440
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35887,9 +36467,9 @@ AcDbText
   0
 ATTDEF
   5
-42F
+441
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35923,9 +36503,9 @@ TAG
   0
 ATTDEF
   5
-430
+442
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35959,9 +36539,9 @@ DESC
   0
 ATTDEF
   5
-431
+443
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -35995,9 +36575,9 @@ COMP_ID
   0
 ATTDEF
   5
-432
+444
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -36031,9 +36611,9 @@ IEC_REF
   0
 ATTDEF
   5
-433
+445
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -36067,9 +36647,9 @@ NMX_REF
   0
 ATTDEF
   5
-434
+446
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -36103,9 +36683,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-42B
+43D
 330
-429
+43B
 100
 AcDbEntity
   8
@@ -36115,9 +36695,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-436
+448
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36141,9 +36721,9 @@ PVSLD_TTLB
   0
 LWPOLYLINE
   5
-438
+44A
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36173,9 +36753,9 @@ AcDbPolyline
   0
 LINE
   5
-439
+44B
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36199,9 +36779,9 @@ AcDbLine
   0
 LINE
   5
-43A
+44C
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36225,9 +36805,9 @@ AcDbLine
   0
 LINE
   5
-43B
+44D
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36251,9 +36831,9 @@ AcDbLine
   0
 LINE
   5
-43C
+44E
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36277,9 +36857,9 @@ AcDbLine
   0
 LINE
   5
-43D
+44F
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36303,9 +36883,9 @@ AcDbLine
   0
 TEXT
   5
-43E
+450
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36335,9 +36915,9 @@ AcDbText
   0
 TEXT
   5
-43F
+451
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36367,9 +36947,9 @@ AcDbText
   0
 TEXT
   5
-440
+452
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36399,9 +36979,9 @@ AcDbText
   0
 LINE
   5
-441
+453
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36425,9 +37005,9 @@ AcDbLine
   0
 TEXT
   5
-442
+454
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36457,9 +37037,9 @@ AcDbText
   0
 TEXT
   5
-443
+455
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36489,9 +37069,9 @@ AcDbText
   0
 LINE
   5
-444
+456
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36515,9 +37095,9 @@ AcDbLine
   0
 TEXT
   5
-445
+457
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36547,9 +37127,9 @@ AcDbText
   0
 LINE
   5
-446
+458
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36573,9 +37153,9 @@ AcDbLine
   0
 TEXT
   5
-447
+459
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36605,9 +37185,9 @@ AcDbText
   0
 LINE
   5
-448
+45A
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36631,9 +37211,9 @@ AcDbLine
   0
 TEXT
   5
-449
+45B
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36663,9 +37243,9 @@ AcDbText
   0
 LINE
   5
-44A
+45C
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36689,9 +37269,9 @@ AcDbLine
   0
 TEXT
   5
-44B
+45D
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36721,9 +37301,9 @@ AcDbText
   0
 TEXT
   5
-44C
+45E
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36753,9 +37333,9 @@ AcDbText
   0
 LINE
   5
-44D
+45F
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36779,9 +37359,9 @@ AcDbLine
   0
 TEXT
   5
-44E
+460
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36811,9 +37391,9 @@ AcDbText
   0
 LINE
   5
-44F
+461
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36837,9 +37417,9 @@ AcDbLine
   0
 TEXT
   5
-450
+462
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36869,9 +37449,9 @@ AcDbText
   0
 LINE
   5
-451
+463
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36895,9 +37475,9 @@ AcDbLine
   0
 TEXT
   5
-452
+464
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36927,9 +37507,9 @@ AcDbText
   0
 LINE
   5
-453
+465
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36953,9 +37533,9 @@ AcDbLine
   0
 TEXT
   5
-454
+466
 330
-435
+447
 100
 AcDbEntity
   8
@@ -36985,9 +37565,9 @@ AcDbText
   0
 TEXT
   5
-455
+467
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37017,9 +37597,9 @@ AcDbText
   0
 LINE
   5
-456
+468
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37043,9 +37623,9 @@ AcDbLine
   0
 TEXT
   5
-457
+469
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37075,9 +37655,9 @@ AcDbText
   0
 LINE
   5
-458
+46A
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37101,9 +37681,9 @@ AcDbLine
   0
 TEXT
   5
-459
+46B
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37133,9 +37713,9 @@ AcDbText
   0
 LINE
   5
-45A
+46C
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37159,9 +37739,9 @@ AcDbLine
   0
 TEXT
   5
-45B
+46D
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37191,9 +37771,9 @@ AcDbText
   0
 LINE
   5
-45C
+46E
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37217,9 +37797,9 @@ AcDbLine
   0
 TEXT
   5
-45D
+46F
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37249,9 +37829,9 @@ AcDbText
   0
 TEXT
   5
-45E
+470
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37281,9 +37861,9 @@ AcDbText
   0
 LINE
   5
-45F
+471
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37307,9 +37887,9 @@ AcDbLine
   0
 TEXT
   5
-460
+472
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37339,9 +37919,9 @@ AcDbText
   0
 LINE
   5
-461
+473
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37365,9 +37945,9 @@ AcDbLine
   0
 TEXT
   5
-462
+474
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37397,9 +37977,9 @@ AcDbText
   0
 LINE
   5
-463
+475
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37423,9 +38003,9 @@ AcDbLine
   0
 TEXT
   5
-464
+476
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37455,9 +38035,9 @@ AcDbText
   0
 LINE
   5
-465
+477
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37481,9 +38061,9 @@ AcDbLine
   0
 ATTDEF
   5
-466
+478
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37517,9 +38097,9 @@ PROYECTO
   0
 ATTDEF
   5
-467
+479
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37553,9 +38133,9 @@ CLIENTE
   0
 ATTDEF
   5
-468
+47A
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37589,9 +38169,9 @@ UBICACION
   0
 ATTDEF
   5
-469
+47B
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37625,9 +38205,9 @@ RPU
   0
 ATTDEF
   5
-46A
+47C
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37661,9 +38241,9 @@ NUM_SERVICIO
   0
 ATTDEF
   5
-46B
+47D
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37697,9 +38277,9 @@ NUM_MEDIDOR
   0
 ATTDEF
   5
-46C
+47E
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37733,9 +38313,9 @@ TARIFA
   0
 ATTDEF
   5
-46D
+47F
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37769,9 +38349,9 @@ TENSION_SUMINISTRO
   0
 ATTDEF
   5
-46E
+480
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37805,9 +38385,9 @@ CAPACIDAD
   0
 ATTDEF
   5
-46F
+481
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37841,9 +38421,9 @@ RESPONSABLE
   0
 ATTDEF
   5
-470
+482
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37877,9 +38457,9 @@ CEDULA
   0
 ATTDEF
   5
-471
+483
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37913,9 +38493,9 @@ UVIE
   0
 ATTDEF
   5
-472
+484
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37949,9 +38529,9 @@ FECHA
   0
 ATTDEF
   5
-473
+485
 330
-435
+447
 100
 AcDbEntity
   8
@@ -37985,9 +38565,9 @@ EMPRESA
   0
 ATTDEF
   5
-474
+486
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38021,9 +38601,9 @@ DIBUJO
   0
 ATTDEF
   5
-475
+487
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38057,9 +38637,9 @@ REVISO
   0
 ATTDEF
   5
-476
+488
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38093,9 +38673,9 @@ APROBO
   0
 ATTDEF
   5
-477
+489
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38129,9 +38709,9 @@ NORMA
   0
 ATTDEF
   5
-478
+48A
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38165,9 +38745,9 @@ TITULO
   0
 ATTDEF
   5
-479
+48B
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38201,9 +38781,9 @@ PLANO_NO
   0
 ATTDEF
   5
-47A
+48C
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38237,9 +38817,9 @@ HOJA
   0
 ATTDEF
   5
-47B
+48D
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38273,9 +38853,9 @@ REV
   0
 ATTDEF
   5
-47C
+48E
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38309,9 +38889,9 @@ ESCALA
   0
 ATTDEF
   5
-47D
+48F
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38345,9 +38925,9 @@ TAG
   0
 ATTDEF
   5
-47E
+490
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38381,9 +38961,9 @@ DESC
   0
 ATTDEF
   5
-47F
+491
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38417,9 +38997,9 @@ COMP_ID
   0
 ATTDEF
   5
-480
+492
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38453,9 +39033,9 @@ IEC_REF
   0
 ATTDEF
   5
-481
+493
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38489,9 +39069,9 @@ NMX_REF
   0
 ATTDEF
   5
-482
+494
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38525,9 +39105,9 @@ SOURCE_STANDARD
   0
 ENDBLK
   5
-437
+449
 330
-435
+447
 100
 AcDbEntity
   8
@@ -38537,9 +39117,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-567
+582
 330
-566
+581
 100
 AcDbEntity
   8
@@ -38563,9 +39143,9 @@ AcDbBlockBegin
   0
 VIEWPORT
   5
-56A
+585
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38667,9 +39247,9 @@ AcDbViewport
   0
 LWPOLYLINE
   5
-56B
+586
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38703,9 +39283,9 @@ AcDbPolyline
   0
 TEXT
   5
-56C
+587
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38737,9 +39317,9 @@ AcDbText
   0
 TEXT
   5
-56D
+588
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38757,7 +39337,7 @@ AcDbText
  40
 3.5
   1
-Biblioteca de símbolos pvsld v0.5.0 — 56 bloques — hoja 2 de 3 — DXF R2018
+Biblioteca de símbolos pvsld v0.6.0 — 57 bloques — hoja 2 de 3 — DXF R2018
   7
 PVSLD_STD
  11
@@ -38771,9 +39351,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-56E
+589
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38805,9 +39385,9 @@ AcDbPolyline
   0
 LINE
   5
-56F
+58A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38831,9 +39411,9 @@ AcDbLine
   0
 TEXT
   5
-570
+58B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38865,9 +39445,9 @@ AcDbText
   0
 TEXT
   5
-571
+58C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38899,9 +39479,9 @@ AcDbText
   0
 TEXT
   5
-572
+58D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38933,9 +39513,9 @@ AcDbText
   0
 LINE
   5
-573
+58E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38959,9 +39539,9 @@ AcDbLine
   0
 TEXT
   5
-574
+58F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -38993,9 +39573,9 @@ AcDbText
   0
 LINE
   5
-575
+590
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39019,9 +39599,9 @@ AcDbLine
   0
 LINE
   5
-576
+591
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39045,9 +39625,9 @@ AcDbLine
   0
 LINE
   5
-577
+592
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39071,9 +39651,9 @@ AcDbLine
   0
 INSERT
   5
-578
+593
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39099,9 +39679,9 @@ PVSLD_SWITCH
   0
 TEXT
   5
-57A
+595
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39133,9 +39713,9 @@ AcDbText
   0
 TEXT
   5
-57B
+596
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39167,9 +39747,9 @@ AcDbText
   0
 TEXT
   5
-57C
+597
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39201,9 +39781,9 @@ AcDbText
   0
 LINE
   5
-57D
+598
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39227,9 +39807,9 @@ AcDbLine
   0
 LINE
   5
-57E
+599
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39253,9 +39833,9 @@ AcDbLine
   0
 LINE
   5
-57F
+59A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39279,9 +39859,9 @@ AcDbLine
   0
 INSERT
   5
-580
+59B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39307,9 +39887,9 @@ PVSLD_DC_DISCONNECT
   0
 TEXT
   5
-582
+59D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39341,9 +39921,9 @@ AcDbText
   0
 TEXT
   5
-583
+59E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39375,9 +39955,9 @@ AcDbText
   0
 TEXT
   5
-584
+59F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39409,9 +39989,9 @@ AcDbText
   0
 TEXT
   5
-585
+5A0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39443,9 +40023,9 @@ AcDbText
   0
 TEXT
   5
-586
+5A1
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39477,9 +40057,9 @@ AcDbText
   0
 TEXT
   5
-587
+5A2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39511,9 +40091,9 @@ AcDbText
   0
 TEXT
   5
-588
+5A3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39545,9 +40125,9 @@ AcDbText
   0
 LINE
   5
-589
+5A4
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39571,9 +40151,9 @@ AcDbLine
   0
 LINE
   5
-58A
+5A5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39597,9 +40177,9 @@ AcDbLine
   0
 LINE
   5
-58B
+5A6
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39623,9 +40203,9 @@ AcDbLine
   0
 INSERT
   5
-58C
+5A7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39645,9 +40225,9 @@ PVSLD_FUSE_DISC
   0
 TEXT
   5
-58E
+5A9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39679,9 +40259,9 @@ AcDbText
   0
 TEXT
   5
-58F
+5AA
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39713,9 +40293,9 @@ AcDbText
   0
 TEXT
   5
-590
+5AB
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39747,9 +40327,9 @@ AcDbText
   0
 TEXT
   5
-591
+5AC
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39781,9 +40361,9 @@ AcDbText
   0
 LINE
   5
-592
+5AD
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39807,9 +40387,9 @@ AcDbLine
   0
 LINE
   5
-593
+5AE
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39833,9 +40413,9 @@ AcDbLine
   0
 LINE
   5
-594
+5AF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39859,9 +40439,9 @@ AcDbLine
   0
 INSERT
   5
-595
+5B0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39881,9 +40461,9 @@ PVSLD_SAFETY_SWITCH
   0
 TEXT
   5
-597
+5B2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39915,9 +40495,9 @@ AcDbText
   0
 TEXT
   5
-598
+5B3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39949,9 +40529,9 @@ AcDbText
   0
 TEXT
   5
-599
+5B4
 330
-566
+581
 100
 AcDbEntity
  67
@@ -39983,9 +40563,9 @@ AcDbText
   0
 TEXT
   5
-59A
+5B5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40017,9 +40597,9 @@ AcDbText
   0
 TEXT
   5
-59B
+5B6
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40051,9 +40631,9 @@ AcDbText
   0
 LINE
   5
-59C
+5B7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40077,9 +40657,9 @@ AcDbLine
   0
 LINE
   5
-59D
+5B8
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40103,9 +40683,9 @@ AcDbLine
   0
 LINE
   5
-59E
+5B9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40129,9 +40709,9 @@ AcDbLine
   0
 INSERT
   5
-59F
+5BA
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40157,9 +40737,9 @@ PVSLD_TRANSFER_SW
   0
 TEXT
   5
-5A1
+5BC
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40191,9 +40771,9 @@ AcDbText
   0
 TEXT
   5
-5A2
+5BD
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40225,9 +40805,9 @@ AcDbText
   0
 TEXT
   5
-5A3
+5BE
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40259,9 +40839,9 @@ AcDbText
   0
 TEXT
   5
-5A4
+5BF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40293,9 +40873,9 @@ AcDbText
   0
 TEXT
   5
-5A5
+5C0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40327,9 +40907,9 @@ AcDbText
   0
 TEXT
   5
-5A6
+5C1
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40361,9 +40941,9 @@ AcDbText
   0
 LINE
   5
-5A7
+5C2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40387,9 +40967,9 @@ AcDbLine
   0
 LINE
   5
-5A8
+5C3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40413,9 +40993,9 @@ AcDbLine
   0
 LINE
   5
-5A9
+5C4
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40439,9 +41019,9 @@ AcDbLine
   0
 INSERT
   5
-5AA
+5C5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40461,9 +41041,9 @@ PVSLD_CONTACTOR
   0
 TEXT
   5
-5AC
+5C7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40495,9 +41075,9 @@ AcDbText
   0
 TEXT
   5
-5AD
+5C8
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40529,9 +41109,9 @@ AcDbText
   0
 TEXT
   5
-5AE
+5C9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40563,9 +41143,9 @@ AcDbText
   0
 TEXT
   5
-5AF
+5CA
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40597,9 +41177,9 @@ AcDbText
   0
 LINE
   5
-5B0
+5CB
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40623,9 +41203,9 @@ AcDbLine
   0
 TEXT
   5
-5B1
+5CC
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40657,9 +41237,9 @@ AcDbText
   0
 LINE
   5
-5B2
+5CD
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40683,9 +41263,9 @@ AcDbLine
   0
 LINE
   5
-5B3
+5CE
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40709,9 +41289,9 @@ AcDbLine
   0
 LINE
   5
-5B4
+5CF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40735,9 +41315,9 @@ AcDbLine
   0
 INSERT
   5
-5B5
+5D0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40763,9 +41343,9 @@ PVSLD_METER
   0
 TEXT
   5
-5B7
+5D2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40797,9 +41377,9 @@ AcDbText
   0
 TEXT
   5
-5B8
+5D3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40831,9 +41411,9 @@ AcDbText
   0
 TEXT
   5
-5B9
+5D4
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40865,9 +41445,9 @@ AcDbText
   0
 TEXT
   5
-5BA
+5D5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40899,9 +41479,9 @@ AcDbText
   0
 LINE
   5
-5BB
+5D6
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40925,9 +41505,9 @@ AcDbLine
   0
 LINE
   5
-5BC
+5D7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40951,9 +41531,9 @@ AcDbLine
   0
 LINE
   5
-5BD
+5D8
 330
-566
+581
 100
 AcDbEntity
  67
@@ -40977,9 +41557,9 @@ AcDbLine
   0
 INSERT
   5
-5BE
+5D9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41005,9 +41585,9 @@ PVSLD_METER_M
   0
 TEXT
   5
-5C0
+5DB
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41039,9 +41619,9 @@ AcDbText
   0
 TEXT
   5
-5C1
+5DC
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41073,9 +41653,9 @@ AcDbText
   0
 TEXT
   5
-5C2
+5DD
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41107,9 +41687,9 @@ AcDbText
   0
 TEXT
   5
-5C3
+5DE
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41141,9 +41721,9 @@ AcDbText
   0
 TEXT
   5
-5C4
+5DF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41175,9 +41755,9 @@ AcDbText
   0
 LINE
   5
-5C5
+5E0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41201,9 +41781,9 @@ AcDbLine
   0
 LINE
   5
-5C6
+5E1
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41227,9 +41807,9 @@ AcDbLine
   0
 LINE
   5
-5C7
+5E2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41253,9 +41833,9 @@ AcDbLine
   0
 INSERT
   5
-5C8
+5E3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41281,9 +41861,9 @@ PVSLD_CT
   0
 TEXT
   5
-5CA
+5E5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41315,9 +41895,9 @@ AcDbText
   0
 TEXT
   5
-5CB
+5E6
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41349,9 +41929,9 @@ AcDbText
   0
 TEXT
   5
-5CC
+5E7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41383,9 +41963,9 @@ AcDbText
   0
 LINE
   5
-5CD
+5E8
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41409,9 +41989,9 @@ AcDbLine
   0
 LINE
   5
-5CE
+5E9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41435,9 +42015,9 @@ AcDbLine
   0
 LINE
   5
-5CF
+5EA
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41461,9 +42041,9 @@ AcDbLine
   0
 INSERT
   5
-5D0
+5EB
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41489,9 +42069,9 @@ PVSLD_MONITOR
   0
 TEXT
   5
-5D2
+5ED
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41523,9 +42103,9 @@ AcDbText
   0
 TEXT
   5
-5D3
+5EE
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41557,9 +42137,9 @@ AcDbText
   0
 TEXT
   5
-5D4
+5EF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41591,9 +42171,9 @@ AcDbText
   0
 TEXT
   5
-5D5
+5F0
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41625,9 +42205,9 @@ AcDbText
   0
 TEXT
   5
-5D6
+5F1
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41659,9 +42239,9 @@ AcDbText
   0
 TEXT
   5
-5D7
+5F2
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41693,9 +42273,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-5D8
+5F3
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41727,9 +42307,9 @@ AcDbPolyline
   0
 LINE
   5
-5D9
+5F4
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41753,9 +42333,9 @@ AcDbLine
   0
 TEXT
   5
-5DA
+5F5
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41787,9 +42367,9 @@ AcDbText
   0
 TEXT
   5
-5DB
+5F6
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41821,9 +42401,9 @@ AcDbText
   0
 TEXT
   5
-5DC
+5F7
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41855,9 +42435,9 @@ AcDbText
   0
 LINE
   5
-5DD
+5F8
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41881,9 +42461,9 @@ AcDbLine
   0
 TEXT
   5
-5DE
+5F9
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41915,9 +42495,9 @@ AcDbText
   0
 LINE
   5
-5DF
+5FA
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41941,9 +42521,9 @@ AcDbLine
   0
 LINE
   5
-5E0
+5FB
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41967,9 +42547,9 @@ AcDbLine
   0
 LINE
   5
-5E1
+5FC
 330
-566
+581
 100
 AcDbEntity
  67
@@ -41993,9 +42573,9 @@ AcDbLine
   0
 INSERT
   5
-5E2
+5FD
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42021,9 +42601,9 @@ PVSLD_GRID
   0
 TEXT
   5
-5E4
+5FF
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42055,9 +42635,9 @@ AcDbText
   0
 TEXT
   5
-5E5
+600
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42089,9 +42669,9 @@ AcDbText
   0
 TEXT
   5
-5E6
+601
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42123,9 +42703,9 @@ AcDbText
   0
 TEXT
   5
-5E7
+602
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42157,9 +42737,9 @@ AcDbText
   0
 LINE
   5
-5E8
+603
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42183,9 +42763,9 @@ AcDbLine
   0
 LINE
   5
-5E9
+604
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42209,9 +42789,9 @@ AcDbLine
   0
 LINE
   5
-5EA
+605
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42235,9 +42815,9 @@ AcDbLine
   0
 INSERT
   5
-5EB
+606
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42257,9 +42837,9 @@ PVSLD_PI
   0
 TEXT
   5
-5ED
+608
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42291,9 +42871,9 @@ AcDbText
   0
 TEXT
   5
-5EE
+609
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42325,9 +42905,9 @@ AcDbText
   0
 TEXT
   5
-5EF
+60A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42359,9 +42939,9 @@ AcDbText
   0
 TEXT
   5
-5F0
+60B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42393,9 +42973,9 @@ AcDbText
   0
 TEXT
   5
-5F1
+60C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42427,9 +43007,9 @@ AcDbText
   0
 LINE
   5
-5F2
+60D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42453,9 +43033,9 @@ AcDbLine
   0
 LINE
   5
-5F3
+60E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42479,9 +43059,9 @@ AcDbLine
   0
 LINE
   5
-5F4
+60F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42505,9 +43085,9 @@ AcDbLine
   0
 INSERT
   5
-5F5
+610
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42533,9 +43113,9 @@ PVSLD_PANEL
   0
 TEXT
   5
-5F7
+612
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42567,9 +43147,9 @@ AcDbText
   0
 TEXT
   5
-5F8
+613
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42601,9 +43181,9 @@ AcDbText
   0
 TEXT
   5
-5F9
+614
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42635,9 +43215,9 @@ AcDbText
   0
 TEXT
   5
-5FA
+615
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42669,9 +43249,9 @@ AcDbText
   0
 LINE
   5
-5FB
+616
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42695,9 +43275,9 @@ AcDbLine
   0
 LINE
   5
-5FC
+617
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42721,9 +43301,9 @@ AcDbLine
   0
 LINE
   5
-5FD
+618
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42747,9 +43327,9 @@ AcDbLine
   0
 INSERT
   5
-5FE
+619
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42775,9 +43355,9 @@ PVSLD_LOAD_LIGHT
   0
 TEXT
   5
-600
+61B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42809,9 +43389,9 @@ AcDbText
   0
 TEXT
   5
-601
+61C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42843,9 +43423,9 @@ AcDbText
   0
 TEXT
   5
-602
+61D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42877,9 +43457,9 @@ AcDbText
   0
 LINE
   5
-603
+61E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42903,9 +43483,9 @@ AcDbLine
   0
 LINE
   5
-604
+61F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42929,9 +43509,9 @@ AcDbLine
   0
 LINE
   5
-605
+620
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42955,9 +43535,9 @@ AcDbLine
   0
 INSERT
   5
-606
+621
 330
-566
+581
 100
 AcDbEntity
  67
@@ -42977,9 +43557,9 @@ PVSLD_LOAD_RECEPT
   0
 TEXT
   5
-608
+623
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43011,9 +43591,9 @@ AcDbText
   0
 TEXT
   5
-609
+624
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43045,9 +43625,9 @@ AcDbText
   0
 TEXT
   5
-60A
+625
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43079,9 +43659,9 @@ AcDbText
   0
 LINE
   5
-60B
+626
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43105,9 +43685,9 @@ AcDbLine
   0
 TEXT
   5
-60C
+627
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43139,9 +43719,9 @@ AcDbText
   0
 LINE
   5
-60D
+628
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43165,9 +43745,9 @@ AcDbLine
   0
 LINE
   5
-60E
+629
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43191,9 +43771,9 @@ AcDbLine
   0
 LINE
   5
-60F
+62A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43217,9 +43797,9 @@ AcDbLine
   0
 INSERT
   5
-610
+62B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43239,9 +43819,9 @@ PVSLD_GND
   0
 TEXT
   5
-612
+62D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43273,9 +43853,9 @@ AcDbText
   0
 TEXT
   5
-613
+62E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43307,9 +43887,9 @@ AcDbText
   0
 TEXT
   5
-614
+62F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43341,9 +43921,9 @@ AcDbText
   0
 TEXT
   5
-615
+630
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43375,9 +43955,9 @@ AcDbText
   0
 LINE
   5
-616
+631
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43401,9 +43981,9 @@ AcDbLine
   0
 LINE
   5
-617
+632
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43427,9 +44007,9 @@ AcDbLine
   0
 LINE
   5
-618
+633
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43453,9 +44033,9 @@ AcDbLine
   0
 INSERT
   5
-619
+634
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43475,9 +44055,9 @@ PVSLD_PE
   0
 TEXT
   5
-61B
+636
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43509,9 +44089,9 @@ AcDbText
   0
 TEXT
   5
-61C
+637
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43543,9 +44123,9 @@ AcDbText
   0
 TEXT
   5
-61D
+638
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43577,9 +44157,9 @@ AcDbText
   0
 TEXT
   5
-61E
+639
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43611,9 +44191,9 @@ AcDbText
   0
 TEXT
   5
-61F
+63A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43645,9 +44225,9 @@ AcDbText
   0
 TEXT
   5
-620
+63B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43679,9 +44259,9 @@ AcDbText
   0
 LINE
   5
-621
+63C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43705,9 +44285,9 @@ AcDbLine
   0
 LINE
   5
-622
+63D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43731,9 +44311,9 @@ AcDbLine
   0
 LINE
   5
-623
+63E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43757,9 +44337,9 @@ AcDbLine
   0
 INSERT
   5
-624
+63F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43779,9 +44359,9 @@ PVSLD_GND_BUS
   0
 TEXT
   5
-626
+641
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43813,9 +44393,9 @@ AcDbText
   0
 TEXT
   5
-627
+642
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43847,9 +44427,9 @@ AcDbText
   0
 TEXT
   5
-628
+643
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43881,9 +44461,9 @@ AcDbText
   0
 LINE
   5
-629
+644
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43907,9 +44487,9 @@ AcDbLine
   0
 LINE
   5
-62A
+645
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43933,9 +44513,9 @@ AcDbLine
   0
 LINE
   5
-62B
+646
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43959,9 +44539,9 @@ AcDbLine
   0
 INSERT
   5
-62C
+647
 330
-566
+581
 100
 AcDbEntity
  67
@@ -43981,9 +44561,9 @@ PVSLD_NEUTRAL_BUS
   0
 TEXT
   5
-62E
+649
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44015,9 +44595,9 @@ AcDbText
   0
 TEXT
   5
-62F
+64A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44049,9 +44629,9 @@ AcDbText
   0
 TEXT
   5
-630
+64B
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44083,9 +44663,9 @@ AcDbText
   0
 LINE
   5
-631
+64C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44109,9 +44689,9 @@ AcDbLine
   0
 TEXT
   5
-632
+64D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44143,9 +44723,9 @@ AcDbText
   0
 LINE
   5
-633
+64E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44169,9 +44749,9 @@ AcDbLine
   0
 LINE
   5
-634
+64F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44195,9 +44775,9 @@ AcDbLine
   0
 LINE
   5
-635
+650
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44221,9 +44801,9 @@ AcDbLine
   0
 INSERT
   5
-636
+651
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44249,9 +44829,9 @@ PVSLD_XFMR
   0
 TEXT
   5
-638
+653
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44283,9 +44863,9 @@ AcDbText
   0
 TEXT
   5
-639
+654
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44317,9 +44897,9 @@ AcDbText
   0
 TEXT
   5
-63A
+655
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44351,9 +44931,9 @@ AcDbText
   0
 TEXT
   5
-63B
+656
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44385,9 +44965,9 @@ AcDbText
   0
 LINE
   5
-63C
+657
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44411,9 +44991,9 @@ AcDbLine
   0
 LINE
   5
-63D
+658
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44437,9 +45017,9 @@ AcDbLine
   0
 LINE
   5
-63E
+659
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44463,9 +45043,9 @@ AcDbLine
   0
 INSERT
   5
-63F
+65A
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44485,9 +45065,9 @@ PVSLD_CUTOUT
   0
 TEXT
   5
-641
+65C
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44519,9 +45099,9 @@ AcDbText
   0
 TEXT
   5
-642
+65D
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44553,9 +45133,9 @@ AcDbText
   0
 TEXT
   5
-643
+65E
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44587,9 +45167,9 @@ AcDbText
   0
 TEXT
   5
-644
+65F
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44621,9 +45201,9 @@ AcDbText
   0
 TEXT
   5
-645
+660
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44655,9 +45235,9 @@ AcDbText
   0
 TEXT
   5
-646
+661
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44689,9 +45269,9 @@ AcDbText
   0
 TEXT
   5
-647
+662
 330
-566
+581
 100
 AcDbEntity
  67
@@ -44723,9 +45303,9 @@ AcDbText
   0
 ENDBLK
   5
-568
+583
 330
-566
+581
 100
 AcDbEntity
   8
@@ -44735,9 +45315,9 @@ AcDbBlockEnd
   0
 BLOCK
   5
-649
+664
 330
-648
+663
 100
 AcDbEntity
   8
@@ -44761,9 +45341,9 @@ AcDbBlockBegin
   0
 VIEWPORT
   5
-64C
+667
 330
-648
+663
 100
 AcDbEntity
  67
@@ -44865,9 +45445,9 @@ AcDbViewport
   0
 LWPOLYLINE
   5
-64D
+668
 330
-648
+663
 100
 AcDbEntity
  67
@@ -44901,9 +45481,9 @@ AcDbPolyline
   0
 TEXT
   5
-64E
+669
 330
-648
+663
 100
 AcDbEntity
  67
@@ -44935,9 +45515,9 @@ AcDbText
   0
 TEXT
   5
-64F
+66A
 330
-648
+663
 100
 AcDbEntity
  67
@@ -44955,7 +45535,7 @@ AcDbText
  40
 3.5
   1
-Biblioteca de símbolos pvsld v0.5.0 — 56 bloques — hoja 3 de 3 — DXF R2018
+Biblioteca de símbolos pvsld v0.6.0 — 57 bloques — hoja 3 de 3 — DXF R2018
   7
 PVSLD_STD
  11
@@ -44969,9 +45549,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-650
+66B
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45003,9 +45583,9 @@ AcDbPolyline
   0
 LINE
   5
-651
+66C
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45029,9 +45609,9 @@ AcDbLine
   0
 TEXT
   5
-652
+66D
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45063,9 +45643,9 @@ AcDbText
   0
 TEXT
   5
-653
+66E
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45097,9 +45677,9 @@ AcDbText
   0
 TEXT
   5
-654
+66F
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45131,9 +45711,9 @@ AcDbText
   0
 LINE
   5
-655
+670
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45157,9 +45737,9 @@ AcDbLine
   0
 TEXT
   5
-656
+671
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45191,9 +45771,9 @@ AcDbText
   0
 LINE
   5
-657
+672
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45217,9 +45797,9 @@ AcDbLine
   0
 LINE
   5
-658
+673
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45243,9 +45823,9 @@ AcDbLine
   0
 LINE
   5
-659
+674
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45269,9 +45849,9 @@ AcDbLine
   0
 INSERT
   5
-65A
+675
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45297,9 +45877,9 @@ PVSLD_ARRESTER_MV
   0
 TEXT
   5
-65C
+677
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45331,9 +45911,9 @@ AcDbText
   0
 TEXT
   5
-65D
+678
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45365,9 +45945,9 @@ AcDbText
   0
 TEXT
   5
-65E
+679
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45399,9 +45979,9 @@ AcDbText
   0
 TEXT
   5
-65F
+67A
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45433,9 +46013,9 @@ AcDbText
   0
 TEXT
   5
-660
+67B
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45467,9 +46047,9 @@ AcDbText
   0
 LINE
   5
-661
+67C
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45493,9 +46073,9 @@ AcDbLine
   0
 LINE
   5
-662
+67D
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45519,9 +46099,9 @@ AcDbLine
   0
 LINE
   5
-663
+67E
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45545,9 +46125,9 @@ AcDbLine
   0
 INSERT
   5
-664
+67F
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45567,9 +46147,9 @@ PVSLD_DISCONNECT_MV
   0
 TEXT
   5
-666
+681
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45601,9 +46181,9 @@ AcDbText
   0
 TEXT
   5
-667
+682
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45635,9 +46215,9 @@ AcDbText
   0
 TEXT
   5
-668
+683
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45669,9 +46249,9 @@ AcDbText
   0
 TEXT
   5
-669
+684
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45703,9 +46283,9 @@ AcDbText
   0
 LINE
   5
-66A
+685
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45729,9 +46309,9 @@ AcDbLine
   0
 LINE
   5
-66B
+686
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45755,9 +46335,9 @@ AcDbLine
   0
 LINE
   5
-66C
+687
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45781,9 +46361,9 @@ AcDbLine
   0
 INSERT
   5
-66D
+688
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45803,9 +46383,9 @@ PVSLD_CT_MV
   0
 TEXT
   5
-66F
+68A
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45837,9 +46417,9 @@ AcDbText
   0
 TEXT
   5
-670
+68B
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45871,9 +46451,9 @@ AcDbText
   0
 TEXT
   5
-671
+68C
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45905,9 +46485,9 @@ AcDbText
   0
 TEXT
   5
-672
+68D
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45939,9 +46519,9 @@ AcDbText
   0
 LINE
   5
-673
+68E
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45965,9 +46545,9 @@ AcDbLine
   0
 LINE
   5
-674
+68F
 330
-648
+663
 100
 AcDbEntity
  67
@@ -45991,9 +46571,9 @@ AcDbLine
   0
 LINE
   5
-675
+690
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46017,9 +46597,9 @@ AcDbLine
   0
 INSERT
   5
-676
+691
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46039,9 +46619,9 @@ PVSLD_VT_MV
   0
 TEXT
   5
-678
+693
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46073,9 +46653,9 @@ AcDbText
   0
 TEXT
   5
-679
+694
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46107,9 +46687,9 @@ AcDbText
   0
 TEXT
   5
-67A
+695
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46141,9 +46721,9 @@ AcDbText
   0
 TEXT
   5
-67B
+696
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46175,9 +46755,9 @@ AcDbText
   0
 LINE
   5
-67C
+697
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46201,9 +46781,9 @@ AcDbLine
   0
 TEXT
   5
-67D
+698
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46235,9 +46815,9 @@ AcDbText
   0
 LINE
   5
-67E
+699
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46261,9 +46841,9 @@ AcDbLine
   0
 LINE
   5
-67F
+69A
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46287,9 +46867,9 @@ AcDbLine
   0
 LINE
   5
-680
+69B
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46313,9 +46893,9 @@ AcDbLine
   0
 INSERT
   5
-681
+69C
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46335,9 +46915,9 @@ PVSLD_BUSBAR
   0
 TEXT
   5
-683
+69E
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46369,9 +46949,9 @@ AcDbText
   0
 TEXT
   5
-684
+69F
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46403,9 +46983,9 @@ AcDbText
   0
 TEXT
   5
-685
+6A0
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46437,9 +47017,9 @@ AcDbText
   0
 TEXT
   5
-686
+6A1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46471,9 +47051,9 @@ AcDbText
   0
 TEXT
   5
-687
+6A2
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46505,9 +47085,9 @@ AcDbText
   0
 LINE
   5
-688
+6A3
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46531,9 +47111,9 @@ AcDbLine
   0
 LINE
   5
-689
+6A4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46557,9 +47137,9 @@ AcDbLine
   0
 LINE
   5
-68A
+6A5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46583,9 +47163,9 @@ AcDbLine
   0
 INSERT
   5
-68B
+6A6
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46605,9 +47185,9 @@ PVSLD_TERMINAL
   0
 TEXT
   5
-68D
+6A8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46639,9 +47219,9 @@ AcDbText
   0
 TEXT
   5
-68E
+6A9
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46673,9 +47253,9 @@ AcDbText
   0
 TEXT
   5
-68F
+6AA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46707,9 +47287,9 @@ AcDbText
   0
 TEXT
   5
-690
+6AB
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46741,9 +47321,9 @@ AcDbText
   0
 LINE
   5
-691
+6AC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46767,9 +47347,9 @@ AcDbLine
   0
 LINE
   5
-692
+6AD
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46793,9 +47373,9 @@ AcDbLine
   0
 LINE
   5
-693
+6AE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46819,9 +47399,9 @@ AcDbLine
   0
 INSERT
   5
-694
+6AF
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46841,9 +47421,9 @@ PVSLD_CROSSING
   0
 TEXT
   5
-696
+6B1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46875,9 +47455,9 @@ AcDbText
   0
 TEXT
   5
-697
+6B2
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46909,9 +47489,9 @@ AcDbText
   0
 TEXT
   5
-698
+6B3
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46943,9 +47523,9 @@ AcDbText
   0
 TEXT
   5
-699
+6B4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -46977,9 +47557,9 @@ AcDbText
   0
 LINE
   5
-69A
+6B5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47003,9 +47583,9 @@ AcDbLine
   0
 LINE
   5
-69B
+6B6
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47029,9 +47609,9 @@ AcDbLine
   0
 LINE
   5
-69C
+6B7
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47055,9 +47635,9 @@ AcDbLine
   0
 INSERT
   5
-69D
+6B8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47077,9 +47657,9 @@ PVSLD_JUNCTION
   0
 TEXT
   5
-69F
+6BA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47111,9 +47691,9 @@ AcDbText
   0
 TEXT
   5
-6A0
+6BB
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47145,9 +47725,9 @@ AcDbText
   0
 TEXT
   5
-6A1
+6BC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47179,9 +47759,9 @@ AcDbText
   0
 TEXT
   5
-6A2
+6BD
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47213,9 +47793,9 @@ AcDbText
   0
 LINE
   5
-6A3
+6BE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47239,9 +47819,9 @@ AcDbLine
   0
 LINE
   5
-6A4
+6BF
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47265,9 +47845,9 @@ AcDbLine
   0
 LINE
   5
-6A5
+6C0
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47291,9 +47871,9 @@ AcDbLine
   0
 INSERT
   5
-6A6
+6C1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47313,9 +47893,9 @@ PVSLD_COND_MARK
   0
 TEXT
   5
-6A8
+6C3
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47347,9 +47927,9 @@ AcDbText
   0
 TEXT
   5
-6A9
+6C4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47381,9 +47961,9 @@ AcDbText
   0
 TEXT
   5
-6AA
+6C5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47415,9 +47995,9 @@ AcDbText
   0
 TEXT
   5
-6AB
+6C6
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47449,9 +48029,9 @@ AcDbText
   0
 LINE
   5
-6AC
+6C7
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47475,9 +48055,9 @@ AcDbLine
   0
 LINE
   5
-6AD
+6C8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47501,9 +48081,9 @@ AcDbLine
   0
 LINE
   5
-6AE
+6C9
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47527,9 +48107,9 @@ AcDbLine
   0
 INSERT
   5
-6AF
+6CA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47549,9 +48129,9 @@ PVSLD_POL_POS
   0
 TEXT
   5
-6B1
+6CC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47583,9 +48163,9 @@ AcDbText
   0
 TEXT
   5
-6B2
+6CD
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47617,9 +48197,9 @@ AcDbText
   0
 TEXT
   5
-6B3
+6CE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47651,9 +48231,9 @@ AcDbText
   0
 LINE
   5
-6B4
+6CF
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47677,9 +48257,9 @@ AcDbLine
   0
 LINE
   5
-6B5
+6D0
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47703,9 +48283,9 @@ AcDbLine
   0
 LINE
   5
-6B6
+6D1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47729,9 +48309,9 @@ AcDbLine
   0
 INSERT
   5
-6B7
+6D2
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47751,9 +48331,9 @@ PVSLD_POL_NEG
   0
 TEXT
   5
-6B9
+6D4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47785,9 +48365,9 @@ AcDbText
   0
 TEXT
   5
-6BA
+6D5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47819,9 +48399,9 @@ AcDbText
   0
 TEXT
   5
-6BB
+6D6
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47853,9 +48433,9 @@ AcDbText
   0
 LWPOLYLINE
   5
-6BC
+6D7
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47887,9 +48467,9 @@ AcDbPolyline
   0
 LINE
   5
-6BD
+6D8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47913,9 +48493,9 @@ AcDbLine
   0
 TEXT
   5
-6BE
+6D9
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47947,9 +48527,9 @@ AcDbText
   0
 TEXT
   5
-6BF
+6DA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -47981,9 +48561,9 @@ AcDbText
   0
 TEXT
   5
-6C0
+6DB
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48015,9 +48595,9 @@ AcDbText
   0
 LINE
   5
-6C1
+6DC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48041,9 +48621,9 @@ AcDbLine
   0
 TEXT
   5
-6C2
+6DD
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48075,9 +48655,9 @@ AcDbText
   0
 LINE
   5
-6C3
+6DE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48101,9 +48681,9 @@ AcDbLine
   0
 LINE
   5
-6C4
+6DF
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48127,9 +48707,9 @@ AcDbLine
   0
 LINE
   5
-6C5
+6E0
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48153,9 +48733,9 @@ AcDbLine
   0
 INSERT
   5
-6C6
+6E1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48181,9 +48761,9 @@ PVSLD_ENCLOSURE
   0
 TEXT
   5
-6C8
+6E3
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48215,9 +48795,9 @@ AcDbText
   0
 TEXT
   5
-6C9
+6E4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48249,9 +48829,9 @@ AcDbText
   0
 TEXT
   5
-6CA
+6E5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48283,9 +48863,9 @@ AcDbText
   0
 TEXT
   5
-6CB
+6E6
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48317,9 +48897,9 @@ AcDbText
   0
 LINE
   5
-6CC
+6E7
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48343,9 +48923,9 @@ AcDbLine
   0
 LINE
   5
-6CD
+6E8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48369,9 +48949,9 @@ AcDbLine
   0
 LINE
   5
-6CE
+6E9
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48395,9 +48975,9 @@ AcDbLine
   0
 INSERT
   5
-6CF
+6EA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48423,9 +49003,9 @@ PVSLD_BOUNDARY
   0
 TEXT
   5
-6D1
+6EC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48457,9 +49037,9 @@ AcDbText
   0
 TEXT
   5
-6D2
+6ED
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48491,9 +49071,9 @@ AcDbText
   0
 TEXT
   5
-6D3
+6EE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48525,9 +49105,9 @@ AcDbText
   0
 TEXT
   5
-6D4
+6EF
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48559,9 +49139,9 @@ AcDbText
   0
 TEXT
   5
-6D5
+6F0
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48593,9 +49173,9 @@ AcDbText
   0
 TEXT
   5
-6D6
+6F1
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48627,9 +49207,9 @@ AcDbText
   0
 LINE
   5
-6D7
+6F2
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48653,9 +49233,9 @@ AcDbLine
   0
 LINE
   5
-6D8
+6F3
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48679,9 +49259,9 @@ AcDbLine
   0
 LINE
   5
-6D9
+6F4
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48705,9 +49285,9 @@ AcDbLine
   0
 INSERT
   5
-6DA
+6F5
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48733,9 +49313,9 @@ PVSLD_TTLB
   0
 TEXT
   5
-6DC
+6F7
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48767,9 +49347,9 @@ AcDbText
   0
 TEXT
   5
-6DD
+6F8
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48801,9 +49381,9 @@ AcDbText
   0
 TEXT
   5
-6DE
+6F9
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48835,9 +49415,9 @@ AcDbText
   0
 TEXT
   5
-6DF
+6FA
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48869,9 +49449,9 @@ AcDbText
   0
 TEXT
   5
-6E0
+6FB
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48903,9 +49483,9 @@ AcDbText
   0
 TEXT
   5
-6E1
+6FC
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48937,9 +49517,9 @@ AcDbText
   0
 TEXT
   5
-6E2
+6FD
 330
-648
+663
 100
 AcDbEntity
  67
@@ -48971,9 +49551,9 @@ AcDbText
   0
 TEXT
   5
-6E3
+6FE
 330
-648
+663
 100
 AcDbEntity
  67
@@ -49005,9 +49585,9 @@ AcDbText
   0
 ENDBLK
   5
-64A
+665
 330
-648
+663
 100
 AcDbEntity
   8
@@ -49023,7 +49603,7 @@ ENTITIES
   0
 VIEWPORT
   5
-483
+495
 330
 1B
 100
@@ -49127,7 +49707,7 @@ AcDbViewport
   0
 LWPOLYLINE
   5
-484
+496
 330
 1B
 100
@@ -49163,7 +49743,7 @@ AcDbPolyline
   0
 TEXT
   5
-485
+497
 330
 1B
 100
@@ -49197,7 +49777,7 @@ AcDbText
   0
 TEXT
   5
-486
+498
 330
 1B
 100
@@ -49217,7 +49797,7 @@ AcDbText
  40
 3.5
   1
-Biblioteca de símbolos pvsld v0.5.0 — 56 bloques — hoja 1 de 3 — DXF R2018
+Biblioteca de símbolos pvsld v0.6.0 — 57 bloques — hoja 1 de 3 — DXF R2018
   7
 PVSLD_STD
  11
@@ -49231,7 +49811,7 @@ AcDbText
   0
 LWPOLYLINE
   5
-487
+499
 330
 1B
 100
@@ -49265,7 +49845,7 @@ AcDbPolyline
   0
 LINE
   5
-488
+49A
 330
 1B
 100
@@ -49291,7 +49871,7 @@ AcDbLine
   0
 TEXT
   5
-489
+49B
 330
 1B
 100
@@ -49325,7 +49905,7 @@ AcDbText
   0
 TEXT
   5
-48A
+49C
 330
 1B
 100
@@ -49359,7 +49939,7 @@ AcDbText
   0
 TEXT
   5
-48B
+49D
 330
 1B
 100
@@ -49393,7 +49973,7 @@ AcDbText
   0
 LINE
   5
-48C
+49E
 330
 1B
 100
@@ -49419,7 +49999,7 @@ AcDbLine
   0
 TEXT
   5
-48D
+49F
 330
 1B
 100
@@ -49453,7 +50033,7 @@ AcDbText
   0
 LINE
   5
-48E
+4A0
 330
 1B
 100
@@ -49479,7 +50059,7 @@ AcDbLine
   0
 LINE
   5
-48F
+4A1
 330
 1B
 100
@@ -49505,7 +50085,7 @@ AcDbLine
   0
 LINE
   5
-490
+4A2
 330
 1B
 100
@@ -49531,7 +50111,7 @@ AcDbLine
   0
 INSERT
   5
-491
+4A3
 330
 1B
 100
@@ -49559,7 +50139,7 @@ PVSLD_PV_MODULE
   0
 TEXT
   5
-493
+4A5
 330
 1B
 100
@@ -49593,7 +50173,7 @@ AcDbText
   0
 TEXT
   5
-494
+4A6
 330
 1B
 100
@@ -49627,7 +50207,7 @@ AcDbText
   0
 TEXT
   5
-495
+4A7
 330
 1B
 100
@@ -49661,7 +50241,7 @@ AcDbText
   0
 LINE
   5
-496
+4A8
 330
 1B
 100
@@ -49687,7 +50267,7 @@ AcDbLine
   0
 LINE
   5
-497
+4A9
 330
 1B
 100
@@ -49713,7 +50293,7 @@ AcDbLine
   0
 LINE
   5
-498
+4AA
 330
 1B
 100
@@ -49739,7 +50319,7 @@ AcDbLine
   0
 INSERT
   5
-499
+4AB
 330
 1B
 100
@@ -49767,7 +50347,7 @@ PVSLD_PV_STRING
   0
 TEXT
   5
-49B
+4AD
 330
 1B
 100
@@ -49801,7 +50381,7 @@ AcDbText
   0
 TEXT
   5
-49C
+4AE
 330
 1B
 100
@@ -49835,7 +50415,7 @@ AcDbText
   0
 TEXT
   5
-49D
+4AF
 330
 1B
 100
@@ -49869,7 +50449,7 @@ AcDbText
   0
 TEXT
   5
-49E
+4B0
 330
 1B
 100
@@ -49903,7 +50483,7 @@ AcDbText
   0
 LINE
   5
-49F
+4B1
 330
 1B
 100
@@ -49929,7 +50509,7 @@ AcDbLine
   0
 LINE
   5
-4A0
+4B2
 330
 1B
 100
@@ -49955,7 +50535,7 @@ AcDbLine
   0
 LINE
   5
-4A1
+4B3
 330
 1B
 100
@@ -49981,7 +50561,7 @@ AcDbLine
   0
 INSERT
   5
-4A2
+4B4
 330
 1B
 100
@@ -50009,7 +50589,7 @@ PVSLD_DIODE
   0
 TEXT
   5
-4A4
+4B6
 330
 1B
 100
@@ -50043,7 +50623,7 @@ AcDbText
   0
 TEXT
   5
-4A5
+4B7
 330
 1B
 100
@@ -50077,7 +50657,7 @@ AcDbText
   0
 TEXT
   5
-4A6
+4B8
 330
 1B
 100
@@ -50111,7 +50691,7 @@ AcDbText
   0
 LINE
   5
-4A7
+4B9
 330
 1B
 100
@@ -50137,7 +50717,7 @@ AcDbLine
   0
 LINE
   5
-4A8
+4BA
 330
 1B
 100
@@ -50163,7 +50743,7 @@ AcDbLine
   0
 LINE
   5
-4A9
+4BB
 330
 1B
 100
@@ -50189,7 +50769,7 @@ AcDbLine
   0
 INSERT
   5
-4AA
+4BC
 330
 1B
 100
@@ -50217,7 +50797,7 @@ PVSLD_COMBINER
   0
 TEXT
   5
-4AC
+4BE
 330
 1B
 100
@@ -50251,7 +50831,7 @@ AcDbText
   0
 TEXT
   5
-4AD
+4BF
 330
 1B
 100
@@ -50285,7 +50865,7 @@ AcDbText
   0
 TEXT
   5
-4AE
+4C0
 330
 1B
 100
@@ -50319,7 +50899,7 @@ AcDbText
   0
 TEXT
   5
-4AF
+4C1
 330
 1B
 100
@@ -50353,7 +50933,7 @@ AcDbText
   0
 TEXT
   5
-4B0
+4C2
 330
 1B
 100
@@ -50387,7 +50967,7 @@ AcDbText
   0
 LINE
   5
-4B1
+4C3
 330
 1B
 100
@@ -50413,7 +50993,7 @@ AcDbLine
   0
 LINE
   5
-4B2
+4C4
 330
 1B
 100
@@ -50439,7 +51019,7 @@ AcDbLine
   0
 LINE
   5
-4B3
+4C5
 330
 1B
 100
@@ -50465,7 +51045,7 @@ AcDbLine
   0
 INSERT
   5
-4B4
+4C6
 330
 1B
 100
@@ -50493,7 +51073,7 @@ PVSLD_BATTERY
   0
 TEXT
   5
-4B6
+4C8
 330
 1B
 100
@@ -50527,7 +51107,7 @@ AcDbText
   0
 TEXT
   5
-4B7
+4C9
 330
 1B
 100
@@ -50561,7 +51141,7 @@ AcDbText
   0
 TEXT
   5
-4B8
+4CA
 330
 1B
 100
@@ -50595,7 +51175,7 @@ AcDbText
   0
 TEXT
   5
-4B9
+4CB
 330
 1B
 100
@@ -50629,7 +51209,7 @@ AcDbText
   0
 LINE
   5
-4BA
+4CC
 330
 1B
 100
@@ -50655,7 +51235,7 @@ AcDbLine
   0
 TEXT
   5
-4BB
+4CD
 330
 1B
 100
@@ -50689,7 +51269,7 @@ AcDbText
   0
 LINE
   5
-4BC
+4CE
 330
 1B
 100
@@ -50715,7 +51295,7 @@ AcDbLine
   0
 LINE
   5
-4BD
+4CF
 330
 1B
 100
@@ -50741,7 +51321,7 @@ AcDbLine
   0
 LINE
   5
-4BE
+4D0
 330
 1B
 100
@@ -50767,7 +51347,7 @@ AcDbLine
   0
 INSERT
   5
-4BF
+4D1
 330
 1B
 100
@@ -50795,7 +51375,7 @@ PVSLD_INV
   0
 TEXT
   5
-4C1
+4D3
 330
 1B
 100
@@ -50829,7 +51409,7 @@ AcDbText
   0
 TEXT
   5
-4C2
+4D4
 330
 1B
 100
@@ -50863,7 +51443,7 @@ AcDbText
   0
 TEXT
   5
-4C3
+4D5
 330
 1B
 100
@@ -50897,7 +51477,7 @@ AcDbText
   0
 LINE
   5
-4C4
+4D6
 330
 1B
 100
@@ -50923,7 +51503,7 @@ AcDbLine
   0
 LINE
   5
-4C5
+4D7
 330
 1B
 100
@@ -50949,7 +51529,7 @@ AcDbLine
   0
 LINE
   5
-4C6
+4D8
 330
 1B
 100
@@ -50975,7 +51555,7 @@ AcDbLine
   0
 INSERT
   5
-4C7
+4D9
 330
 1B
 100
@@ -51003,7 +51583,7 @@ PVSLD_INV_HYBRID
   0
 TEXT
   5
-4C9
+4DB
 330
 1B
 100
@@ -51037,7 +51617,7 @@ AcDbText
   0
 TEXT
   5
-4CA
+4DC
 330
 1B
 100
@@ -51071,7 +51651,7 @@ AcDbText
   0
 TEXT
   5
-4CB
+4DD
 330
 1B
 100
@@ -51105,7 +51685,7 @@ AcDbText
   0
 TEXT
   5
-4CC
+4DE
 330
 1B
 100
@@ -51139,7 +51719,7 @@ AcDbText
   0
 TEXT
   5
-4CD
+4DF
 330
 1B
 100
@@ -51173,7 +51753,7 @@ AcDbText
   0
 TEXT
   5
-4CE
+4E0
 330
 1B
 100
@@ -51207,7 +51787,7 @@ AcDbText
   0
 LINE
   5
-4CF
+4E1
 330
 1B
 100
@@ -51233,7 +51813,7 @@ AcDbLine
   0
 LINE
   5
-4D0
+4E2
 330
 1B
 100
@@ -51259,7 +51839,7 @@ AcDbLine
   0
 LINE
   5
-4D1
+4E3
 330
 1B
 100
@@ -51285,7 +51865,7 @@ AcDbLine
   0
 INSERT
   5
-4D2
+4E4
 330
 1B
 100
@@ -51313,7 +51893,7 @@ PVSLD_MICROINV
   0
 TEXT
   5
-4D4
+4E6
 330
 1B
 100
@@ -51347,7 +51927,7 @@ AcDbText
   0
 TEXT
   5
-4D5
+4E7
 330
 1B
 100
@@ -51381,7 +51961,7 @@ AcDbText
   0
 TEXT
   5
-4D6
+4E8
 330
 1B
 100
@@ -51415,7 +51995,7 @@ AcDbText
   0
 TEXT
   5
-4D7
+4E9
 330
 1B
 100
@@ -51449,7 +52029,7 @@ AcDbText
   0
 LINE
   5
-4D8
+4EA
 330
 1B
 100
@@ -51475,7 +52055,7 @@ AcDbLine
   0
 LINE
   5
-4D9
+4EB
 330
 1B
 100
@@ -51501,7 +52081,7 @@ AcDbLine
   0
 LINE
   5
-4DA
+4EC
 330
 1B
 100
@@ -51527,7 +52107,7 @@ AcDbLine
   0
 INSERT
   5
-4DB
+4ED
 330
 1B
 100
@@ -51555,7 +52135,7 @@ PVSLD_OPTIMIZER
   0
 TEXT
   5
-4DD
+4EF
 330
 1B
 100
@@ -51589,7 +52169,7 @@ AcDbText
   0
 TEXT
   5
-4DE
+4F0
 330
 1B
 100
@@ -51623,7 +52203,7 @@ AcDbText
   0
 TEXT
   5
-4DF
+4F1
 330
 1B
 100
@@ -51657,7 +52237,7 @@ AcDbText
   0
 TEXT
   5
-4E0
+4F2
 330
 1B
 100
@@ -51691,7 +52271,7 @@ AcDbText
   0
 TEXT
   5
-4E1
+4F3
 330
 1B
 100
@@ -51725,7 +52305,7 @@ AcDbText
   0
 TEXT
   5
-4E2
+4F4
 330
 1B
 100
@@ -51759,7 +52339,7 @@ AcDbText
   0
 LINE
   5
-4E3
+4F5
 330
 1B
 100
@@ -51785,7 +52365,7 @@ AcDbLine
   0
 LINE
   5
-4E4
+4F6
 330
 1B
 100
@@ -51811,7 +52391,7 @@ AcDbLine
   0
 LINE
   5
-4E5
+4F7
 330
 1B
 100
@@ -51837,7 +52417,7 @@ AcDbLine
   0
 INSERT
   5
-4E6
+4F8
 330
 1B
 100
@@ -51865,7 +52445,7 @@ PVSLD_CHARGE_CTRL
   0
 TEXT
   5
-4E8
+4FA
 330
 1B
 100
@@ -51899,7 +52479,7 @@ AcDbText
   0
 TEXT
   5
-4E9
+4FB
 330
 1B
 100
@@ -51933,7 +52513,7 @@ AcDbText
   0
 TEXT
   5
-4EA
+4FC
 330
 1B
 100
@@ -51967,7 +52547,7 @@ AcDbText
   0
 TEXT
   5
-4EB
+4FD
 330
 1B
 100
@@ -52001,7 +52581,7 @@ AcDbText
   0
 TEXT
   5
-4EC
+4FE
 330
 1B
 100
@@ -52035,7 +52615,7 @@ AcDbText
   0
 LINE
   5
-4ED
+4FF
 330
 1B
 100
@@ -52061,7 +52641,7 @@ AcDbLine
   0
 LINE
   5
-4EE
+500
 330
 1B
 100
@@ -52087,7 +52667,7 @@ AcDbLine
   0
 LINE
   5
-4EF
+501
 330
 1B
 100
@@ -52113,7 +52693,7 @@ AcDbLine
   0
 INSERT
   5
-4F0
+502
 330
 1B
 100
@@ -52141,7 +52721,7 @@ PVSLD_XFMR_ISO
   0
 TEXT
   5
-4F2
+504
 330
 1B
 100
@@ -52175,7 +52755,7 @@ AcDbText
   0
 TEXT
   5
-4F3
+505
 330
 1B
 100
@@ -52209,7 +52789,7 @@ AcDbText
   0
 TEXT
   5
-4F4
+506
 330
 1B
 100
@@ -52243,7 +52823,7 @@ AcDbText
   0
 TEXT
   5
-4F5
+507
 330
 1B
 100
@@ -52277,7 +52857,7 @@ AcDbText
   0
 LWPOLYLINE
   5
-4F6
+508
 330
 1B
 100
@@ -52303,15 +52883,15 @@ AcDbPolyline
  10
 405.0
  20
-68.0
+50.0
  10
 215.0
  20
-68.0
+50.0
   0
 LINE
   5
-4F7
+509
 330
 1B
 100
@@ -52337,7 +52917,7 @@ AcDbLine
   0
 TEXT
   5
-4F8
+50A
 330
 1B
 100
@@ -52371,7 +52951,7 @@ AcDbText
   0
 TEXT
   5
-4F9
+50B
 330
 1B
 100
@@ -52405,7 +52985,7 @@ AcDbText
   0
 TEXT
   5
-4FA
+50C
 330
 1B
 100
@@ -52439,7 +53019,7 @@ AcDbText
   0
 LINE
   5
-4FB
+50D
 330
 1B
 100
@@ -52465,7 +53045,7 @@ AcDbLine
   0
 TEXT
   5
-4FC
+50E
 330
 1B
 100
@@ -52499,7 +53079,7 @@ AcDbText
   0
 LINE
   5
-4FD
+50F
 330
 1B
 100
@@ -52525,7 +53105,7 @@ AcDbLine
   0
 LINE
   5
-4FE
+510
 330
 1B
 100
@@ -52551,7 +53131,7 @@ AcDbLine
   0
 LINE
   5
-4FF
+511
 330
 1B
 100
@@ -52577,7 +53157,7 @@ AcDbLine
   0
 INSERT
   5
-500
+512
 330
 1B
 100
@@ -52599,7 +53179,7 @@ PVSLD_CB
   0
 TEXT
   5
-502
+514
 330
 1B
 100
@@ -52633,7 +53213,7 @@ AcDbText
   0
 TEXT
   5
-503
+515
 330
 1B
 100
@@ -52667,7 +53247,7 @@ AcDbText
   0
 TEXT
   5
-504
+516
 330
 1B
 100
@@ -52701,7 +53281,7 @@ AcDbText
   0
 TEXT
   5
-505
+517
 330
 1B
 100
@@ -52735,7 +53315,7 @@ AcDbText
   0
 LINE
   5
-506
+518
 330
 1B
 100
@@ -52761,7 +53341,7 @@ AcDbLine
   0
 LINE
   5
-507
+519
 330
 1B
 100
@@ -52787,7 +53367,7 @@ AcDbLine
   0
 LINE
   5
-508
+51A
 330
 1B
 100
@@ -52813,7 +53393,7 @@ AcDbLine
   0
 INSERT
   5
-509
+51B
 330
 1B
 100
@@ -52841,7 +53421,7 @@ PVSLD_CB_IEC
   0
 TEXT
   5
-50B
+51D
 330
 1B
 100
@@ -52875,7 +53455,7 @@ AcDbText
   0
 TEXT
   5
-50C
+51E
 330
 1B
 100
@@ -52909,7 +53489,7 @@ AcDbText
   0
 TEXT
   5
-50D
+51F
 330
 1B
 100
@@ -52943,7 +53523,7 @@ AcDbText
   0
 TEXT
   5
-50E
+520
 330
 1B
 100
@@ -52977,7 +53557,7 @@ AcDbText
   0
 TEXT
   5
-50F
+521
 330
 1B
 100
@@ -53011,7 +53591,7 @@ AcDbText
   0
 TEXT
   5
-510
+522
 330
 1B
 100
@@ -53045,7 +53625,7 @@ AcDbText
   0
 LINE
   5
-511
+523
 330
 1B
 100
@@ -53071,7 +53651,7 @@ AcDbLine
   0
 LINE
   5
-512
+524
 330
 1B
 100
@@ -53097,7 +53677,7 @@ AcDbLine
   0
 LINE
   5
-513
+525
 330
 1B
 100
@@ -53123,7 +53703,7 @@ AcDbLine
   0
 INSERT
   5
-514
+526
 330
 1B
 100
@@ -53151,7 +53731,7 @@ PVSLD_RCD
   0
 TEXT
   5
-516
+528
 330
 1B
 100
@@ -53185,7 +53765,7 @@ AcDbText
   0
 TEXT
   5
-517
+529
 330
 1B
 100
@@ -53219,7 +53799,7 @@ AcDbText
   0
 TEXT
   5
-518
+52A
 330
 1B
 100
@@ -53253,7 +53833,7 @@ AcDbText
   0
 TEXT
   5
-519
+52B
 330
 1B
 100
@@ -53287,7 +53867,7 @@ AcDbText
   0
 TEXT
   5
-51A
+52C
 330
 1B
 100
@@ -53321,7 +53901,7 @@ AcDbText
   0
 TEXT
   5
-51B
+52D
 330
 1B
 100
@@ -53355,7 +53935,7 @@ AcDbText
   0
 TEXT
   5
-51C
+52E
 330
 1B
 100
@@ -53389,7 +53969,7 @@ AcDbText
   0
 LINE
   5
-51D
+52F
 330
 1B
 100
@@ -53415,7 +53995,7 @@ AcDbLine
   0
 LINE
   5
-51E
+530
 330
 1B
 100
@@ -53441,7 +54021,7 @@ AcDbLine
   0
 LINE
   5
-51F
+531
 330
 1B
 100
@@ -53467,7 +54047,7 @@ AcDbLine
   0
 INSERT
   5
-520
+532
 330
 1B
 100
@@ -53489,7 +54069,7 @@ PVSLD_FUSE
   0
 TEXT
   5
-522
+534
 330
 1B
 100
@@ -53509,7 +54089,7 @@ AcDbText
  40
 3.2
   1
-Fusible
+Fusible (CD)
   7
 PVSLD_STD
  11
@@ -53523,7 +54103,7 @@ AcDbText
   0
 TEXT
   5
-523
+535
 330
 1B
 100
@@ -53557,7 +54137,7 @@ AcDbText
   0
 TEXT
   5
-524
+536
 330
 1B
 100
@@ -53591,7 +54171,7 @@ AcDbText
   0
 TEXT
   5
-525
+537
 330
 1B
 100
@@ -53625,490 +54205,6 @@ AcDbText
   0
 LINE
   5
-526
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-215.0
- 20
-158.0
- 30
-0.0
- 11
-405.0
- 21
-158.0
- 31
-0.0
-  0
-LINE
-  5
-527
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-257.0
- 20
-176.0
- 30
-0.0
- 11
-257.0
- 21
-158.0
- 31
-0.0
-  0
-LINE
-  5
-528
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-331.0
- 20
-176.0
- 30
-0.0
- 11
-331.0
- 21
-158.0
- 31
-0.0
-  0
-INSERT
-  5
-529
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbBlockReference
-  2
-PVSLD_SPD
- 10
-236.0
- 20
-172.0
- 30
-0.0
- 41
-0.5
- 42
-0.5
- 43
-0.5
-  0
-TEXT
-  5
-52B
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-170.0
- 30
-0.0
- 40
-3.2
-  1
-Varistor (dispositivo de
-  7
-PVSLD_STD
- 11
-260.0
- 21
-170.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-52C
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-165.6
- 30
-0.0
- 40
-3.2
-  1
-protección contra
-  7
-PVSLD_STD
- 11
-260.0
- 21
-165.6
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-52D
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-161.2
- 30
-0.0
- 40
-3.2
-  1
-sobretensiones)
-  7
-PVSLD_STD
- 11
-260.0
- 21
-161.2
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-52E
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-156.6
- 30
-0.0
- 40
-2.2
-  1
-PVSLD_SPD
-  7
-PVSLD_STD
- 11
-260.0
- 21
-156.6
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-52F
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-334.0
- 20
-170.0
- 30
-0.0
- 40
-2.4
-  1
-CFE G0100-04 Apéndice C
-  7
-PVSLD_STD
- 11
-334.0
- 21
-170.0
- 31
-0.0
-100
-AcDbText
-  0
-LINE
-  5
-530
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-215.0
- 20
-140.0
- 30
-0.0
- 11
-405.0
- 21
-140.0
- 31
-0.0
-  0
-LINE
-  5
-531
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-257.0
- 20
-158.0
- 30
-0.0
- 11
-257.0
- 21
-140.0
- 31
-0.0
-  0
-LINE
-  5
-532
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-331.0
- 20
-158.0
- 30
-0.0
- 11
-331.0
- 21
-140.0
- 31
-0.0
-  0
-INSERT
-  5
-533
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbBlockReference
-  2
-PVSLD_SPD_AC
- 10
-236.0
- 20
-154.0
- 30
-0.0
- 41
-0.5
- 42
-0.5
- 43
-0.5
-  0
-TEXT
-  5
-535
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-152.0
- 30
-0.0
- 40
-3.2
-  1
-Varistor en CA (dispositivo
-  7
-PVSLD_STD
- 11
-260.0
- 21
-152.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-536
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-147.6
- 30
-0.0
- 40
-3.2
-  1
-de protección contra
-  7
-PVSLD_STD
- 11
-260.0
- 21
-147.6
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-537
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-143.2
- 30
-0.0
- 40
-3.2
-  1
-sobretensiones)
-  7
-PVSLD_STD
- 11
-260.0
- 21
-143.2
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
 538
 330
 1B
@@ -54117,31 +54213,23 @@ AcDbEntity
  67
 1
   8
-E-ANNO-NOTE
+E-ANNO-TABL
 100
-AcDbText
+AcDbLine
  10
-260.0
+215.0
  20
-138.6
+158.0
  30
 0.0
- 40
-2.2
-  1
-PVSLD_SPD_AC
-  7
-PVSLD_STD
  11
-260.0
+405.0
  21
-138.6
+158.0
  31
 0.0
-100
-AcDbText
   0
-TEXT
+LINE
   5
 539
 330
@@ -54151,31 +54239,23 @@ AcDbEntity
  67
 1
   8
-E-ANNO-NOTE
+E-ANNO-TABL
 100
-AcDbText
+AcDbLine
  10
-334.0
+257.0
  20
-152.0
+176.0
  30
 0.0
- 40
-2.4
-  1
-CFE G0100-04 Apéndice C (varistor),
-  7
-PVSLD_STD
  11
-334.0
+257.0
  21
-152.0
+158.0
  31
 0.0
-100
-AcDbText
   0
-TEXT
+LINE
   5
 53A
 330
@@ -54185,31 +54265,23 @@ AcDbEntity
  67
 1
   8
-E-ANNO-NOTE
+E-ANNO-TABL
 100
-AcDbText
+AcDbLine
  10
-334.0
+331.0
  20
-148.5
+176.0
  30
 0.0
- 40
-2.4
-  1
-usado en CA en Apéndice D
-  7
-PVSLD_STD
  11
-334.0
+331.0
  21
-148.5
+158.0
  31
 0.0
-100
-AcDbText
   0
-LINE
+INSERT
   5
 53B
 330
@@ -54219,49 +54291,19 @@ AcDbEntity
  67
 1
   8
-E-ANNO-TABL
+E-ANNO-NOTE
 100
-AcDbLine
+AcDbBlockReference
+  2
+PVSLD_FUSE_AC
  10
-215.0
+224.75
  20
-122.0
+167.0
  30
 0.0
- 11
-405.0
- 21
-122.0
- 31
-0.0
   0
-LINE
-  5
-53C
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-257.0
- 20
-140.0
- 30
-0.0
- 11
-257.0
- 21
-122.0
- 31
-0.0
-  0
-LINE
+TEXT
   5
 53D
 330
@@ -54271,23 +54313,31 @@ AcDbEntity
  67
 1
   8
-E-ANNO-TABL
+E-ANNO-NOTE
 100
-AcDbLine
+AcDbText
  10
-331.0
+260.0
  20
-140.0
+170.0
  30
 0.0
+ 40
+3.2
+  1
+Fusible (CA)
+  7
+PVSLD_STD
  11
-331.0
+260.0
  21
-122.0
+170.0
  31
 0.0
+100
+AcDbText
   0
-INSERT
+TEXT
   5
 53E
 330
@@ -54299,21 +54349,61 @@ AcDbEntity
   8
 E-ANNO-NOTE
 100
-AcDbBlockReference
-  2
-PVSLD_GFDI
+AcDbText
  10
-225.995
+260.0
  20
-136.0025
+165.4
  30
 0.0
- 41
-0.667
- 42
-0.667
- 43
-0.667
+ 40
+2.2
+  1
+PVSLD_FUSE_AC
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+165.4
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+53F
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+170.0
+ 30
+0.0
+ 40
+2.4
+  1
+NMX-J-136-ANCE-2019 4.2.21 (FUS,
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+170.0
+ 31
+0.0
+100
+AcDbText
   0
 TEXT
   5
@@ -54329,123 +54419,21 @@ E-ANNO-NOTE
 100
 AcDbText
  10
-260.0
- 20
-134.0
- 30
-0.0
- 40
-3.2
-  1
-Detector de falla a tierra
-  7
-PVSLD_STD
- 11
-260.0
- 21
-134.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-541
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-260.0
- 20
-129.4
- 30
-0.0
- 40
-2.2
-  1
-PVSLD_GFDI
-  7
-PVSLD_STD
- 11
-260.0
- 21
-129.4
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-542
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
 334.0
  20
-134.0
+166.5
  30
 0.0
  40
 2.4
   1
-CFE G0100-04 Apéndice D, fig. D1
+forma nacional 1)
   7
 PVSLD_STD
  11
 334.0
  21
-134.0
- 31
-0.0
-100
-AcDbText
-  0
-TEXT
-  5
-543
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-NOTE
-100
-AcDbText
- 10
-334.0
- 20
-130.5
- 30
-0.0
- 40
-2.4
-  1
-(detector de falla a tierra)
-  7
-PVSLD_STD
- 11
-334.0
- 21
-130.5
+166.5
  31
 0.0
 100
@@ -54453,7 +54441,7 @@ AcDbText
   0
 LINE
   5
-544
+541
 330
 1B
 100
@@ -54467,19 +54455,19 @@ AcDbLine
  10
 215.0
  20
-104.0
+140.0
  30
 0.0
  11
 405.0
  21
-104.0
+140.0
  31
 0.0
   0
 LINE
   5
-545
+542
 330
 1B
 100
@@ -54493,19 +54481,19 @@ AcDbLine
  10
 257.0
  20
-122.0
+158.0
  30
 0.0
  11
 257.0
  21
-104.0
+140.0
  31
 0.0
   0
 LINE
   5
-546
+543
 330
 1B
 100
@@ -54519,19 +54507,19 @@ AcDbLine
  10
 331.0
  20
-122.0
+158.0
  30
 0.0
  11
 331.0
  21
-104.0
+140.0
  31
 0.0
   0
 INSERT
   5
-547
+544
 330
 1B
 100
@@ -54543,19 +54531,121 @@ E-ANNO-NOTE
 100
 AcDbBlockReference
   2
-PVSLD_INS_MONITOR
+PVSLD_SPD
  10
-225.995
+236.0
  20
-118.0025
+154.0
  30
 0.0
  41
-0.667
+0.5
  42
-0.667
+0.5
  43
-0.667
+0.5
+  0
+TEXT
+  5
+546
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+152.0
+ 30
+0.0
+ 40
+3.2
+  1
+Varistor (dispositivo de
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+152.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+547
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+147.6
+ 30
+0.0
+ 40
+3.2
+  1
+protección contra
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+147.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+548
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+143.2
+ 30
+0.0
+ 40
+3.2
+  1
+sobretensiones)
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+143.2
+ 31
+0.0
+100
+AcDbText
   0
 TEXT
   5
@@ -54573,19 +54663,19 @@ AcDbText
  10
 260.0
  20
-116.0
+138.6
  30
 0.0
  40
-3.2
+2.2
   1
-Monitor de aislamiento
+PVSLD_SPD
   7
 PVSLD_STD
  11
 260.0
  21
-116.0
+138.6
  31
 0.0
 100
@@ -54605,27 +54695,27 @@ E-ANNO-NOTE
 100
 AcDbText
  10
-260.0
+334.0
  20
-111.39999999999999
+152.0
  30
 0.0
  40
-2.2
+2.4
   1
-PVSLD_INS_MONITOR
+CFE G0100-04 Apéndice C
   7
 PVSLD_STD
  11
-260.0
+334.0
  21
-111.39999999999999
+152.0
  31
 0.0
 100
 AcDbText
   0
-TEXT
+LINE
   5
 54B
 330
@@ -54635,31 +54725,23 @@ AcDbEntity
  67
 1
   8
-E-ANNO-NOTE
+E-ANNO-TABL
 100
-AcDbText
+AcDbLine
  10
-334.0
+215.0
  20
-116.0
+122.0
  30
 0.0
- 40
-2.4
-  1
-CFE G0100-04 Apéndice D, fig. D2
-  7
-PVSLD_STD
  11
-334.0
+405.0
  21
-116.0
+122.0
  31
 0.0
-100
-AcDbText
   0
-TEXT
+LINE
   5
 54C
 330
@@ -54669,29 +54751,21 @@ AcDbEntity
  67
 1
   8
-E-ANNO-NOTE
+E-ANNO-TABL
 100
-AcDbText
+AcDbLine
  10
-334.0
+257.0
  20
-112.5
+140.0
  30
 0.0
- 40
-2.4
-  1
-(monitor de aislamiento)
-  7
-PVSLD_STD
  11
-334.0
+257.0
  21
-112.5
+122.0
  31
 0.0
-100
-AcDbText
   0
 LINE
   5
@@ -54707,73 +54781,21 @@ E-ANNO-TABL
 100
 AcDbLine
  10
-215.0
- 20
-86.0
- 30
-0.0
- 11
-405.0
- 21
-86.0
- 31
-0.0
-  0
-LINE
-  5
-54E
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
-257.0
- 20
-104.0
- 30
-0.0
- 11
-257.0
- 21
-86.0
- 31
-0.0
-  0
-LINE
-  5
-54F
-330
-1B
-100
-AcDbEntity
- 67
-1
-  8
-E-ANNO-TABL
-100
-AcDbLine
- 10
 331.0
  20
-104.0
+140.0
  30
 0.0
  11
 331.0
  21
-86.0
+122.0
  31
 0.0
   0
 INSERT
   5
-550
+54E
 330
 1B
 100
@@ -54785,19 +54807,87 @@ E-ANNO-NOTE
 100
 AcDbBlockReference
   2
-PVSLD_AFCI
+PVSLD_SPD_AC
  10
-225.995
+236.0
  20
-100.0025
+136.0
  30
 0.0
  41
-0.667
+0.5
  42
-0.667
+0.5
  43
-0.667
+0.5
+  0
+TEXT
+  5
+550
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+134.0
+ 30
+0.0
+ 40
+3.2
+  1
+Varistor en CA (dispositivo
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+134.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+551
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+129.6
+ 30
+0.0
+ 40
+3.2
+  1
+de protección contra
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+129.6
+ 31
+0.0
+100
+AcDbText
   0
 TEXT
   5
@@ -54815,19 +54905,19 @@ AcDbText
  10
 260.0
  20
-98.0
+125.19999999999999
  30
 0.0
  40
 3.2
   1
-Detector de falla por arco
+sobretensiones)
   7
 PVSLD_STD
  11
 260.0
  21
-98.0
+125.19999999999999
  31
 0.0
 100
@@ -54849,19 +54939,19 @@ AcDbText
  10
 260.0
  20
-93.6
+120.59999999999998
  30
 0.0
  40
-3.2
+2.2
   1
-(AFCI)
+PVSLD_SPD_AC
   7
 PVSLD_STD
  11
 260.0
  21
-93.6
+120.59999999999998
  31
 0.0
 100
@@ -54881,21 +54971,21 @@ E-ANNO-NOTE
 100
 AcDbText
  10
-260.0
+334.0
  20
-88.99999999999999
+134.0
  30
 0.0
  40
-2.2
+2.4
   1
-PVSLD_AFCI
+CFE G0100-04 Apéndice C (varistor),
   7
 PVSLD_STD
  11
-260.0
+334.0
  21
-88.99999999999999
+134.0
  31
 0.0
 100
@@ -54917,13 +55007,463 @@ AcDbText
  10
 334.0
  20
+130.5
+ 30
+0.0
+ 40
+2.4
+  1
+usado en CA en Apéndice D
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+130.5
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+556
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+215.0
+ 20
+104.0
+ 30
+0.0
+ 11
+405.0
+ 21
+104.0
+ 31
+0.0
+  0
+LINE
+  5
+557
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+257.0
+ 20
+122.0
+ 30
+0.0
+ 11
+257.0
+ 21
+104.0
+ 31
+0.0
+  0
+LINE
+  5
+558
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+331.0
+ 20
+122.0
+ 30
+0.0
+ 11
+331.0
+ 21
+104.0
+ 31
+0.0
+  0
+INSERT
+  5
+559
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbBlockReference
+  2
+PVSLD_GFDI
+ 10
+225.995
+ 20
+118.0025
+ 30
+0.0
+ 41
+0.667
+ 42
+0.667
+ 43
+0.667
+  0
+TEXT
+  5
+55B
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+116.0
+ 30
+0.0
+ 40
+3.2
+  1
+Detector de falla a tierra
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+116.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+55C
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+111.39999999999999
+ 30
+0.0
+ 40
+2.2
+  1
+PVSLD_GFDI
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+111.39999999999999
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+55D
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+116.0
+ 30
+0.0
+ 40
+2.4
+  1
+CFE G0100-04 Apéndice D, fig. D1
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+116.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+55E
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+112.5
+ 30
+0.0
+ 40
+2.4
+  1
+(detector de falla a tierra)
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+112.5
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+55F
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+215.0
+ 20
+86.0
+ 30
+0.0
+ 11
+405.0
+ 21
+86.0
+ 31
+0.0
+  0
+LINE
+  5
+560
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+257.0
+ 20
+104.0
+ 30
+0.0
+ 11
+257.0
+ 21
+86.0
+ 31
+0.0
+  0
+LINE
+  5
+561
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+331.0
+ 20
+104.0
+ 30
+0.0
+ 11
+331.0
+ 21
+86.0
+ 31
+0.0
+  0
+INSERT
+  5
+562
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbBlockReference
+  2
+PVSLD_INS_MONITOR
+ 10
+225.995
+ 20
+100.0025
+ 30
+0.0
+ 41
+0.667
+ 42
+0.667
+ 43
+0.667
+  0
+TEXT
+  5
+564
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+98.0
+ 30
+0.0
+ 40
+3.2
+  1
+Monitor de aislamiento
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+98.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+565
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+93.39999999999999
+ 30
+0.0
+ 40
+2.2
+  1
+PVSLD_INS_MONITOR
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+93.39999999999999
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+566
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
 98.0
  30
 0.0
  40
 2.4
   1
-pvsld (composición); bloque rotulado
+CFE G0100-04 Apéndice D, fig. D2
   7
 PVSLD_STD
  11
@@ -54937,7 +55477,7 @@ AcDbText
   0
 TEXT
   5
-556
+567
 330
 1B
 100
@@ -54957,7 +55497,7 @@ AcDbText
  40
 2.4
   1
-al estilo de CFE G0100-04 Apéndice D
+(monitor de aislamiento)
   7
 PVSLD_STD
  11
@@ -54971,7 +55511,7 @@ AcDbText
   0
 LINE
   5
-557
+568
 330
 1B
 100
@@ -54997,7 +55537,7 @@ AcDbLine
   0
 LINE
   5
-558
+569
 330
 1B
 100
@@ -55023,7 +55563,7 @@ AcDbLine
   0
 LINE
   5
-559
+56A
 330
 1B
 100
@@ -55049,7 +55589,283 @@ AcDbLine
   0
 INSERT
   5
-55A
+56B
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbBlockReference
+  2
+PVSLD_AFCI
+ 10
+225.995
+ 20
+82.0025
+ 30
+0.0
+ 41
+0.667
+ 42
+0.667
+ 43
+0.667
+  0
+TEXT
+  5
+56D
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+80.0
+ 30
+0.0
+ 40
+3.2
+  1
+Detector de falla por arco
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+80.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+56E
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+75.6
+ 30
+0.0
+ 40
+3.2
+  1
+(AFCI)
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+75.6
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+56F
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+260.0
+ 20
+70.99999999999999
+ 30
+0.0
+ 40
+2.2
+  1
+PVSLD_AFCI
+  7
+PVSLD_STD
+ 11
+260.0
+ 21
+70.99999999999999
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+570
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+80.0
+ 30
+0.0
+ 40
+2.4
+  1
+pvsld (composición); bloque rotulado
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+80.0
+ 31
+0.0
+100
+AcDbText
+  0
+TEXT
+  5
+571
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-NOTE
+100
+AcDbText
+ 10
+334.0
+ 20
+76.5
+ 30
+0.0
+ 40
+2.4
+  1
+al estilo de CFE G0100-04 Apéndice D
+  7
+PVSLD_STD
+ 11
+334.0
+ 21
+76.5
+ 31
+0.0
+100
+AcDbText
+  0
+LINE
+  5
+572
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+215.0
+ 20
+50.0
+ 30
+0.0
+ 11
+405.0
+ 21
+50.0
+ 31
+0.0
+  0
+LINE
+  5
+573
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+257.0
+ 20
+68.0
+ 30
+0.0
+ 11
+257.0
+ 21
+50.0
+ 31
+0.0
+  0
+LINE
+  5
+574
+330
+1B
+100
+AcDbEntity
+ 67
+1
+  8
+E-ANNO-TABL
+100
+AcDbLine
+ 10
+331.0
+ 20
+68.0
+ 30
+0.0
+ 11
+331.0
+ 21
+50.0
+ 31
+0.0
+  0
+INSERT
+  5
+575
 330
 1B
 100
@@ -55067,7 +55883,7 @@ PVSLD_RELAY
  10
 227.6625
  20
-82.0025
+64.0025
  30
 0.0
  41
@@ -55079,7 +55895,7 @@ PVSLD_RELAY
   0
 ATTRIB
   5
-55C
+577
 330
 1B
 100
@@ -55093,7 +55909,7 @@ AcDbText
  10
 229.6635
  20
-77.3335
+59.3335
  30
 0.0
  40
@@ -55115,7 +55931,7 @@ FUNCTION
   0
 ATTRIB
   5
-55D
+578
 330
 1B
 100
@@ -55129,7 +55945,7 @@ AcDbText
  10
 229.6635
  20
-73.665
+55.665
  30
 0.0
  40
@@ -55151,9 +55967,9 @@ ANSI_NO
   0
 SEQEND
   5
-55B
+576
 330
-55A
+575
 100
 AcDbEntity
  67
@@ -55163,7 +55979,7 @@ E-ANNO-NOTE
   0
 TEXT
   5
-55E
+579
 330
 1B
 100
@@ -55177,7 +55993,7 @@ AcDbText
  10
 260.0
  20
-80.0
+62.0
  30
 0.0
  40
@@ -55189,7 +56005,7 @@ PVSLD_STD
  11
 260.0
  21
-80.0
+62.0
  31
 0.0
 100
@@ -55197,7 +56013,7 @@ AcDbText
   0
 TEXT
   5
-55F
+57A
 330
 1B
 100
@@ -55211,7 +56027,7 @@ AcDbText
  10
 260.0
  20
-75.39999999999999
+57.4
  30
 0.0
  40
@@ -55223,7 +56039,7 @@ PVSLD_STD
  11
 260.0
  21
-75.39999999999999
+57.4
  31
 0.0
 100
@@ -55231,7 +56047,7 @@ AcDbText
   0
 TEXT
   5
-560
+57B
 330
 1B
 100
@@ -55245,7 +56061,7 @@ AcDbText
  10
 334.0
  20
-80.0
+62.0
  30
 0.0
  40
@@ -55257,7 +56073,7 @@ PVSLD_STD
  11
 334.0
  21
-80.0
+62.0
  31
 0.0
 100
@@ -55265,7 +56081,7 @@ AcDbText
   0
 TEXT
   5
-561
+57C
 330
 1B
 100
@@ -55279,7 +56095,7 @@ AcDbText
  10
 334.0
  20
-76.5
+58.5
  30
 0.0
  40
@@ -55291,7 +56107,7 @@ PVSLD_STD
  11
 334.0
  21
-76.5
+58.5
  31
 0.0
 100
@@ -55299,7 +56115,7 @@ AcDbText
   0
 TEXT
   5
-562
+57D
 330
 1B
 100
@@ -55313,7 +56129,7 @@ AcDbText
  10
 334.0
  20
-73.0
+55.0
  30
 0.0
  40
@@ -55325,7 +56141,7 @@ PVSLD_STD
  11
 334.0
  21
-73.0
+55.0
  31
 0.0
 100
@@ -55333,7 +56149,7 @@ AcDbText
   0
 TEXT
   5
-563
+57E
 330
 1B
 100
@@ -55367,7 +56183,7 @@ AcDbText
   0
 TEXT
   5
-564
+57F
 330
 1B
 100
@@ -55401,7 +56217,7 @@ AcDbText
   0
 TEXT
   5
-565
+580
 330
 1B
 100
@@ -55537,11 +56353,11 @@ Legend
   3
 Legend2
 350
-569
+584
   3
 Legend3
 350
-64B
+666
   0
 DICTIONARY
   5
@@ -55907,7 +56723,7 @@ Legend
 330
 1B
 331
-483
+495
   0
 MATERIAL
   5
@@ -56435,11 +57251,11 @@ CREATED_BY_EZDXF
   3
 PVSLD_LIBRARY_VERSION
 350
-6E4
+6FF
   3
 WRITTEN_BY_EZDXF
 350
-6E7
+702
   0
 DICTIONARYVAR
   5
@@ -56455,7 +57271,7 @@ DictionaryVariables
   0
 LAYOUT
   5
-569
+584
 330
 D
 100
@@ -56577,13 +57393,13 @@ Legend2
  76
 1
 330
-566
+581
 331
-56A
+585
   0
 LAYOUT
   5
-64B
+666
 330
 D
 100
@@ -56705,13 +57521,13 @@ Legend3
  76
 1
 330
-648
+663
 331
-64C
+667
   0
 DICTIONARYVAR
   5
-6E4
+6FF
 330
 2D
 100
@@ -56719,11 +57535,11 @@ DictionaryVariables
 280
 0
   1
-0.5.0
+0.6.0
   0
 DICTIONARYVAR
   5
-6E7
+702
 330
 2D
 100

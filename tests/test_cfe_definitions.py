@@ -3,13 +3,19 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 
 import pytest
 
 from pvsld.core import layers
 from pvsld.symbols import SYMBOLS as PHASE2_SYMBOLS
 from pvsld.symbols.cfe import LIBRARY, SYMBOLS, get_symbol
-from pvsld.symbols.cfe.definitions import FAMILIES
+from pvsld.symbols.cfe.definitions import (
+    FAMILIES,
+    MAX_COMBINER_STRINGS,
+    combiner_box,
+    combiner_name,
+)
 from pvsld.symbols.cfe.model import (
     COMMON_TAGS,
     GRID_MM,
@@ -17,6 +23,7 @@ from pvsld.symbols.cfe.model import (
     SOURCE_CFE_C,
     SOURCE_CFE_D,
     SOURCE_PREFIXES,
+    Circle,
     Dot,
     Label,
     port_distance,
@@ -69,7 +76,7 @@ def test_the_library_also_has_the_symbols_the_generator_needs() -> None:
     ):
         assert name in SYMBOLS
     assert get_symbol("PVSLD_GND").source == SOURCE_CFE_D
-    assert len(SYMBOLS) == 56
+    assert len(SYMBOLS) == 57
 
 
 def test_get_symbol_rejects_an_unknown_block() -> None:
@@ -224,11 +231,12 @@ NEW_BLOCKS = {
     "PVSLD_RELAY": "07-73-01",
     "PVSLD_RCD": "UNE-EN 60617",
     "PVSLD_CB_IEC": "UNE-EN 60617",
+    "PVSLD_FUSE_AC": "4.2.21",
 }
 
 
-def test_the_library_has_the_thirty_four_blocks_of_round_two() -> None:
-    assert len(NEW_BLOCKS) == 34
+def test_the_library_has_the_thirty_five_blocks_of_rounds_two_and_three() -> None:
+    assert len(NEW_BLOCKS) == 35
     assert set(NEW_BLOCKS) <= set(SYMBOLS)
 
 
@@ -323,3 +331,52 @@ def test_the_battery_marks_the_positive_plate_and_the_spd_has_an_ac_variant() ->
     assert battery.port("POS").x > battery.port("NEG").x
     assert get_symbol("PVSLD_SPD_AC").port("L").kind == "AC"
     assert get_symbol("PVSLD_SPD").port("L").kind == "DC"
+
+
+# --- Round 3: owner decisions on the v0.5.0 review (2026-10-08) ---------------------------
+
+
+def test_the_ac_fuse_is_the_dc_fuse_shape_with_ac_ports() -> None:
+    dc, ac = get_symbol("PVSLD_FUSE"), get_symbol("PVSLD_FUSE_AC")
+    assert [(p.id, p.kind) for p in dc.ports] == [("IN", "DC"), ("OUT", "DC")]
+    assert [(p.id, p.kind) for p in ac.ports] == [("IN", "AC"), ("OUT", "AC")]
+    assert [replace(g, layer=ac.layer) for g in dc.geometry] == list(ac.geometry)
+    assert ac.layer == layers.AC_EQUIPMENT
+    assert dc.tags == ac.tags
+
+
+@pytest.mark.parametrize("n", [1, 2, 3, 4, 8, MAX_COMBINER_STRINGS])
+def test_the_combiner_has_one_breaker_and_one_input_per_string(n: int) -> None:
+    spec = combiner_box(n)
+    assert spec.name == combiner_name(n) == f"PVSLD_COMBINER_{n}S"
+    inputs = [p for p in spec.ports if p.id.startswith("IN")]
+    assert [p.id for p in inputs] == [f"IN{i}" for i in range(1, n + 1)]
+    assert all(p.required and p.kind == "DC" for p in inputs)
+    ys = [p.y for p in inputs]
+    assert ys == sorted(ys, reverse=True)
+    assert ys[0] == -ys[-1]  # symmetric about the output
+    assert spec.port("OUT").y == 0
+    breakers = [g for g in spec.geometry if isinstance(g, Circle)]
+    assert len(breakers) == n
+    for port in spec.ports:
+        assert port.x % GRID_MM == 0
+        assert port.y % GRID_MM == 0
+        assert port_distance(spec, port) < 0.01
+    _x0, y0, _x1, y1 = spec.bounds()
+    assert y0 <= spec.port("PE").y
+    assert y1 >= ys[0]
+    default = {a.tag: a.default for a in spec.attdefs}["N_STRINGS"]
+    assert default == str(n)
+
+
+@pytest.mark.parametrize("n", [0, -1, MAX_COMBINER_STRINGS + 1])
+def test_the_combiner_rejects_a_string_count_out_of_range(n: int) -> None:
+    with pytest.raises(ValueError, match="strings"):
+        combiner_box(n)
+
+
+def test_the_library_combiner_is_the_two_string_form() -> None:
+    library, two = get_symbol("PVSLD_COMBINER"), combiner_box(2)
+    assert library.geometry == two.geometry
+    assert library.ports == two.ports
+    assert "PVSLD_COMBINER_<n>S" in library.note

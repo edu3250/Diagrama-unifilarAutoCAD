@@ -36,7 +36,7 @@ from pvsld.symbols.cfe.build import (
     write_library,
 )
 from pvsld.symbols.cfe.definitions import FAMILIES
-from pvsld.symbols.cfe.loader import import_blocks, load_library
+from pvsld.symbols.cfe.loader import ensure_combiner, import_blocks, load_library
 from pvsld.symbols.cfe.validate import validate_document, validate_file
 from s1_helpers import ROOT
 
@@ -69,7 +69,7 @@ def test_the_library_passes_audit_with_no_errors_and_no_fixes(document) -> None:
 def test_the_document_holds_exactly_the_defined_blocks(document) -> None:  # type: ignore[no-untyped-def]
     names = {b.name for b in document.blocks if b.name.startswith("PVSLD_")}
     assert names == set(SYMBOLS)
-    assert len(names) == 56
+    assert len(names) == 57
 
 
 @pytest.mark.parametrize("spec", LIBRARY, ids=lambda s: s.name)
@@ -361,6 +361,23 @@ def test_importing_every_block_and_an_unknown_block(document) -> None:  # type: 
     assert sorted(import_blocks(document, target)) == sorted(SYMBOLS)
     with pytest.raises(KeyError, match="PVSLD_NOPE"):
         import_blocks(document, target, ["PVSLD_NOPE"])
+
+
+def test_ensure_combiner_defines_the_block_for_the_exact_string_count() -> None:
+    target = _new_document()
+    assert ensure_combiner(target, 5) == "PVSLD_COMBINER_5S"
+    assert ensure_combiner(target, 5) == "PVSLD_COMBINER_5S"  # reused, not redefined
+    ports = _parse_ports(_block_xdata(target, "PVSLD_COMBINER_5S"))
+    assert [p.id for p in ports] == ["IN1", "IN2", "IN3", "IN4", "IN5", "OUT", "PE"]
+    attdefs = {
+        e.dxf.tag: e for e in target.blocks.get("PVSLD_COMBINER_5S") if e.dxftype() == "ATTDEF"
+    }
+    assert attdefs["N_STRINGS"].dxf.text == "5"
+    assert "DASHED" in target.linetypes
+    auditor = target.audit()
+    assert (len(auditor.errors), len(auditor.fixes)) == (0, 0)
+    with pytest.raises(ValueError, match="1 to 24"):
+        ensure_combiner(target, 0)
 
 
 def test_the_library_file_loads_back_with_the_same_blocks() -> None:

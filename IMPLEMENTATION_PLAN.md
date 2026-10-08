@@ -638,6 +638,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - 22 blocks in v0.4.0 and 56 in v0.5.0 (round 2: the 28 components of the symbol map plus the IEC thermomagnetic breaker and the RCD; three Legend layouts by family). v0.4.0 blocks: the 13 Appendix C symbols (names follow ADR-0003: `PVSLD_PV_MODULE`, `PVSLD_SPD`, `PVSLD_CB`, `PVSLD_INV`, `PVSLD_METER`, `PVSLD_GRID`, `PVSLD_ENCLOSURE`, `PVSLD_DIODE`, `PVSLD_LOAD_LIGHT`, `PVSLD_CT`, `PVSLD_SWITCH`, `PVSLD_XFMR_ISO`, `PVSLD_LOAD_RECEPT`), `PVSLD_GND`, `PVSLD_COND_MARK`, `PVSLD_POL_POS`, `PVSLD_POL_NEG`, `PVSLD_JUNCTION`, and the Phase 2 blocks `PVSLD_PV_STRING`, `PVSLD_PANEL`, `PVSLD_PI`, `PVSLD_TTLB`.
 - Source priority CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617 (through the DGE norm and the UNE-EN 60617 sheet); every block records the clause, figure or code. `PVSLD_DC_DISCONNECT` and `PVSLD_FUSE` were added in v0.5.0. The inverter attribute `CERT` is dropped.
 - ezdxf's `Importer` does not copy block-record XDATA (the ports); `pvsld.symbols.cfe.loader.import_blocks` does, and Stage 4.3 should use it instead of `blocks.import_blocks`.
+- v0.6.0 (57 blocks), owner decisions of the v0.5.0 review (2026-10-08): the generator uses the CFE breaker `PVSLD_CB`; `PVSLD_FUSE_AC` added; the combiner box follows the string count, so Stage 4.3 calls `loader.ensure_combiner(doc, n)` (block `PVSLD_COMBINER_<n>S`, inputs `IN1`..`INn`) instead of inserting the two-string `PVSLD_COMBINER`.
 
 
 ---

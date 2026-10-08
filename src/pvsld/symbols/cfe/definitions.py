@@ -1010,49 +1010,83 @@ _SIGNAL_PORTS = (
 
 # --- Generation and storage -----------------------------------------------------------------------
 
-COMBINER_BOX = _spec(
-    "PVSLD_COMBINER",
-    "Caja combinadora de ramas (combiner)",
-    "pvsld (composición) según CFE G0100-04 Apéndice D, figs. D1 y D2",
-    layers.DC_EQUIPMENT,
-    (
-        Polyline(_rect(0, -25, 60, 15), _ENCL, closed=True, linetype="DASHED"),
-        Line(0, 7.5, 5, 7.5, _EQ_DC),
-        *_cfe_breaker(5, 7.5, _EQ_DC),
-        Line(25, 7.5, 35, 7.5, _EQ_DC),
-        Line(0, -7.5, 5, -7.5, _EQ_DC),
-        *_cfe_breaker(5, -7.5, _EQ_DC),
-        Line(25, -7.5, 35, -7.5, _EQ_DC),
-        Line(35, 7.5, 35, -7.5, _EQ_DC),
+MAX_COMBINER_STRINGS = 24
+_COMBINER_PITCH = 15.0
+
+
+def combiner_name(n_strings: int) -> str:
+    """Block name of the combiner box for ``n_strings`` strings, e.g. ``PVSLD_COMBINER_4S``."""
+    return f"PVSLD_COMBINER_{n_strings}S"
+
+
+def combiner_box(n_strings: int, *, name: str | None = None) -> SymbolSpec:
+    """The combiner box for ``n_strings`` strings: one CFE breaker per string, a bus and an SPD.
+
+    Inputs ``IN1``..``INn`` sit 15 mm apart (``IN1`` on top), symmetric about the output ``OUT``
+    at ``y = 0``; the varistor hangs from the bus to ``PE``. The library keeps the two-string form
+    as ``PVSLD_COMBINER`` for the legend; the generator asks for the exact count through
+    :func:`pvsld.symbols.cfe.loader.ensure_combiner`, which defines ``PVSLD_COMBINER_<n>S``.
+
+    Raises:
+        ValueError: ``n_strings`` is outside ``1..MAX_COMBINER_STRINGS``.
+    """
+    if not 1 <= n_strings <= MAX_COMBINER_STRINGS:
+        raise ValueError(
+            f"a combiner box takes 1 to {MAX_COMBINER_STRINGS} strings, not {n_strings}"
+        )
+    rows = [_r(_COMBINER_PITCH * ((n_strings - 1) / 2 - i)) for i in range(n_strings)]
+    top, bottom = rows[0] + 7.5, min(rows[-1] - 7.5, -25.0)
+    geometry: list[Primitive] = [
+        Polyline(_rect(0, bottom, 60, top), _ENCL, closed=True, linetype="DASHED")
+    ]
+    for y in rows:
+        geometry += [
+            Line(0, y, 5, y, _EQ_DC),
+            *_cfe_breaker(5, y, _EQ_DC),
+            Line(25, y, 35, y, _EQ_DC),
+        ]
+    if n_strings > 1:
+        geometry.append(Line(35, rows[0], 35, rows[-1], _EQ_DC))
+        geometry += [Dot(35, y, 0.8, _DC_COND) for y in sorted({*rows, 0.0}, reverse=True)]
+    geometry += [
         Line(35, 0, 60, 0, _EQ_DC),
-        Dot(35, 7.5, 0.8, _DC_COND),
-        Dot(35, 0, 0.8, _DC_COND),
-        Dot(35, -7.5, 0.8, _DC_COND),
         Dot(45, 0, 0.8, _DC_COND),
         Line(45, 0, 45, -5, _EQ_DC),
         Polyline(_rect(42.5, -15, 47.5, -5), _EQ_DC, closed=True),
         Polyline(((41, -15), (41, -11.5), (49, -8.5), (49, -5)), _EQ_DC),
-        Line(45, -15, 45, -25, _EQ_DC),
-    ),
-    (
-        Port("IN1", 0, 7.5, "left", "DC"),
-        Port("IN2", 0, -7.5, "left", "DC", required=False),
-        Port("OUT", 60, 0, "right", "DC"),
-        Port("PE", 45, -25, "down", "PE"),
-    ),
-    extra=_hidden(
-        ("N_STRINGS", "Ramas conectadas"),
-        ("RATING_A", "Corriente nominal de cada interruptor (A)"),
-        ("VOLT_V", "Tensión máxima CD (V)"),
-        ("SPD_TYPE", "Tipo de DPS"),
-    ),
-    family=F_GEN,
-    note=(
-        "Composition from the figure D1 combiner: a dashed enclosure with one CFE breaker per "
-        "string (two drawn, the second is optional), a bus with junction dots and a varistor to "
-        "earth. Single-polarity (single-line) form."
-    ),
-)
+        Line(45, -15, 45, bottom, _EQ_DC),
+    ]
+    return _spec(
+        name or combiner_name(n_strings),
+        "Caja combinadora de ramas (combiner)",
+        "pvsld (composición) según CFE G0100-04 Apéndice D, figs. D1 y D2",
+        layers.DC_EQUIPMENT,
+        tuple(geometry),
+        (
+            *(Port(f"IN{i + 1}", 0, y, "left", "DC") for i, y in enumerate(rows)),
+            Port("OUT", 60, 0, "right", "DC"),
+            Port("PE", 45, bottom, "down", "PE"),
+        ),
+        extra=(
+            AttDef("N_STRINGS", "Ramas conectadas", 0, 0, visible=False, default=str(n_strings)),
+            *_hidden(
+                ("RATING_A", "Corriente nominal de cada interruptor (A)"),
+                ("VOLT_V", "Tensión máxima CD (V)"),
+                ("SPD_TYPE", "Tipo de DPS"),
+            ),
+        ),
+        family=F_GEN,
+        note=(
+            "Composition from the figure D1 combiner: a dashed enclosure with one CFE breaker per "
+            "string, a bus with junction dots and a varistor to earth. Single-polarity "
+            "(single-line) form. The number of strings is a parameter (combiner_box(n), 1 to "
+            f"{MAX_COMBINER_STRINGS}); this two-string block is the legend representative and "
+            "the generator uses PVSLD_COMBINER_<n>S."
+        ),
+    )
+
+
+COMBINER_BOX = combiner_box(2, name="PVSLD_COMBINER")
 
 BATTERY = _spec(
     "PVSLD_BATTERY",
@@ -1249,8 +1283,8 @@ BREAKER_IEC = _spec(
     family=F_PROT,
     note=(
         "Single-line form of the owner's sheet: open contact, thermal step and magnetic I> cell, "
-        "operator mark and dashed links. Alternative to PVSLD_CB "
-        "(CFE); same attributes and port ids."
+        "operator mark and dashed links. Alternative to PVSLD_CB (CFE), which the generator "
+        "uses (owner decision 2026-10-08); same attributes and port ids."
     ),
 )
 
@@ -1307,32 +1341,44 @@ RESIDUAL_CURRENT_DEVICE = _spec(
     ),
 )
 
-FUSE = _spec(
-    "PVSLD_FUSE",
-    "Fusible",
-    _nmx("4.2.21 (FUS, forma nacional 1)"),
-    _EQ_DC,
-    (
-        Line(0, 0, 5, 0, _EQ_DC),
-        Polyline(_rect(5, -3.75, 17.5, 3.75), _EQ_DC, closed=True),
-        Line(7.5, -3.75, 7.5, 3.75, _EQ_DC),
-        Line(15, -3.75, 15, 3.75, _EQ_DC),
-        Line(17.5, 0, 22.5, 0, _EQ_DC),
-    ),
-    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 22.5, 0, "right", "DC")),
-    nmx_ref=_nmx("4.2.21 (alt. 4.2.174, IEC S00362)"),
-    extra=_hidden(
-        ("RATING_A", "Corriente nominal (A)"),
-        ("VOLT_V", "Tensión (V)"),
-        ("FUSE_CLASS", "Clase (gPV, gG)"),
-        ("KAIC_KA", "Capacidad interruptiva (kA)"),
-    ),
-    family=F_PROT,
-    note=(
-        "Rectangle with an end cap line at each end; the leads stop at the body. Turned to run "
-        "rightwards. Port kind DC (string fuses); an AC fuse needs its own variant."
-    ),
-)
+
+def _fuse(layer: str) -> tuple[Primitive, ...]:
+    """NMX 4.2.21: a rectangle with an end cap line at each end, 22.5 mm with its leads."""
+    return (
+        Line(0, 0, 5, 0, layer),
+        Polyline(_rect(5, -3.75, 17.5, 3.75), layer, closed=True),
+        Line(7.5, -3.75, 7.5, 3.75, layer),
+        Line(15, -3.75, 15, 3.75, layer),
+        Line(17.5, 0, 22.5, 0, layer),
+    )
+
+
+def _fuse_spec(name: str, description_es: str, layer: str, kind: str, classes: str) -> SymbolSpec:
+    return _spec(
+        name,
+        description_es,
+        _nmx("4.2.21 (FUS, forma nacional 1)"),
+        layer,
+        _fuse(layer),
+        (Port("IN", 0, 0, "left", kind), Port("OUT", 22.5, 0, "right", kind)),
+        nmx_ref=_nmx("4.2.21 (alt. 4.2.174, IEC S00362)"),
+        extra=_hidden(
+            ("RATING_A", "Corriente nominal (A)"),
+            ("VOLT_V", "Tensión (V)"),
+            ("FUSE_CLASS", f"Clase ({classes})"),
+            ("KAIC_KA", "Capacidad interruptiva (kA)"),
+        ),
+        family=F_PROT,
+        note=(
+            "Rectangle with an end cap line at each end; the leads stop at the body. Turned to "
+            f"run rightwards. Port kind {kind}; "
+            + ("string fuses (gPV)." if kind == "DC" else "same shape as PVSLD_FUSE, AC ports.")
+        ),
+    )
+
+
+FUSE = _fuse_spec("PVSLD_FUSE", "Fusible (CD)", _EQ_DC, "DC", "gPV, gG")
+FUSE_AC = _fuse_spec("PVSLD_FUSE_AC", "Fusible (CA)", _EQ_AC, "AC", "gG, gL")
 
 SPD_AC = _spec(
     "PVSLD_SPD_AC",
@@ -1908,6 +1954,7 @@ LIBRARY: tuple[SymbolSpec, ...] = (
     BREAKER_IEC,
     RESIDUAL_CURRENT_DEVICE,
     FUSE,
+    FUSE_AC,
     SPD,
     SPD_AC,
     GROUND_FAULT_DETECTOR,

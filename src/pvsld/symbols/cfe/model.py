@@ -15,7 +15,7 @@ from typing import Literal
 
 from pvsld.core import layers
 
-LIBRARY_VERSION = "0.5.0"
+LIBRARY_VERSION = "0.6.0"
 """Semantic version of the library (ADR-0005, section 7); also stored in every block record."""
 APP_ID = "PVSLD"
 BLOCK_PREFIX = "PVSLD_"

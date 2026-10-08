@@ -16,6 +16,8 @@ from ezdxf.addons import Importer
 from ezdxf.document import Drawing
 from ezdxf.lldxf.const import DXFValueError
 
+from pvsld.symbols.cfe.build import build_document
+from pvsld.symbols.cfe.definitions import combiner_box, combiner_name
 from pvsld.symbols.cfe.model import APP_ID, BLOCK_PREFIX
 
 
@@ -55,3 +57,19 @@ def import_blocks(
             continue  # a block without ports (a hand-made one)
         target.blocks.get(name).block_record.set_xdata(APP_ID, [(t.code, t.value) for t in xdata])
     return todo
+
+
+def ensure_combiner(target: Drawing, n_strings: int) -> str:
+    """Define the combiner box for ``n_strings`` strings in ``target`` and return its block name.
+
+    The block is rendered from :func:`~pvsld.symbols.cfe.definitions.combiner_box` and copied with
+    :func:`import_blocks`, so it brings its layers, linetypes and port XDATA. A block already in
+    ``target`` is reused.
+
+    Raises:
+        ValueError: ``n_strings`` is outside the supported range.
+    """
+    name = combiner_name(n_strings)
+    if name not in target.blocks:
+        import_blocks(build_document([combiner_box(n_strings)]), target, [name])
+    return name

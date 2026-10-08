@@ -7,7 +7,13 @@
 storage, conversion, protection, switching, measurement, grid and loads, earthing, medium voltage,
 conductors and annotation).
 
-* Library version: **0.5.0**, 56 blocks (stored in every block record and printed on the Legend).
+* Library version: **0.6.0**, 57 blocks (stored in every block record and printed on the Legend).
+* Owner decisions of the v0.5.0 review (2026-10-08): the generator draws the thermomagnetic breaker
+  in the CFE form `PVSLD_CB` (`PVSLD_CB_IEC` stays as a documented alternative); the fuse has a DC
+  (`PVSLD_FUSE`) and an AC (`PVSLD_FUSE_AC`) variant; the combiner box follows the number of
+  strings. `PVSLD_COMBINER` in the library is its two-string legend form; the generator calls
+  `pvsld.symbols.cfe.loader.ensure_combiner(doc, n)`, which defines `PVSLD_COMBINER_<n>S` (1 to 24
+  strings, ports `IN1`..`INn`, `OUT`, `PE`) from `definitions.combiner_box(n)`.
 * Shapes, by source priority **CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617**: the 13 symbols of
   CFE Appendix C and the usage of Appendix D (earth, ticks, polarity, junction, combiner, ground-fault
   detector, monitoring subsystem); the NMX figures (fuse, fuse-switch, safety switch, battery,
