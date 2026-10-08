@@ -216,11 +216,13 @@ def _memory(spec: PvSystemSpec, derived: Derived, i1: Ocpd) -> list[str]:
         f"{_g(mppt.vmax_v)} V  OK",
     ]
     isc_design = 1.25 * first.isc_a
-    fuse = (
-        "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
-        if strings_per_mppt == 1
-        else f"{strings_per_mppt} cadenas por MPPT"
-    )
+    string_breakers = [d for d in spec.dc_bos.disconnects if d.id.startswith("DCB-")]
+    if string_breakers:
+        fuse = f"ITM CD {_g(string_breakers[0].ie_a)} A por cadena en la caja de protecciones CD"
+    elif strings_per_mppt == 1:
+        fuse = "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
+    else:
+        fuse = f"{strings_per_mppt} cadenas por MPPT"
     isc_max = _g(mppt.isc_max_a)
     lines.append(
         f"      Isc x 1.25 = {_n(isc_design, 2)} A <= Icc máx {isc_max} A/MPPT  OK ; {fuse}"

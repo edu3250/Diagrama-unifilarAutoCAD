@@ -457,3 +457,9 @@ def test_without_string_breakers_the_spd_hangs_before_the_disconnect(
     spd = next(c for c in diagram.connections if c.end.comp_id == "DPS-CD1")
     assert (spd.start.comp_id, spd.start.port) == ("DCD-1/S2", "IN")
     assert not any(t.text.endswith("PROTECCIONES CD") for t in diagram.texts)  # no box
+
+
+def test_the_calculation_summary_names_the_string_breakers(template: SheetTemplate) -> None:
+    texts = {t.text for t in _build(template, _with_string_breakers).texts}
+    assert any("ITM CD 25 A por cadena en la caja de protecciones CD" in t for t in texts)
+    assert not any("fusible de cadena no requerido" in t for t in texts)
