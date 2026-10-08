@@ -588,7 +588,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - References to CFE G0100-04 Appendix C and IEC 60617 are correct
 - Owner approves the decision before Stage 4.2 begins
 
-**Status:** Not Started
+**Status:** Complete (ADR-0005 accepted)
 
 ---
 
@@ -630,7 +630,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_library_cross_platform`: CI runs regeneration on Windows and Linux; hashes match
 - Manual inspection (owner): Open the DXF in AutoCAD, visually verify each symbol matches Appendix C or IEC standard, audit 0/0
 
-**Status:** In Progress (implemented in PR; owner review in AutoCAD pending)
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
 
 **As built (deviations from the plan above):**
 
@@ -677,7 +677,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_no_code_defined_symbols`: grep confirms no references to old symbol definitions in the backend code
 - Manual (owner): Open regenerated golden in AutoCAD, visually confirm it looks correct, run AUDIT
 
-**Status:** In Progress (implemented in PR; owner review of the regenerated golden pending)
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
 
 **As built (deviations from the plan above):**
 
@@ -692,7 +692,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 
 **Goal:** Draw every design on the owner's A3 sheet template, its content adapted to the design, with no personal data.
 
-**Status:** In Progress (implemented in PR; owner review and the decision to publish the neutral template pending)
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
 
 - `pvsld sheet import` turns the owner's DWG into a neutral template DXF. `sheet_templates/` is git-ignored until the owner approves publishing it.
 - `layout_sheet.build_sheet_diagram` fills the 76 fields. Location, address, installer, owner and licence fields stay blank; the title block reads "COMPAÑÍA INSTALADORA".
@@ -730,7 +730,7 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - `test_library_dwg_audit_clean`: if headless AUDIT available, (0, 0); otherwise manual check recorded
 - Manual (owner): Open DWG in AutoCAD, AUDIT, confirm 0/0; review metadata privacy
 
-**Status:** In Progress (DWG committed in PR; release pending)
+**Status:** Complete (released as `v0.4.0-symbols`, 2026-10-08)
 
 **As built:** the DWG is `symbols/pvsld-symbols.dwg` (owner request: a plain library name), exported by `pvsld symbols dwg` through the finisher. Staleness is checked offline with `symbols/pvsld-symbols.dwg.json` (DXF SHA-256, library version) and `pvsld symbols dwg --check`. AutoCAD writes the Windows login name as "last saved by" and it cannot be removed without breaking TrustedDWG. No local paths are stored.
 
