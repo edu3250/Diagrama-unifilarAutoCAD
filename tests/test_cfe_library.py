@@ -493,3 +493,8 @@ def test_write_library_creates_parent_folders(tmp_path: Path, library_bytes: byt
     target = tmp_path / "a" / "b" / "lib.dxf"
     assert write_library(target) == library_bytes
     assert target.read_bytes() == library_bytes
+
+
+def test_the_library_opens_on_the_legend(document) -> None:  # type: ignore[no-untyped-def]
+    assert document.header["$TILEMODE"] == 0
+    assert document.layouts.active_layout().name == LEGEND_LAYOUT

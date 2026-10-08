@@ -297,6 +297,9 @@ def _build_document(diagram: Diagram) -> Drawing:
 
     # The file opens on the A3 sheet, framed on the border.
     doc.layouts.set_active_layout(LAYOUT_NAME)
+    # TILEMODE 0: AutoCAD opens on that layout; ezdxf leaves 1 (the Model tab), where the sheet
+    # furniture of paper space (frame, template boxes, title block) is not visible.
+    doc.header["$TILEMODE"] = 0
     doc.set_modelspace_vport(height=vp.view_height, center=(vp.view_center.x, vp.view_center.y))
     doc.header["$LIMMIN"] = (0.0, 0.0)
     doc.header["$LIMMAX"] = (diagram.sheet.width, diagram.sheet.height)

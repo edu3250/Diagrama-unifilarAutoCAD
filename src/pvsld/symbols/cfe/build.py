@@ -391,6 +391,7 @@ def build_document(specs: Iterable[SymbolSpec] = LIBRARY) -> Drawing:
         define_block(doc, spec)
     _build_legend(doc, chosen)
     doc.layouts.set_active_layout(LEGEND_LAYOUT)
+    doc.header["$TILEMODE"] = 0  # open on the Legend, not on the empty Model tab
     doc.header["$LIMMIN"] = (0.0, 0.0)
     doc.header["$LIMMAX"] = (SHEET_WIDTH_MM, SHEET_HEIGHT_MM)
     doc.header["$EXTMIN"] = (MARGIN_MM, MARGIN_MM, 0.0)
