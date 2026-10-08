@@ -25,7 +25,7 @@ from pvsld.backends.dxf import _new_document
 from pvsld.backends.readback import _parse_ports
 from pvsld.cli import main
 from pvsld.core import layers
-from pvsld.symbols.cfe import LIBRARY, LIBRARY_VERSION, SYMBOLS
+from pvsld.symbols.cfe import LIBRARY, LIBRARY_VERSION, SYMBOLS, loader
 from pvsld.symbols.cfe.build import (
     LEGEND_LAYOUT,
     LEGEND_TITLE,
@@ -378,6 +378,28 @@ def test_ensure_combiner_defines_the_block_for_the_exact_string_count() -> None:
     assert (len(auditor.errors), len(auditor.fixes)) == (0, 0)
     with pytest.raises(ValueError, match="1 to 24"):
         ensure_combiner(target, 0)
+
+
+def test_the_generator_reads_the_committed_library_unless_told_otherwise(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv(loader.LIBRARY_ENV, raising=False)
+    assert loader.library_path() == COMMITTED.resolve()
+    monkeypatch.setenv(loader.LIBRARY_ENV, str(tmp_path / "other.dxf"))
+    assert loader.library_path() == tmp_path / "other.dxf"
+
+
+def test_a_library_of_another_version_is_refused(tmp_path: Path) -> None:
+    doc = build_document([SYMBOLS["PVSLD_CB"]])
+    doc.ezdxf_metadata()["PVSLD_LIBRARY_VERSION"] = "0.0.1"
+    doc.saveas(tmp_path / "old.dxf")
+    with pytest.raises(ValueError, match=r"0.0.1"):
+        loader._library_document(tmp_path / "old.dxf")
+
+
+def test_without_a_library_file_the_blocks_are_rendered_from_the_definitions() -> None:
+    doc = loader._library_document(None)
+    assert {b.name for b in doc.blocks if b.name.startswith("PVSLD_")} == set(SYMBOLS)
 
 
 def test_the_library_file_loads_back_with_the_same_blocks() -> None:

@@ -8,7 +8,6 @@ from dataclasses import replace
 import pytest
 
 from pvsld.core import layers
-from pvsld.symbols import SYMBOLS as PHASE2_SYMBOLS
 from pvsld.symbols.cfe import LIBRARY, SYMBOLS, get_symbol
 from pvsld.symbols.cfe.definitions import (
     FAMILIES,
@@ -28,6 +27,51 @@ from pvsld.symbols.cfe.model import (
     Label,
     port_distance,
 )
+
+# The interface of the nine Phase 2 blocks the layout template draws with (tags without the dropped
+# CERT; ports as id, kind, direction, required). Frozen when the code-defined catalogue was removed
+# in Stage 4.3, so the generator keeps working with the library blocks.
+PHASE2_CONTRACT: dict[str, tuple[tuple[str, ...], tuple[tuple[str, str, str, bool], ...]]] = {
+    "PVSLD_PV_STRING": (
+        ("TAG", "DESC", "COMP_ID", "IEC_REF", "NMX_REF", "MODEL", "MFR", "MPPT", "PMAX_W"),
+        (("OUT", "DC", "right", True),),
+    ),
+    "PVSLD_INV": (
+        ("TAG", "DESC", "COMP_ID", "IEC_REF", "NMX_REF", "MFR", "MODEL", "PAC_W", "VAC_V"),
+        (
+            ("A", "DC", "left", True),
+            ("B", "DC", "left", False),
+            ("AC", "AC", "right", True),
+            ("PE", "PE", "down", True),
+        ),
+    ),
+    "PVSLD_CB": (
+        ("TAG", "DESC", "COMP_ID", "ROLE", "POLES", "RATING_A", "VOLT_V", "KAIC_KA", "BACKFED"),
+        (("IN", "AC", "left", True), ("OUT", "AC", "right", True)),
+    ),
+    "PVSLD_PI": (
+        ("TAG", "DESC", "COMP_ID", "PI_TYPE", "PANEL", "BREAKER"),
+        (("IN", "AC", "left", True), ("OUT", "AC", "right", True)),
+    ),
+    "PVSLD_PANEL": (
+        ("TAG", "DESC", "COMP_ID", "SPEC", "NAME", "BUS_A", "MAIN_ID", "MAIN_A", "SYSTEM"),
+        (("LEFT", "AC", "left", True), ("RIGHT", "AC", "right", True), ("PE", "PE", "down", True)),
+    ),
+    "PVSLD_METER": (
+        ("TAG", "DESC", "COMP_ID", "METER_TYPE", "BIDIRECTIONAL", "OWNER", "METER_NO"),
+        (("IN", "AC", "left", True), ("OUT", "AC", "right", True)),
+    ),
+    "PVSLD_GRID": (
+        ("TAG", "DESC", "COMP_ID", "SPEC", "VOLT_V", "SYSTEM", "FREQ_HZ", "OWNER", "ISC_KA"),
+        (("IN", "AC", "left", True),),
+    ),
+    "PVSLD_GND": (
+        ("TAG", "DESC", "COMP_ID", "SPEC", "ELECTRODE", "R_OHM", "GEC_SIZE"),
+        (("PE", "PE", "up", True),),
+    ),
+    "PVSLD_TTLB": (("PROYECTO", "CLIENTE", "RPU", "TITULO", "PLANO_NO", "REV", "COMP_ID"), ()),
+}
+
 
 APPENDIX_C_BLOCKS = {
     "modulo_fotovoltaico": "PVSLD_PV_MODULE",
@@ -149,22 +193,21 @@ def test_only_symbols_without_connections_have_no_ports() -> None:
 def test_the_inverter_drops_the_cert_attribute_and_keeps_the_rest() -> None:
     inverter = get_symbol("PVSLD_INV")
     assert "CERT" not in inverter.tags
-    assert set(PHASE2_SYMBOLS["PVSLD_INV"].tags) - {"CERT"} <= set(inverter.tags)
+    assert set(PHASE2_CONTRACT["PVSLD_INV"][0]) <= set(inverter.tags)
 
 
-@pytest.mark.parametrize("name", sorted(PHASE2_SYMBOLS))
+@pytest.mark.parametrize("name", sorted(PHASE2_CONTRACT))
 def test_the_nine_phase_2_blocks_keep_their_tags_and_port_ids(name: str) -> None:
-    old, new = PHASE2_SYMBOLS[name], get_symbol(name)
-    assert set(old.tags) - {"CERT"} <= set(new.tags)
-    assert {p.id for p in old.ports} <= {p.id for p in new.ports}
-    for port in old.ports:
-        assert new.port(port.id).kind == port.kind
-        assert new.port(port.id).direction == port.direction
-        assert new.port(port.id).required == port.required
+    tags, ports = PHASE2_CONTRACT[name]
+    new = get_symbol(name)
+    assert set(tags) <= set(new.tags)
+    for port_id, kind, direction, required in ports:
+        port = new.port(port_id)
+        assert (port.kind, port.direction, port.required) == (kind, direction, required)
 
 
 def test_the_title_block_keeps_every_phase_2_field() -> None:
-    assert set(PHASE2_SYMBOLS["PVSLD_TTLB"].tags) <= set(get_symbol("PVSLD_TTLB").tags)
+    assert set(PHASE2_CONTRACT["PVSLD_TTLB"][0]) <= set(get_symbol("PVSLD_TTLB").tags)
 
 
 def test_the_enclosures_use_the_dash_dot_layer_of_the_cfe_gabinete() -> None:

@@ -49,7 +49,7 @@ from pvsld.core.model import (
 )
 from pvsld.core.tables import NomTables, get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
-from pvsld.symbols.catalogue import (
+from pvsld.symbols.cfe.definitions import (
     TITLE_BLOCK_FIELDS,
     TITLE_BLOCK_HEIGHT_MM,
     TITLE_BLOCK_WIDTH_MM,
@@ -63,9 +63,10 @@ NO_VALUE = "—"
 MEXICAN_GRID_FREQUENCY_HZ = 60
 
 # --- Sheet regions (sheet millimetres, origin bottom-left of the A3 sheet) ---------------------
-INVERTER_XY = (115.0, 220.0)
+INVERTER_XY = (110.0, 220.0)
 STRING_X = 20.0
 STRING_DY = 20.0
+STRING_BEND_MM = 7.5
 ITM1_X = 216.0
 PI_X = 244.0
 PANEL_X = 266.0
@@ -110,6 +111,7 @@ def _attributes(
         "COMP_ID": comp_id,
         "IEC_REF": symbol.iec_ref,
         "NMX_REF": symbol.nmx_ref,
+        "SOURCE_STANDARD": symbol.source,
         **values,
     }
     missing = [tag for tag in symbol.tags if tag not in values]
@@ -191,7 +193,6 @@ def _inverter_instance(inverter: Inverter) -> SymbolInstance:
             "MPPT_N": str(len(inverter.mppt)),
             "OCPD_MAX_A": _g(inverter.ocpd_max_a),
             "ISOLATION": inverter.isolation,
-            "CERT": "; ".join(inverter.certifications) or NO_VALUE,
             "DC_SWITCH": "Integrado" if inverter.dc_switch_integrated else "No",
             "DC_SPD": inverter.dc_spd_integrated or "No",
         },
@@ -247,11 +248,14 @@ def _key_devices(spec: PvSystemSpec) -> tuple[Ocpd, MainBreaker, Meter, Panel]:
 # --- Routing -----------------------------------------------------------------------------------
 
 
-def _hvh(a: Point, b: Point) -> tuple[Point, ...]:
-    """Horizontal, vertical, horizontal route (straight when the ends are level)."""
+def _hvh(a: Point, b: Point, *, bend_x: float | None = None) -> tuple[Point, ...]:
+    """Horizontal, vertical, horizontal route (straight when the ends are level).
+
+    The vertical leg is at ``bend_x``, by default half-way between the ends.
+    """
     if a.y == b.y:
         return (a, b)
-    mid = rnd((a.x + b.x) / 2)
+    mid = rnd((a.x + b.x) / 2) if bend_x is None else rnd(bend_x)
     return (a, Point(mid, a.y), Point(mid, b.y), b)
 
 
@@ -639,6 +643,14 @@ def _protection_table(spec: PvSystemSpec) -> Table:
     )
 
 
+def _short_source(source: str) -> str:
+    """The source of a symbol as the legend prints it: the standard and the clause or appendix."""
+    if source.startswith("pvsld"):
+        return "pvsld (sin símbolo oficial)"
+    short = source.replace("Apéndices", "Ap.").replace("Apéndice", "Ap.")
+    return short.split(" (")[0].split(";")[0]
+
+
 def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
     rows = []
     seen: set[str] = set()
@@ -647,16 +659,16 @@ def _legend_table(instances: Sequence[SymbolInstance]) -> Table:
             continue
         seen.add(item.symbol)
         symbol = get_symbol(item.symbol)
-        rows.append((symbol.name, symbol.description_es, symbol.iec_ref))
+        rows.append((symbol.name, symbol.description_es, _short_source(symbol.source)))
     return _auto(
         id="TBL-LEGEND",
         layer=layers.NOTES,
         x=LEGEND_X,
         y_top=LEGEND_Y_TOP,
-        title="CUADRO DE SIMBOLOGÍA (IEC 60617; abreviaturas NMX-J-136-ANCE)",
-        header=("Bloque", "Descripción", "Referencia"),
+        title="CUADRO DE SIMBOLOGÍA (CFE G0100-04; NMX-J-136-ANCE-2019)",
+        header=("Bloque", "Descripción", "Fuente"),
         rows=tuple(rows),
-        max_width=None,
+        max_width=RIGHT_BAND_WIDTH_MM,
         row_height=4.2,
     )
 
@@ -921,7 +933,7 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
             INVERTER_XY[1],
             {
                 "TAG": meter.id,
-                "DESC": "Medidor bidireccional (MF)",
+                "DESC": "Medidor MF",
                 "METER_TYPE": "MF",
                 "BIDIRECTIONAL": "SI" if meter.bidirectional else "NO",
                 "OWNER": meter.owner,
@@ -981,11 +993,12 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
         end: PortRef,
         *,
         route: str = "hvh",
+        bend_x: float | None = None,
         circuit: Circuit | None = None,
     ) -> None:
         a = by_id[start.comp_id].port_xy(start.port)
         b = by_id[end.comp_id].port_xy(end.port)
-        points = _hvh(a, b) if route == "hvh" else _vh(a, b)
+        points = _hvh(a, b, bend_x=bend_x) if route == "hvh" else _vh(a, b)
         connections.append(
             Connection(conn_id, kind, layer, start, end, points, circuit.id if circuit else None)
         )
@@ -1007,6 +1020,8 @@ def build_diagram(spec: PvSystemSpec, derived: Derived | None = None) -> Diagram
             layers.DC_CONDUCTORS,
             PortRef(string.id, "OUT"),
             PortRef(inverter.id, string.mppt),
+            # Bend next to the inverter, clear of the callout above the string's wire.
+            bend_x=INVERTER_XY[0] - STRING_BEND_MM,
             circuit=circuit,
         )
     inverter_circuit = next((c for c in spec.circuits if c.kind == "inverter_output"), None)

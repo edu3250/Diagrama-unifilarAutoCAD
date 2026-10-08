@@ -152,7 +152,9 @@ def test_protection_schedule_and_legend_and_revisions(diagram: Diagram) -> None:
     protections = next(t for t in diagram.tables if t.id == "TBL-PROTECTIONS")
     assert [row[0] for row in protections.rows] == ["ITM-1", "ITM-P", "DCD-1", "DPS-CD1", "DPS-CA1"]
     legend = next(t for t in diagram.tables if t.id == "TBL-LEGEND")
-    assert {row[0] for row in legend.rows} == {n for n in SYMBOLS if n != "PVSLD_TTLB"}
+    used = {item.symbol for item in diagram.instances if item.space == "model"}
+    assert sorted(row[0] for row in legend.rows) == sorted(used)  # one row each, none wrapped
+    assert {row[0]: row[2] for row in legend.rows}["PVSLD_CB"] == "CFE G0100-04 Ap. C"
     revisions = next(t for t in diagram.tables if t.id == "TBL-REVISIONS")
     assert revisions.space == "paper"
     assert revisions.rows[0][2] == "Emisión para solicitud de interconexión"
