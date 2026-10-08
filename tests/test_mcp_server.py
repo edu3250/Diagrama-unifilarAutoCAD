@@ -34,6 +34,7 @@ from pvsld.mcp.server import (
     MAX_SPEC_BYTES,
     RULEPACK_URI,
     SCHEMA_URI,
+    SIZING_TEMPLATE_URI,
     SYMBOLS_URI,
     VALIDATE_DESCRIPTION,
     create_server,
@@ -46,6 +47,7 @@ T = TypeVar("T")
 GOLDEN = GOLDEN_DIR / "residential_7p7kwp.dxf"
 GENERATE = "generate_single_line_diagram"
 VALIDATE = "validate_pv_design"
+TOOLS = [VALIDATE, GENERATE, "list_components", "get_component", "size_pv_system"]
 # Claude Code stops a tool result at 25k tokens; four characters per token is the conservative
 # estimate (real text of this kind is closer to three, but the image is base64 that counts as text).
 TOKEN_BUDGET = 25_000
@@ -110,9 +112,9 @@ def generated(tmp_path_factory: pytest.TempPathFactory) -> tuple[OutputSandbox, 
 # --- the surface -------------------------------------------------------------------------------
 
 
-def test_the_server_lists_exactly_the_two_workflow_tools(server: Any) -> None:
+def test_the_server_lists_exactly_the_workflow_tools(server: Any) -> None:
     tools = run_client(server, lambda client: client.list_tools()).tools
-    assert sorted(tool.name for tool in tools) == [GENERATE, VALIDATE]
+    assert sorted(tool.name for tool in tools) == sorted(TOOLS)
 
 
 def test_the_tool_annotations_are_honest(server: Any) -> None:
@@ -156,7 +158,7 @@ def test_no_tool_accepts_a_path_or_code(server: Any) -> None:
 
 def test_the_spec_parameter_points_to_the_schema_resource(server: Any) -> None:
     tools = {tool.name: tool for tool in run_client(server, lambda c: c.list_tools()).tools}
-    for tool in tools.values():
+    for tool in (tools[VALIDATE], tools[GENERATE]):
         spec = tool.input_schema["properties"]["spec"]
         assert spec["type"] == "object"
         assert SCHEMA_URI in spec["description"]
@@ -175,9 +177,14 @@ def test_the_instructions_tell_claude_to_validate_first(server: Any) -> None:
     assert "Never invent" in instructions
 
 
-def test_the_server_lists_the_three_resources(server: Any) -> None:
+def test_the_server_lists_the_four_resources(server: Any) -> None:
     resources = run_client(server, lambda client: client.list_resources()).resources
-    assert {str(resource.uri) for resource in resources} == {SCHEMA_URI, RULEPACK_URI, SYMBOLS_URI}
+    assert {str(resource.uri) for resource in resources} == {
+        SCHEMA_URI,
+        RULEPACK_URI,
+        SYMBOLS_URI,
+        SIZING_TEMPLATE_URI,
+    }
     assert {resource.mime_type for resource in resources} == {"application/json"}
 
 

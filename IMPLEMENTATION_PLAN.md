@@ -521,7 +521,16 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Integration test: `test_mcp_server_lists_tools`: the server starts, lists tools in < 5 s, and schemas match the code
 - Optional: manual Claude Code session ("size a 15 kWp commercial system") within 240 s, no output-cap errors
 
-**Status:** Not Started
+**Status:** In Progress (implemented in PR; a real Claude Code session by the owner pending)
+
+**As built:**
+
+- `size_pv_system` takes the module, the inverters (ids or `auto`), a target (`target_dc_power_w` or `module_count_min/max`), the non-sizing `template` (example in the resource `pvsld://examples/sizing-template`), `routing`, `dc_ocpd` and `layout_template`.
+- It returns the selected candidate, its complete spec, up to 5 brief alternatives, rejections grouped by rule with one Spanish example, and the assumptions.
+- A result is about 3k tokens with `inverters: auto` (budget 8k, tested). The rule-pack resource is tested at 15k or less.
+- No diagram preview in the sizing result: `generate_single_line_diagram` returns one.
+- `list_components` and `get_component` read `$PVSLD_CATALOGUE_DIR` (default `datasheets/records`), reviewed records only unless `include_unreviewed`.
+- `ingest_datasheet` (optional) is left for Stage 3.6.
 
 ---
 

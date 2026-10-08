@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Phase 3, Stage 3.5: MCP tools `list_components` and `get_component` (reviewed catalogue, with datasheet provenance) and `size_pv_system` (the sizing engine: the selected design as a complete spec, ranked alternatives and rejections grouped by rule; about 3k tokens per result); resource `pvsld://examples/sizing-template`; `$PVSLD_CATALOGUE_DIR` (default `datasheets/records`). The server instructions now start from the catalogue
+
 ## [0.4.0-symbols] - 2026-10-08
 
 Symbol library, the generator drawing with it, and the owner's sheet template. Also ships the first part of Phase 3 (component catalogue and the sizing engine v1).

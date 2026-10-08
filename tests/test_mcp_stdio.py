@@ -111,7 +111,13 @@ def test_stdout_carries_only_frames_and_logs_go_to_stderr(tmp_path: Path) -> Non
     requests = [*_handshake(), {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}]
     responses, elapsed, stderr = _converse(tmp_path / "out", requests)
     names = {tool["name"] for tool in responses[2]["result"]["tools"]}
-    assert names == {"validate_pv_design", "generate_single_line_diagram"}
+    assert names == {
+        "validate_pv_design",
+        "generate_single_line_diagram",
+        "list_components",
+        "get_component",
+        "size_pv_system",
+    }
     assert "serving on stdio" in stderr
     assert elapsed < STARTUP_BUDGET_S
 
