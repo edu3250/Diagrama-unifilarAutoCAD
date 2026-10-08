@@ -5,12 +5,15 @@ Usage::
     pvsld symbols build [-o symbols/pvsld-symbols-cfe.dxf] [--png out/legend.png] [--check]
     pvsld symbols list [--json]
     pvsld symbols validate [PATH] [--no-fresh-check]
+    pvsld symbols dwg [--check]
 
 ``build`` writes the deterministic DXF (and, with ``--png``, a picture of each ``Legend`` sheet for
 visual review: ``name-1.png``, ``name-2.png``... when there are several). With ``--check`` it
 writes nothing and exits 1 when the file on disk differs from what the definitions render, which is
 the CI guard against a stale committed library. ``validate`` audits the DXF and checks it against
-the definitions; the exit code is 1 on any problem.
+the definitions; the exit code is 1 on any problem. ``dwg`` saves the library as
+``symbols/pvsld-symbols.dwg`` with the Core Console (licensed AutoCAD); with ``--check`` it only
+verifies that the committed DWG is a TrustedDWG 2018 exported from the current DXF.
 The heavy imports (ezdxf, matplotlib) happen inside the handlers so ``pvsld --version`` stays fast.
 """
 
@@ -95,6 +98,26 @@ def _validate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _dwg(args: argparse.Namespace) -> int:
+    from pvsld.symbols.cfe.dwg import LibraryDwgError, check_dwg, export_dwg
+
+    if args.check:
+        problems = check_dwg()
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
+        if problems:
+            return 1
+        print("OK: symbols/pvsld-symbols.dwg matches the library DXF")
+        return 0
+    try:
+        export = export_dwg(timeout_s=args.timeout)
+    except LibraryDwgError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(f"wrote {export.dwg} (AUDIT 0/0) and {export.manifest}")
+    return 0
+
+
 def register(subcommands: Any) -> None:
     """Add the ``symbols`` command group to the ``pvsld`` parser."""
     symbols = subcommands.add_parser(
@@ -148,3 +171,14 @@ def register(subcommands: Any) -> None:
         help="do not require the bytes to equal the rendered definitions",
     )
     validate.set_defaults(run=_validate)
+
+    dwg = actions.add_parser(
+        "dwg",
+        help="save the library as DWG 2018 with the Core Console, or check the committed DWG",
+        description="Export symbols/pvsld-symbols.dwg (TrustedDWG 2018, AUDIT 0/0) from the DXF.",
+    )
+    dwg.add_argument(
+        "--check", action="store_true", help="only check the committed DWG (no AutoCAD needed)"
+    )
+    dwg.add_argument("--timeout", type=float, default=180.0, metavar="SECONDS")
+    dwg.set_defaults(run=_dwg)
