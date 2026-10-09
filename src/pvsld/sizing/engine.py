@@ -484,6 +484,7 @@ def _build_spec(
                 "poles": dc_ocpd.poles,
                 "ue_v": dc_ocpd.ue_v,
                 "ie_a": dc_ocpd.rating_a,
+                "model": dc_ocpd.device_id,
             }
             for index in range(config.n_strings)
         ]

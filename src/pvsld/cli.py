@@ -119,6 +119,56 @@ def _write_spec(path: Path, spec: dict[str, object]) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def _report(args: argparse.Namespace) -> int:
+    """Calculation report (xlsx + pdf), project sheet and bill of materials for one spec."""
+    from pvsld.report import (
+        bom_text,
+        build_memoria,
+        write_memoria_pdf,
+        write_memoria_xlsx,
+        write_project_sheet,
+    )
+
+    try:
+        data = load_spec_file(args.path)
+    except SpecFileError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    report = validate_pv_design(data)
+    if not report.ok or report.spec is None or report.derived is None:
+        print(f"error: {args.path} does not validate ({_summary(report)})", file=sys.stderr)
+        _print_findings(report, sys.stderr)
+        return 1
+    try:
+        registry = ComponentRegistry.load(
+            args.catalogue, include_unreviewed=args.include_unreviewed
+        )
+    except CatalogueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    out = args.output
+    memoria = build_memoria(
+        report.spec, report.derived, report.findings, explanation_es=args.explanation or ""
+    )
+    written = [
+        write_memoria_xlsx(memoria, out / "memoria_calculo.xlsx"),
+        write_memoria_pdf(memoria, out / "memoria_calculo.pdf"),
+        write_project_sheet(
+            out / "hoja_de_proyecto.xlsx",
+            registry,
+            report.spec,
+            report.derived,
+            explanation_es=args.explanation or "",
+        ),
+    ]
+    summary = bom_text(report.spec, report.derived)
+    (out / "resumen_materiales.txt").write_text(summary + "\n", encoding="utf-8")
+    written.append(out / "resumen_materiales.txt")
+    print(summary)
+    print("\n".join(f"wrote {path}" for path in written))
+    return 0 if memoria.ok else 1
+
+
 def _size(args: argparse.Namespace) -> int:
     try:
         request = load_request(args.path)
@@ -306,6 +356,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--png", action="store_true", help="also write a PNG preview next to the DXF"
     )
     generate.set_defaults(run=_generate)
+
+    report_cmd = subcommands.add_parser(
+        "report",
+        help="write the calculation report (xlsx and pdf), the project sheet and the bill of "
+        "materials of a spec (Stage 3.6.1)",
+    )
+    report_cmd.add_argument("path", type=Path, metavar="PATH", help="parameter YAML or JSON file")
+    report_cmd.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=Path(),
+        metavar="DIR",
+        help="folder for the files (default: current folder)",
+    )
+    report_cmd.add_argument(
+        "--catalogue",
+        type=Path,
+        default=Path("datasheets") / "records",
+        metavar="DIR",
+        help="component records for the project-sheet lists",
+    )
+    report_cmd.add_argument(
+        "--include-unreviewed",
+        action="store_true",
+        help="also list records the owner has not reviewed (development only)",
+    )
+    report_cmd.add_argument(
+        "--explanation",
+        default="",
+        metavar="TEXT",
+        help="why the inverter was chosen (from pvsld size)",
+    )
+    report_cmd.set_defaults(run=_report)
 
     finish_cmd = subcommands.add_parser(
         "finish",
