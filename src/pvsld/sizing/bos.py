@@ -24,8 +24,14 @@ Voltage Drop", NOM-001-SEDE-2012; tables in :mod:`pvsld.core.tables`):
   and bundling corrections >= I_max (CON-002), protected by its OCPD per 240-4(b)/(d) (CON-003,
   AC only), and a voltage drop within the project limit (VD-001/VD-002).
 
-TODO Stage 3.4b: EGC per Table 250-122 (the EGC is set to the circuit conductor size), conduit
-fill (CON-006), external DC disconnects for inverters without an integrated switch (DIS-001),
+* **Raceways** (Stage 3.4b, owner choices 2026-10-09: EMT; PV cable on the DC side, THHW-LS on
+  the AC side). The DC raceway holds both conductors of every string, the AC raceway the phases
+  and the neutral; one bare grounding conductor each (250-122(c)). Areas: the cable datasheet
+  diameter (PV cable, Chapter 10 Table 1 note 5), Table 5 for THHW (THHW-LS has no row of its own)
+  and Table 8 for the bare conductor. The smallest EMT of Table 4 within the Table 1 fill wins.
+
+TODO Stage 3.4b: EGC per Table 250-122 (the EGC is set to the circuit conductor size), external DC
+disconnects for inverters without an integrated switch (DIS-001),
 inverter maximum OCPD (OCP-005), aluminium conductors and multiple inverters.
 """
 
@@ -33,12 +39,12 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 
-from pvsld.catalogue import DcBreaker, DcFuse
+from pvsld.catalogue import Cable, DcBreaker, DcFuse
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
 from pvsld.core.severity import Severity
 from pvsld.core.tables import NomTables
-from pvsld.sizing.models import ConductorChoice, DcOcpdChoice, Issue
+from pvsld.sizing.models import ConductorChoice, DcOcpdChoice, Issue, RacewayChoice
 
 STRING_BREAKER_POLES = 2
 """A string is a two-wire circuit: both conductors are opened (ungrounded array, NOM 690-35)."""
@@ -48,7 +54,6 @@ LARGEST_SIZE = "4/0 AWG"
 
 TODO_STAGE_3_4B = (
     "EGC igual al calibre del conductor del circuito (Tabla 250-122 pendiente).",
-    "Diámetro de la canalización no calculado (CON-006, relleno de tubería, pendiente).",
     "Desconectador de CD externo si el inversor no lo integra (DIS-001, pendiente).",
     "Protección máxima de salida del inversor del fabricante (OCP-005, pendiente).",
 )
@@ -229,6 +234,127 @@ def select_string_fuse(
         minimum_rating_a=minimum_a,
         rejected=tuple(rejected),
     )
+
+
+# --- Raceways (EMT) -----------------------------------------------------------------------------
+
+AC_INSULATION = "THHW-LS"
+"""Insulation of the AC circuits (owner choice 2026-10-09); NOM Table 5 gives it as THHW."""
+EGC_TYPE = "desnudo"
+
+
+def pv_cable(size: str, cables: Sequence[Cable]) -> Cable | None:
+    """The ``size`` variant of the first PV cable family offering it (by family id)."""
+    return next(
+        (
+            c
+            for c in sorted(cables, key=lambda c: (c.family_id, c.component_id))
+            if c.application == "pv" and c.size == size
+        ),
+        None,
+    )
+
+
+def size_raceway(
+    *,
+    circuit_id: str,
+    conductors: int,
+    conductor_area_mm2: float | None,
+    egc_size: str,
+    given_trade_size_mm: float | None,
+    insulation: str,
+    tables: NomTables,
+    cable: Cable | None = None,
+) -> tuple[RacewayChoice, list[Issue]]:
+    """EMT for ``conductors`` insulated conductors plus one bare grounding conductor.
+
+    With ``given_trade_size_mm`` the designer's size is kept and checked; otherwise the smallest EMT
+    of Table 4 within the Table 1 fill is chosen.
+    """
+    egc = tables.bare_stranded_area_mm2.get(egc_size)
+    count = conductors + 1
+    limit = calc.fill_limit_pct(count, tables)
+    base = {
+        "circuit_id": circuit_id,
+        "type": "EMT",
+        "conductors": count,
+        "fill_limit_pct": limit,
+        "insulation": insulation,
+        "cable_id": cable.component_id if cable else None,
+        "outer_diameter_mm": cable.outer_diameter_mm if cable else None,
+    }
+    if conductor_area_mm2 is None or egc is None:
+        what = "del cable PV en el catálogo" if conductor_area_mm2 is None else "del conductor"
+        return RacewayChoice(
+            **base,
+            trade_size_mm=given_trade_size_mm,
+            trade_size_in=None,
+            area_mm2=None,
+            fill_pct=None,
+        ), [
+            Issue(
+                "CON-006",
+                Severity.WARNING,
+                f"Llenado de la canalización de {circuit_id} sin verificar: falta el diámetro "
+                f"{what}.",
+                subject=circuit_id,
+            )
+        ]
+    area = conductors * conductor_area_mm2 + egc
+    rows = {r[0]: r for r in tables.emt}
+    if given_trade_size_mm is not None:
+        row = rows.get(int(given_trade_size_mm))
+        if row is None or row[0] != given_trade_size_mm:
+            return RacewayChoice(
+                **base,
+                trade_size_mm=given_trade_size_mm,
+                trade_size_in=None,
+                area_mm2=area,
+                fill_pct=None,
+            ), [
+                Issue(
+                    "CON-006",
+                    Severity.ERROR,
+                    f"EMT {_g(given_trade_size_mm)} mm no es una designación de la Tabla 4.",
+                    subject=circuit_id,
+                )
+            ]
+        pct = area / row[3] * 100
+        choice = RacewayChoice(
+            **base, trade_size_mm=row[0], trade_size_in=row[1], area_mm2=area, fill_pct=pct
+        )
+        if pct > limit:
+            return choice, [
+                Issue(
+                    "CON-006",
+                    Severity.ERROR,
+                    f"La canalización EMT {row[0]} mm de {circuit_id} queda llena al {_n(pct)} % "
+                    f"(máximo {_g(limit)} %, Capítulo 10, Tabla 1).",
+                    subject=circuit_id,
+                )
+            ]
+        return choice, []
+    for designation, trade, _diameter, total in tables.emt:
+        pct = area / total * 100
+        if pct <= limit:
+            return RacewayChoice(
+                **base,
+                trade_size_mm=designation,
+                trade_size_in=trade,
+                area_mm2=area,
+                fill_pct=pct,
+            ), []
+    return RacewayChoice(
+        **base, trade_size_mm=None, trade_size_in=None, area_mm2=area, fill_pct=None
+    ), [
+        Issue(
+            "CON-006",
+            Severity.ERROR,
+            f"Ningún EMT de la Tabla 4 aloja los {count} conductores de {circuit_id} "
+            f"({_n(area)} mm²).",
+            subject=circuit_id,
+        )
+    ]
 
 
 # --- Inverter-output OCPD ----------------------------------------------------------------------

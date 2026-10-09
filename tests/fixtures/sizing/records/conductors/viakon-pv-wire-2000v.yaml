@@ -1,0 +1,42 @@
+# Test copy of datasheets/records/conductors/viakon-pv-wire-2000v.yaml, marked reviewed so the sizing tests can use it.
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per size.
+# Sizes 14 AWG to 4/0 AWG only: the schema's conductor sizes stop at 4/0 (250-1000 kcmil are left out).
+component_type: conductor
+family_id: VIAKON-PV-WIRE-2000V
+manufacturer: Viakon (Conductores Monterrey)
+range_name: Cable de cobre tipo fotovoltaico, PV Wire, XLPE 2000 V, 90 °C
+material: Cu
+insulation: XLPE (PV Wire, RHW-2)
+application: pv
+rated_voltage_v: 2000
+max_conductor_temp_c: 90
+standards: [UL 4703, UL 44]
+listings: [PV Wire, RHW-2, Sun Res, RoHS]
+min_temp_c: -40
+variants:
+  - {component_id: VIAKON-PV2000-14AWG,  size: "14 AWG",  area_mm2: 2.082, strands: 19, conductor_diameter_mm: 1.8,   insulation_mm: 1.91, outer_diameter_mm: 6.0,  weight_kg_per_100m: 5,   ampacity_a: [15, 20, 25]}
+  - {component_id: VIAKON-PV2000-12AWG,  size: "12 AWG",  area_mm2: 3.307, strands: 19, conductor_diameter_mm: 2.26,  insulation_mm: 1.91, outer_diameter_mm: 6.5,  weight_kg_per_100m: 6,   ampacity_a: [20, 25, 30]}
+  - {component_id: VIAKON-PV2000-10AWG,  size: "10 AWG",  area_mm2: 5.26,  strands: 19, conductor_diameter_mm: 2.87,  insulation_mm: 1.91, outer_diameter_mm: 7.1,  weight_kg_per_100m: 9,   ampacity_a: [30, 35, 40]}
+  - {component_id: VIAKON-PV2000-8AWG,   size: "8 AWG",   area_mm2: 8.367, strands: 19, conductor_diameter_mm: 3.61,  insulation_mm: 2.16, outer_diameter_mm: 8.3,  weight_kg_per_100m: 12,  ampacity_a: [40, 50, 55]}
+  - {component_id: VIAKON-PV2000-6AWG,   size: "6 AWG",   area_mm2: 13.3,  strands: 7,  conductor_diameter_mm: 4.55,  insulation_mm: 2.16, outer_diameter_mm: 9.2,  weight_kg_per_100m: 18,  ampacity_a: [55, 65, 75]}
+  - {component_id: VIAKON-PV2000-4AWG,   size: "4 AWG",   area_mm2: 21.15, strands: 7,  conductor_diameter_mm: 5.72,  insulation_mm: 2.16, outer_diameter_mm: 10.4, weight_kg_per_100m: 26,  ampacity_a: [70, 85, 95]}
+  - {component_id: VIAKON-PV2000-2AWG,   size: "2 AWG",   area_mm2: 33.62, strands: 7,  conductor_diameter_mm: 7.19,  insulation_mm: 2.16, outer_diameter_mm: 11.9, weight_kg_per_100m: 38,  ampacity_a: [95, 115, 130]}
+  - {component_id: VIAKON-PV2000-1AWG,   size: "1 AWG",   area_mm2: 42.41, strands: 19, conductor_diameter_mm: 8.18,  insulation_mm: 2.67, outer_diameter_mm: 14.1, weight_kg_per_100m: 49,  ampacity_a: [110, 130, 145]}
+  - {component_id: VIAKON-PV2000-1-0AWG, size: "1/0 AWG", area_mm2: 53.48, strands: 19, conductor_diameter_mm: 9.19,  insulation_mm: 2.67, outer_diameter_mm: 15.1, weight_kg_per_100m: 60,  ampacity_a: [125, 150, 170]}
+  - {component_id: VIAKON-PV2000-2-0AWG, size: "2/0 AWG", area_mm2: 67.43, strands: 19, conductor_diameter_mm: 10.31, insulation_mm: 2.67, outer_diameter_mm: 16.2, weight_kg_per_100m: 74,  ampacity_a: [145, 175, 195]}
+  - {component_id: VIAKON-PV2000-3-0AWG, size: "3/0 AWG", area_mm2: 85.01, strands: 19, conductor_diameter_mm: 11.58, insulation_mm: 2.67, outer_diameter_mm: 17.5, weight_kg_per_100m: 91,  ampacity_a: [165, 200, 225]}
+  - {component_id: VIAKON-PV2000-4-0AWG, size: "4/0 AWG", area_mm2: 107.2, strands: 19, conductor_diameter_mm: 13.0,  insulation_mm: 2.67, outer_diameter_mm: 18.9, weight_kg_per_100m: 113, ampacity_a: [195, 230, 260]}
+source:
+  filename: C-BT-UL-PV-2000V-1-CU-XLPE.pdf
+  sha256: c251c6216a621e17f2142977f839851d2bd69e493a86549f2dbca56933e2fd07
+  title: Viakon, Cable de cobre tipo fotovoltaico, PV Wire, XLPE 2000V, 90 °C (revisión 08-jun-2026)
+  pages: [1, 2]
+  extraction_method: pdf_text_layer
+  extraction_date: 2026-10-09
+  reviewed_by: "test fixture"
+  review_date: 2026-10-09
+  notes: >-
+    Provided by the owner on 2026-10-09 (the cable they use). Text extracted from the PDF text layer with pypdfium2.
+    Dimensions are approximate and subject to manufacturing tolerances (datasheet note); the ampacity columns are the
+    datasheet's reading of NOM Table 310-15(b)(16) at 30 °C. The datasheet lists no 3 AWG size. Page 1 also gives 130 °C
+    emergency and 250 °C short-circuit conductor temperatures (ICEA P-32-382).

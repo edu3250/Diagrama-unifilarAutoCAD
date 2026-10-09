@@ -7,8 +7,9 @@ correct the spec. Rule data (titles, citations, MX ids) is separate from the che
 published through :func:`rulepack_catalogue` for the future ``pvsld://rulepack/mx-gd-2026.10``
 MCP resource.
 
-Implemented in this version: VOLT-001, STR-001, STR-004, STR-007, CON-003, PCC-002, MET-001,
-DIS-003 and DIS-004. The remaining rules of the vault pack (98 in total) arrive with later stages.
+Implemented in this version: VOLT-001, STR-001, STR-004, STR-007, CON-003, CON-006, PCC-002,
+MET-001, DIS-003 and DIS-004. The remaining rules of the vault pack (98 in total) arrive with
+later stages.
 
 Scope notes, where the vault definition needs data that schema 0.1.0 does not carry:
 
@@ -18,6 +19,9 @@ Scope notes, where the vault definition needs data that schema 0.1.0 does not ca
   maximum PV power"; the optimizer-only value only when the design declares optimizers on every
   module) and applies the DC/AC ratio policy of :mod:`pvsld.core.policy` (defaults: warning above
   1.35, error above 1.50, both owner-configurable).
+* CON-006 checks EMT raceways only (the Table 4 rows loaded so far); conductor areas come from the
+  datasheet diameter in the spec, else Table 5 (TW/THW/THHW), and bare grounding conductors from
+  Table 8. One grounding conductor per shared raceway, the largest (250-122(c)).
 * DIS-003 checks the ``manual``, ``lockable`` and ``visible_break`` flags only when the spec
   declares them (``null`` means "not declared" and is not an error).
 """
@@ -283,6 +287,54 @@ def _con_003(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
             )
 
 
+# --- CON-006 -----------------------------------------------------------------------------------
+
+
+def _con_006(ctx: RuleContext) -> Iterator[tuple[Severity, str, str]]:
+    for owner in ctx.spec.circuits:
+        raceway = owner.raceway
+        if raceway.ref is not None or raceway.type is None or raceway.trade_size_mm is None:
+            continue
+        if raceway.type.upper() != "EMT":  # Table 4 is loaded for EMT only
+            continue
+        row = next((r for r in ctx.tables.emt if r[0] == raceway.trade_size_mm), None)
+        if row is None:
+            sizes = ", ".join(str(r[0]) for r in ctx.tables.emt)
+            yield (
+                Severity.ERROR,
+                owner.id,
+                f"La canalización del circuito {owner.id} (EMT {_g(raceway.trade_size_mm)} mm) "
+                f"no es una designación de la Tabla 4 del Capítulo 10 ({sizes} mm).",
+            )
+            continue
+        fill = calc.raceway_fill(ctx.spec, owner, ctx.tables)
+        shared = ", ".join(fill.circuit_ids)
+        if fill.missing:
+            yield (
+                Severity.WARNING,
+                owner.id,
+                f"No se puede verificar el llenado de la canalización de {shared}: falta el "
+                f"diámetro exterior de {'; '.join(fill.missing)} (dato de la hoja técnica del "
+                "cable, outer_diameter_mm).",
+            )
+            continue
+        designation, trade, _diameter, area = row
+        pct = fill.area_mm2 / area * 100
+        limit = calc.fill_limit_pct(fill.conductors, ctx.tables)
+        if pct > limit:
+            fits = calc.smallest_emt(
+                [fill.area_mm2 / fill.conductors] * fill.conductors, ctx.tables
+            )
+            way_out = f'use EMT de {fits[0]} mm ({fits[1]}")' if fits else "divida los circuitos"
+            yield (
+                Severity.ERROR,
+                owner.id,
+                f'La canalización EMT {designation} mm ({trade}") de {shared} queda llena al '
+                f"{_n(pct)} % con {fill.conductors} conductores ({_n(fill.area_mm2)} mm²): el "
+                f"máximo es {_g(limit)} % (NOM Capítulo 10, Tabla 1). Para cumplir, {way_out}.",
+            )
+
+
 # --- PCC-002 -----------------------------------------------------------------------------------
 
 
@@ -441,6 +493,18 @@ RULES: tuple[RuleDef, ...] = (
         ),
         mx_ids=("MX-C07",),
         check=_con_003,
+    ),
+    RuleDef(
+        id="CON-006",
+        title_es="Llenado de la canalización (EMT) dentro del porcentaje permitido",
+        severity="E/W",
+        basis=("NOM",),
+        cites=(
+            Cite("NOM-001-SEDE-2012", "358-22"),
+            Cite("NOM-001-SEDE-2012", "Capítulo 10, Tablas 1, 4, 5 y 8"),
+        ),
+        mx_ids=(),
+        check=_con_006,
     ),
     RuleDef(
         id="PCC-002",

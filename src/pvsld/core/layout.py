@@ -370,10 +370,16 @@ def _raceway(spec: PvSystemSpec, circuit: Circuit) -> Raceway:
     return circuit.raceway
 
 
-def _raceway_text(raceway: Raceway) -> str:
+def _raceway_text(raceway: Raceway, tables: NomTables | None = None) -> str:
+    """Raceway type and metric designation, with the trade size in inches for EMT (Table 4)."""
     if raceway.type is None:
         return NO_VALUE
-    size = f" {_g(raceway.trade_size_mm)} mm" if raceway.trade_size_mm is not None else ""
+    if raceway.trade_size_mm is None:
+        return raceway.type
+    size = f" {_g(raceway.trade_size_mm)} mm"
+    if tables is not None and raceway.type.upper() == "EMT":
+        trade = next((r[1] for r in tables.emt if r[0] == raceway.trade_size_mm), None)
+        size += f' ({trade}")' if trade else ""
     return f"{raceway.type}{size}"
 
 
@@ -628,7 +634,7 @@ def _conductor_table(spec: PvSystemSpec, derived: Derived, tables: NomTables) ->
                 _conductor_text(circuit),
                 _g(tables.awg_mm2[circuit.conductors.size]),
                 f"{circuit.egc.size} {circuit.egc.type}",
-                _raceway_text(_raceway(spec, circuit)),
+                _raceway_text(_raceway(spec, circuit)),  # no inches: v1's band is full
                 _g(circuit.length_m),
                 _n(values.ampacity_corrected_a)
                 if values.ampacity_corrected_a is not None

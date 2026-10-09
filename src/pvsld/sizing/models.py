@@ -55,8 +55,12 @@ class Routing(BaseModel):
     rooftop_clearance_mm: float = Field(
         default=25, ge=0, description="Sunlit DC raceway above the roof (Table 310-15(b)(3)(c))"
     )
-    dc_raceway_trade_size_mm: float = Field(default=21, gt=0)
-    ac_raceway_trade_size_mm: float = Field(default=21, gt=0)
+    dc_raceway_trade_size_mm: float | None = Field(
+        default=None, gt=0, description="EMT designation (mm); default: the smallest that fits"
+    )
+    ac_raceway_trade_size_mm: float | None = Field(
+        default=None, gt=0, description="EMT designation (mm); default: the smallest that fits"
+    )
     tilt_deg: float = Field(default=20, ge=0, le=90)
     azimuth_deg: float = Field(default=180, ge=0, le=360)
 
@@ -85,6 +89,11 @@ class SizingRequest(BaseModel):
         description="String protection of the box: 'fuse' (default, owner decision 2026-10-08), a "
         "gPV fuse in a fuse-disconnector, falling back to a breaker when no catalogue fuse "
         "qualifies; 'breaker': a DC breaker",
+    )
+    dc_cable: str | Literal["auto"] = Field(
+        default="auto",
+        description="Catalogue family id of the PV cable of the strings (its diameter fills the "
+        "raceway), or 'auto' for the first PV cable family",
     )
     dc_fuses: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue gPV fuse ids to choose from, or 'auto' for all"
@@ -283,19 +292,41 @@ class ConductorChoice:
 
 
 @dataclass(frozen=True)
+class RacewayChoice:
+    """The EMT raceway of one circuit type: what it holds and the designation chosen."""
+
+    circuit_id: str
+    type: str
+    trade_size_mm: float | None
+    trade_size_in: str | None
+    conductors: int
+    area_mm2: float | None
+    fill_pct: float | None
+    fill_limit_pct: float
+    insulation: str
+    cable_id: str | None = None
+    outer_diameter_mm: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {k: (round(v, 2) if isinstance(v, float) else v) for k, v in asdict(self).items()}
+
+
+@dataclass(frozen=True)
 class BosSpec:
-    """Balance of system of one candidate (v1: string OCPD, AC OCPD, conductors)."""
+    """Balance of system of one candidate: string OCPD, AC OCPD, conductors and raceways."""
 
     dc_ocpd: DcOcpdChoice
     ac_ocpd_a: float
     conductors: tuple[ConductorChoice, ...]
     todo: tuple[str, ...] = ()
+    raceways: tuple[RacewayChoice, ...] = ()
 
     def to_dict(self, *, with_alternatives: bool = False) -> dict[str, Any]:
         return {
             "dc_ocpd": self.dc_ocpd.to_dict(with_alternatives=with_alternatives),
             "ac_ocpd_a": self.ac_ocpd_a,
             "conductors": [c.to_dict() for c in self.conductors],
+            "raceways": [r.to_dict() for r in self.raceways],
             "todo": list(self.todo),
         }
 
