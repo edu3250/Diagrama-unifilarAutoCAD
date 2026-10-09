@@ -30,6 +30,7 @@ def _selected_section(candidate: Candidate) -> list[str]:
     m, bos = candidate.metrics, candidate.bos
     lines = [
         f"SELECTED: {_describe(candidate)}",
+        f"  why: {candidate.explanation_es}",
         f"  string: Vmp hot {m.vmp_hot_string_v:.1f} V, Vmp cold {m.vmp_cold_string_v:.1f} V, "
         f"Isc design {m.isc_design_a:.2f} A, input {m.isc_input_a:.2f} A (1.25 x Isc x "
         f"{m.strings_per_mppt} per MPPT)",

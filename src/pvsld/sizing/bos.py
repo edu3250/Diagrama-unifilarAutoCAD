@@ -458,6 +458,7 @@ def select_box_switch(
         ie_a,
         step_v,
         note_es=f"{poles_per_string} polos por cadena, {switch.utilization_category}",
+        poles=switch.poles,  # the switch uses all of its poles (four in series for one string)
     ), []
 
 

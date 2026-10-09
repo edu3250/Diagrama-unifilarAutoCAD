@@ -309,6 +309,7 @@ class DeviceChoice:
     voltage_v: float
     interrupting_ka: float | None = None
     note_es: str = ""
+    poles: int | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -371,6 +372,8 @@ class Candidate:
     bos: BosSpec
     findings: tuple[Finding, ...]
     spec: dict[str, Any] = field(repr=False)
+    explanation_es: str = ""
+    """Why this inverter, in one or two plain Spanish sentences (shown to the user)."""
 
     @property
     def warnings(self) -> tuple[Issue, ...]:
@@ -380,6 +383,7 @@ class Candidate:
         data: dict[str, Any] = {
             "rank": self.rank,
             "inverter": self.config.inverter_id,
+            "explanation_es": self.explanation_es,
             "config": self.config.to_dict(),
             "metrics": self.metrics.to_dict(),
             "issues": [i.to_dict() for i in self.issues],
