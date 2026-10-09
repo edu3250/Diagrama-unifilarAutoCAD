@@ -53,6 +53,12 @@ DC_SWITCH_ASSUMPTION = (
     "DCD-1 (desconectador integrado): tensión e intensidad tomadas de los límites de entrada del "
     "inversor; el catálogo no registra la capacidad del interruptor integrado."
 )
+BOX_SWITCH_ID = "DCD-CD1"
+"""The disconnect of the DC protection box, after the string breakers and the DC SPD."""
+BOX_SWITCH_ASSUMPTION = (
+    f"{BOX_SWITCH_ID} (seccionador de la caja de protecciones CD): tensión y corriente iguales a "
+    "las del ITM CD de cadena, dos polos por cadena; el catálogo aún no registra seccionadores."
+)
 ITM_ASSUMPTION = (
     "kAIC del interruptor de salida: se toma la corriente de falla disponible del servicio como "
     "mínimo requerido; elija un interruptor comercial con al menos ese valor (catálogo de CA: "
@@ -317,6 +323,16 @@ def _build_spec(
             }
             for index in range(config.n_strings)
         ]
+        # The box opens every string ahead of the inverter (owner's reference box, 2026-10-08).
+        disconnects.append(
+            {
+                "id": BOX_SWITCH_ID,
+                "integrated_in": None,
+                "poles": dc_ocpd.poles * config.n_strings,
+                "ue_v": dc_ocpd.ue_v,
+                "ie_a": dc_ocpd.rating_a,
+            }
+        )
     dc_bos = spec.get("dc_bos") or {}
     spec["dc_bos"] = {"combiners": [], "spds": dc_bos.get("spds", []), "disconnects": disconnects}
 
@@ -532,7 +548,12 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             )
         )
 
-    assumptions = [*adapters.ASSUMPTIONS, ITM_ASSUMPTION, DC_SWITCH_ASSUMPTION]
+    assumptions = [
+        *adapters.ASSUMPTIONS,
+        ITM_ASSUMPTION,
+        DC_SWITCH_ASSUMPTION,
+        BOX_SWITCH_ASSUMPTION,
+    ]
     if request.optimizers_on_all_modules:
         assumptions.append(OPTIMIZER_ASSUMPTION)
     return SizingResult(

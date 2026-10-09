@@ -80,7 +80,7 @@ PLACEMENT = Placement(
     callouts=False,
     pi_description="",
     dc_box_x=66.0,
-    dc_disconnect_x=101.0,
+    dc_disconnect_x=99.0,
     dc_scale=0.6,
     dc_spd_scale=0.5,
     full_strings=True,
@@ -618,7 +618,7 @@ def build_sheet_diagram(
         polylines=(*template.polylines, *schematic.polylines),
         tables=(_protections(spec),),
         viewport=viewport,
-        circles=(*template.circles, *circles),
+        circles=(*template.circles, *circles, *schematic.dots),
         samples=tuple(samples),
         text_styles=template.text_styles,
         sheet_in_model=True,  # everything editable in one place (owner request)

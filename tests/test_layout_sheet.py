@@ -251,7 +251,7 @@ def test_the_protection_schedule_lists_every_device_in_the_template_style(
 def test_circuits_are_numbered_with_the_template_markers(diagram: Diagram) -> None:
     numbers = sorted(t.text for t in diagram.texts if t.space == "model" and t.align == "center")
     assert numbers == ["1", "1", "2"]  # two strings, one inverter output
-    markers = [c for c in diagram.circles if c.space == "model"]
+    markers = [c for c in diagram.circles if c.space == "model" and not c.filled]
     assert len(markers) == 3
     assert all(c.radius == definition.MARKER_RADIUS_MM for c in markers)
 
@@ -451,13 +451,71 @@ def test_each_string_goes_through_its_breaker_and_the_disconnect_to_the_inverter
     box = next(p for p in diagram.polylines if p.layer == "E-ANNO-ENCL" and p.space == "model")
     xs = [p.x for p in box.points]
     ys = [p.y for p in box.points]
-    assert (max(xs) - min(xs), max(ys) - min(ys)) == (30, 35)  # the size of the load centre
+    assert max(ys) - min(ys) == 35  # as tall as the load centre
+    assert 30 <= max(xs) - min(xs) < 35  # as wide too, plus the SPD's tag
     inside = Box(min(xs), min(ys), max(xs), max(ys))
     for item in diagram.instances:
         if item.comp_id in ("DCB-S1", "DCB-S2", "DPS-CD1"):
             assert item.scale < 1
             for name, part in item.boxes():
                 assert inside.contains(part), f"{name} {part} leaves the box"
+        if item.comp_id.startswith("DCD-1/"):  # integrated in the inverter: outside the box
+            assert item.x > max(xs)
+
+
+def _with_box_switch(spec: dict[str, Any]) -> None:
+    """What the sizing engine writes: string breakers and the box disconnect, none integrated."""
+    spec["dc_bos"]["disconnects"] = [
+        *(
+            {"id": f"DCB-S{n}", "integrated_in": None, "poles": 2, "ue_v": 600, "ie_a": 25}
+            for n in (1, 2)
+        ),
+        {"id": "DCD-CD1", "integrated_in": None, "poles": 4, "ue_v": 600, "ie_a": 25},
+    ]
+
+
+def test_the_box_follows_the_reference_breakers_spd_on_both_strings_then_the_disconnect(
+    template: SheetTemplate,
+) -> None:
+    diagram = _build(template, _with_box_switch)
+    assert check_diagram(diagram) == []
+    by_id = {i.comp_id: i for i in diagram.instances}
+    path = [(c.start.comp_id, c.end.comp_id) for c in diagram.connections]
+    for n in (1, 2):
+        assert (f"DCB-S{n}", f"DCD-CD1/S{n}") in path
+        assert (f"DCD-CD1/S{n}", "INV1") in path
+    feeds = {
+        (c.start.comp_id, c.start.port) for c in diagram.connections if c.end.comp_id == "DPS-CD1"
+    }
+    assert feeds == {("DCB-S1", "OUT"), ("DCB-S2", "OUT")}  # both strings into the SPD
+    assert any(c.start.comp_id == "DPS-CD1" and c.kind == "grounding" for c in diagram.connections)
+    # One tag for the whole disconnect, its pole pairs tied by a dashed link.
+    assert by_id["DCD-CD1/S1"].values["TAG"] == "DCD-CD1"
+    assert by_id["DCD-CD1/S2"].values["TAG"] == ""
+    link = [p for p in diagram.polylines if p.layer == get_symbol("PVSLD_DC_DISCONNECT").layer]
+    assert len(link) > 5
+    assert {p.points[0].x for p in link} == {round(by_id["DCD-CD1/S1"].x + 8.75 * 0.6, 3)}
+    box = next(p for p in diagram.polylines if p.layer == "E-ANNO-ENCL" and p.space == "model")
+    xs = [p.x for p in box.points]
+    ys = [p.y for p in box.points]
+    assert max(ys) - min(ys) == 35
+    inside = Box(min(xs), min(ys), max(xs), max(ys))
+    for comp_id in ("DCB-S1", "DCB-S2", "DPS-CD1", "DCD-CD1/S1", "DCD-CD1/S2"):
+        for name, part in by_id[comp_id].boxes():
+            assert inside.contains(part), f"{name} {part} leaves the box"
+    assert max(xs) < by_id["INV1"].x
+    # Dots where each tap leaves its string and where the taps meet, none on the earth crossing.
+    dots = {(c.cx, c.cy) for c in diagram.circles if c.filled}
+    spd_line = by_id["DPS-CD1"].port_xy("L")
+    assert len(dots) == 3
+    assert (spd_line.x, spd_line.y) in dots
+    assert {y for _x, y in dots} - {spd_line.y} == {
+        by_id["DCB-S1"].port_xy("OUT").y,
+        by_id["DCB-S2"].port_xy("OUT").y,
+    }
+    table = next(t for t in diagram.tables if t.title == "CUADRO DE PROTECCIONES")
+    row = next(r for r in table.rows if r[0] == "DCD-CD1")
+    assert (row[2], row[-1]) == ("4", "Caja CD")
 
 
 def test_without_string_breakers_the_spd_hangs_before_the_disconnect(

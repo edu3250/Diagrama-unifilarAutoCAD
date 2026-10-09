@@ -236,6 +236,16 @@ def test_suntree_breaker_is_selected_when_a_string_breaker_is_requested() -> Non
     assert [b["id"] for b in breakers] == ["DCB-S1", "DCB-S2"]
     assert all(b["ie_a"] == 32 and b["poles"] == 2 for b in breakers)
     assert all(b["ue_v"] >= selected.metrics.voc_cold_string_v for b in breakers)
+    box = [d for d in result.spec["dc_bos"]["disconnects"] if d["id"] == "DCD-CD1"]  # type: ignore[index]
+    assert box == [
+        {
+            "id": "DCD-CD1",
+            "integrated_in": None,
+            "poles": 4,
+            "ue_v": breakers[0]["ue_v"],
+            "ie_a": 32,
+        }
+    ]
     assert validate_selected(result).ok
 
 
