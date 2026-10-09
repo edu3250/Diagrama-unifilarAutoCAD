@@ -124,7 +124,7 @@ def test_the_library_also_has_the_symbols_the_generator_needs() -> None:
     ):
         assert name in SYMBOLS
     assert get_symbol("PVSLD_GND").source == SOURCE_CFE_D
-    assert len(SYMBOLS) == 58
+    assert len(SYMBOLS) == 62
 
 
 def test_get_symbol_rejects_an_unknown_block() -> None:

@@ -130,7 +130,10 @@ def _draw_primitive(block: BlockLayout, item: Any) -> None:
             dxfattribs=_attribs(item.layer, linetype=item.linetype),
         )
     elif isinstance(item, Circle):
-        block.add_circle((item.cx, item.cy), item.radius, dxfattribs=_attribs(item.layer))
+        attribs = _attribs(item.layer)
+        if item.color_by_block:
+            attribs["color"] = const.BYBLOCK
+        block.add_circle((item.cx, item.cy), item.radius, dxfattribs=attribs)
     elif isinstance(item, Arc):
         block.add_arc(
             (item.cx, item.cy), item.radius, item.start, item.end, dxfattribs=_attribs(item.layer)

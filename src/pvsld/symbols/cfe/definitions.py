@@ -2022,12 +2022,15 @@ TERMINAL = _spec(
     "Terminal o borne",
     _nmx("4.2.140 (IEC S00017)"),
     _AC_COND,
-    (Circle(1.25, 0, 1.25, _AC_COND),),
+    (Circle(1.25, 0, 1.25, _AC_COND, color_by_block=True),),
     (Port("L", 0, 0, "left", "ANY"), Port("R", 2.5, 0, "right", "ANY", required=False)),
     iec_ref="IEC 60617 S00017",
     extra=_hidden(("TERMINAL_NO", "Número de borne")),
     family=F_ANNOT,
-    note="Small open circle on the conductor.",
+    note=(
+        "Small open circle on the conductor, coloured BYBLOCK: it takes the colour of the layer "
+        "it is inserted on (owner decision 2026-10-08), so it serves AC and DC circuits."
+    ),
 )
 
 CROSSING = _spec(
@@ -2069,7 +2072,7 @@ BOUNDARY = _spec(
     ),
 )
 
-# --- DC protection box after the owner's reference (proposed 2026-10-08) -----------------------
+# --- DC protection box after the owner's reference box (owner decision 2026-10-08) -----------
 
 MAX_DC_DISCONNECT_POLES = 12
 DC_DISCONNECT_PITCH = 20.0
@@ -2283,6 +2286,7 @@ LIBRARY: tuple[SymbolSpec, ...] = (
     FUSE,
     FUSE_AC,
     SPD,
+    SPD_DC_BOX,
     SPD_AC,
     GROUND_FAULT_DETECTOR,
     INSULATION_MONITOR,
@@ -2291,7 +2295,9 @@ LIBRARY: tuple[SymbolSpec, ...] = (
     # switching and control
     SWITCH,
     DC_DISCONNECT,
+    DC_DISCONNECT_2S,
     FUSE_SWITCH,
+    FUSE_SWITCH_DC,
     SAFETY_SWITCH,
     TRANSFER_SWITCH,
     CONTACTOR,
@@ -2321,6 +2327,7 @@ LIBRARY: tuple[SymbolSpec, ...] = (
     # conductors, boundaries and annotation
     BUSBAR,
     TERMINAL,
+    PV_CONNECTOR,
     CROSSING,
     JUNCTION,
     CONDUCTOR_MARK,
@@ -2336,6 +2343,7 @@ SYMBOLS: Mapping[str, SymbolSpec] = {spec.name: spec for spec in LIBRARY}
 
 _COMBINER_NAME = re.compile(r"PVSLD_COMBINER_([1-9][0-9]?)S")
 _PV_STRING_NAME = re.compile(r"PVSLD_PV_STRING_([1-9][0-9]?)M_(UP|DN)")
+_DC_DISCONNECT_NAME = re.compile(r"PVSLD_DC_DISCONNECT_([1-9][0-9]?)S")
 
 
 def get_symbol(name: str) -> SymbolSpec:
@@ -2343,7 +2351,8 @@ def get_symbol(name: str) -> SymbolSpec:
 
     Besides the blocks of :data:`LIBRARY`, ``PVSLD_COMBINER_<n>S`` names the combiner box for
     ``n`` strings (:func:`combiner_box`) and ``PVSLD_PV_STRING_<n>M_UP|DN`` a string with its
-    ``n`` modules drawn (:func:`pv_string`); the generator defines them on demand.
+    ``n`` modules drawn (:func:`pv_string`) and ``PVSLD_DC_DISCONNECT_<n>S`` the DC disconnect
+    of ``n`` strings (:func:`dc_disconnect_multi`); the generator defines them on demand.
 
     Raises:
         KeyError: the library has no such block.
@@ -2358,4 +2367,7 @@ def get_symbol(name: str) -> SymbolSpec:
     match = _PV_STRING_NAME.fullmatch(name)
     if match and 1 <= int(match.group(1)) <= MAX_STRING_MODULES:
         return pv_string(int(match.group(1)), "up" if match.group(2) == "UP" else "down")
+    match = _DC_DISCONNECT_NAME.fullmatch(name)
+    if match and 1 <= int(match.group(1)) <= MAX_DC_DISCONNECT_POLES:
+        return dc_disconnect_multi(int(match.group(1)))
     raise KeyError(f"unknown symbol {name!r}; library has {', '.join(SYMBOLS)}")

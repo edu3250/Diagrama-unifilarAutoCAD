@@ -69,7 +69,7 @@ def test_the_library_passes_audit_with_no_errors_and_no_fixes(document) -> None:
 def test_the_document_holds_exactly_the_defined_blocks(document) -> None:  # type: ignore[no-untyped-def]
     names = {b.name for b in document.blocks if b.name.startswith("PVSLD_")}
     assert names == set(SYMBOLS)
-    assert len(names) == 58
+    assert len(names) == 62
 
 
 @pytest.mark.parametrize("spec", LIBRARY, ids=lambda s: s.name)
