@@ -23,7 +23,6 @@ from pvsld.core import calc, layers
 from pvsld.core.calc import Derived
 from pvsld.core.diagram import (
     A3,
-    CircleItem,
     Connection,
     Diagram,
     LineItem,
@@ -31,6 +30,7 @@ from pvsld.core.diagram import (
     PolylineItem,
     PortRef,
     SymbolInstance,
+    SymbolSample,
     Table,
     TextItem,
     Viewport,
@@ -42,6 +42,7 @@ from pvsld.core.model import (
     RULEPACK_ID,
     SCHEMA_VERSION,
     Circuit,
+    DcDisconnect,
     Inverter,
     MainBreaker,
     Meter,
@@ -56,6 +57,7 @@ from pvsld.symbols.cfe.definitions import (
     TITLE_BLOCK_FIELDS,
     TITLE_BLOCK_HEIGHT_MM,
     TITLE_BLOCK_WIDTH_MM,
+    dc_disconnect_name,
     pv_string_name,
 )
 
@@ -87,19 +89,13 @@ NOTES_MAX_WIDTH_MM = 112.0
 MIN_REVISION_ROWS, MAX_REVISION_ROWS = 3, 5
 CALLOUT_LINE_MM = 3.5
 SPD_DROP_MM = 3.5
-"""How far below the string conductor the DC SPD hangs (times the SPD scale)."""
-SPD_BOX_DROP_MM = 8.0
-"""The same in the protection box, where the lower string's tap comes in from the side."""
-SPD_OFFSET_MM = 5.0
-"""The DC SPD hangs this far right of the upper breaker output."""
-SPD_TAP_MM = 1.5
-"""The lower string's tap to the SPD rises this far right of its breaker output."""
+"""How far below the string conductor the DC SPD hangs (times the SPD scale), without a box."""
 SWITCH_OUTSIDE_MM = 2.0
-"""A disconnect outside the box (integrated in the inverter) stands this much further right."""
-JUNCTION_DOT_MM = 0.5
-"""Radius of a junction dot (a T between conductors), as in the owner's reference box."""
-GANG_DASH_MM = (1.0, 0.75)
-"""Dash and gap of the mechanical link between the poles of one DC disconnect."""
+"""A disconnect outside the box (integrated in the inverter) stands this much right of it."""
+SPD_BEFORE_SWITCH_MM = 18.0
+"""Without a box the SPD hangs this far left of the disconnect, on the upper string."""
+JUNCTION_SCALE = 0.5
+"""Scale of ``PVSLD_JUNCTION`` (a 2 mm dot) where an SPD tap leaves a string conductor."""
 
 
 @dataclass(frozen=True)
@@ -112,8 +108,8 @@ class Schematic:
     i1: Ocpd
     i2: MainBreaker
     polylines: tuple[PolylineItem, ...] = ()
-    dots: tuple[CircleItem, ...] = ()
-    """Junction dots where the SPD taps leave the string conductors and where they meet."""
+    junctions: tuple[SymbolSample, ...] = ()
+    """``PVSLD_JUNCTION`` dots where the SPD taps leave the string conductors."""
 
 
 @dataclass(frozen=True)
@@ -139,19 +135,20 @@ class Placement:
     gec_ac_text: tuple[float, float]
     callouts: bool = True
     pi_description: str = "Punto de interconexión"
+    """Description under the PI marker; a compact sheet leaves it empty (the legend names it)."""
     dc_box_x: float | None = None
-    """Left end of the DC protection box (string breakers, SPD) between the strings and the
-    inverter; ``None`` draws the strings straight into the inverter (template v1)."""
+    """Left side of the DC protection box between the strings and the inverter; ``None`` draws
+    the strings straight into the inverter (template v1)."""
     dc_disconnect_x: float | None = None
-    """Left end of the DC disconnect drawn on each string conductor before the inverter."""
+    """Left end of the DC disconnect when the sheet has no protection box (an integrated or a
+    single external disconnect, drawn on each string conductor before the inverter)."""
     dc_scale: float = 1.0
-    """Scale of the DC breakers and disconnects (0.6 fits them in the protection box)."""
+    """Scale of the DC protection devices (0.6 fits them in the protection box)."""
     dc_spd_scale: float = 1.0
-    """Scale of the DC SPD; smaller than the breakers so it fits between the strings."""
+    """Scale of the DC SPD drawn without a box (smaller, between the strings)."""
     full_strings: bool = False
     """Draw every module of each string (``PVSLD_PV_STRING_<n>M_UP|DN``), level with its MPPT
     input; otherwise the two-module convention ``PVSLD_PV_STRING``."""
-    """Description under the PI marker; a compact sheet leaves it empty (the legend names it)."""
 
 
 RESIDENTIAL = Placement(
@@ -217,13 +214,14 @@ def _instance(
     *,
     space: str = "model",
     scale: float = 1.0,
+    layer: str | None = None,
 ) -> SymbolInstance:
     return SymbolInstance(
         comp_id=comp_id,
         symbol=symbol_name,
         x=rnd(x),
         y=rnd(y),
-        layer=get_symbol(symbol_name).layer,
+        layer=layer or get_symbol(symbol_name).layer,
         attributes=_attributes(symbol_name, comp_id, values),
         space="paper" if space == "paper" else "model",
         scale=scale,
@@ -705,16 +703,16 @@ def _protection_table(spec: PvSystemSpec) -> Table:
                 NO_VALUE,
             )
         )
-    boxed = any(d.id.startswith("DCB-") for d in spec.dc_bos.disconnects)
+    string_functions = {"DCB-": "ITM de CD (cadena)", "FUS-": "Fusible gPV (cadena)"}
+    boxed = bool(_string_devices(spec))
     for d in spec.dc_bos.disconnects:
-        string_breaker = d.id.startswith("DCB-")  # the sizing engine's string breakers
         where = f"{d.integrated_in} (integrado)" if d.integrated_in else NO_VALUE
         if boxed and not d.integrated_in:
             where = "Caja CD"
         rows.append(
             (
                 d.id,
-                "ITM de CD (cadena)" if string_breaker else "Desconectador de CD",
+                string_functions.get(d.id[:4], "Desconectador de CD"),
                 str(d.poles),
                 f"{_g(d.ie_a)} A",
                 f"{_g(d.ue_v)} V",
@@ -943,10 +941,21 @@ def _title_block(spec: PvSystemSpec, derived: Derived) -> SymbolInstance:
 
 
 @dataclass(frozen=True)
+class _Stop:
+    """A device a string runs through, and its ports in and out."""
+
+    comp_id: str
+    in_port: str = "IN"
+    out_port: str = "OUT"
+
+
+@dataclass(frozen=True)
 class _DcChain:
     """Devices of the DC side of one string, in order from the string to the inverter."""
 
-    devices: tuple[str, ...]
+    devices: tuple[_Stop, ...]
+    circuit_run: int = 0
+    """The run that carries the string circuit and its marker (after the field connector)."""
 
 
 @dataclass(frozen=True)
@@ -956,119 +965,128 @@ class _DcDevices:
     instances: tuple[SymbolInstance, ...] = ()
     chains: dict[str, _DcChain] = field(default_factory=dict)
     spd: SymbolInstance | None = None
-    spd_taps: tuple[tuple[PortRef, float], ...] = ()
-    """Where the SPD line port is fed from, with the x of each tap's vertical run."""
-    switch_in_box: bool = False
-    gang: tuple[PolylineItem, ...] = ()
+    spd_taps: tuple[tuple[PortRef, str, float], ...] = ()
+    """Each SPD feed: the device port it leaves, the SPD port it reaches, the x of its rise."""
+    junctions: tuple[SymbolSample, ...] = ()
+    outline: tuple[PolylineItem, TextItem] | None = None
 
 
-def _dc_devices(spec: PvSystemSpec, inverter: Inverter, placement: Placement) -> _DcDevices:
-    """String breakers, the DC SPD and the DC disconnect (sheet template).
+STRING_DEVICE_SYMBOLS = {"DCB-": "PVSLD_CB_DC", "FUS-": "PVSLD_FUSE_DISC_DC"}
+"""Id prefix of the sizing engine's string protection -> block: DC breaker, gPV fuse holder."""
+DC_BOX_CAPTIONS = ("CAJA DE PROTECCIONES CD", "CAJA DE PROT. CD", "PROTECCIONES CD")
+DC_BOX_CAPTION_MM = 1.5
+DC_BOX_INSET_MM = 1.5
+"""Gap between the box's entry terminal and the string protection."""
+CONNECTOR_GAP_MM = 1.0
+"""The field connector (MC4 type) sits this far right of the string's last module."""
+SPD_TAP_MM = 2.5
+"""The upper string's tap to the SPD drops this far right of the string protection."""
+SPD_BOX_DROP_MM = 4.0
+"""The SPD module's inputs sit this far below the lower string conductor."""
+SWITCH_GAP_MM = 3.0
+"""Gap between the lower tap to the SPD and the box disconnect."""
 
-    The string breakers are the external disconnects named DCB-S1, DCB-S2... (one per string). With
-    them the protection box follows the owner's reference: breaker on each string, both strings
-    into the DC SPD to earth, then the box disconnect (another external disconnect) ahead of the
-    inverter, one pole pair per string tied by a dashed mechanical link. Without a box
-    disconnect, an integrated or single external disconnect stands just before the inverter.
+
+def _string_devices(spec: PvSystemSpec) -> list[DcDisconnect]:
+    """The string protections of the box (DCB-S1... or FUS-S1...), one per string, or none."""
+    devices = sorted(
+        (
+            d
+            for d in spec.dc_bos.disconnects
+            if not d.integrated_in and d.id[:4] in STRING_DEVICE_SYMBOLS
+        ),
+        key=lambda d: d.id,
+    )
+    return devices if len(devices) == len(spec.strings) else []
+
+
+def _dc_devices(
+    spec: PvSystemSpec, inverter: Inverter, placement: Placement, string_out: dict[str, Point]
+) -> _DcDevices:
+    """The DC side between the strings and the inverter (sheet template).
+
+    With one string protection per string the owner's reference box is drawn (2026-10-08); else
+    an integrated or single external disconnect stands just before the inverter and the SPD hangs
+    from the upper string (:func:`_dc_devices_without_box`).
     """
     if placement.dc_box_x is None or placement.dc_disconnect_x is None:
         return _DcDevices()
-    dc = spec.dc_bos
+    devices = _string_devices(spec)
+    if devices:
+        return _protection_box(spec, inverter, placement, devices, string_out)
+    return _dc_devices_without_box(spec, inverter, placement)
+
+
+def _protection_box(
+    spec: PvSystemSpec,
+    inverter: Inverter,
+    placement: Placement,
+    devices: Sequence[DcDisconnect],
+    string_out: dict[str, Point],
+) -> _DcDevices:
+    """The DC protection box of the owner's reference, with the library 0.8.0 blocks.
+
+    Each string enters through its field connector and the box terminal, runs through its
+    protection (gPV fuse-disconnector by default, or DC breaker), feeds the SPD module below the
+    strings, then the one ganged disconnect of the box and the exit terminal. The upper string's
+    tap crosses the lower string without a junction dot, as in the reference.
+    """
+    assert placement.dc_box_x is not None
+    assert placement.dc_disconnect_x is not None
+    k = placement.dc_scale
+    x0 = placement.dc_box_x
     strings = list(spec.strings)
-    external = sorted((d for d in dc.disconnects if not d.integrated_in), key=lambda d: d.id)
-    breakers = [d for d in external if d.id.startswith("DCB-")]
-    if len(breakers) != len(strings):
-        breakers = []
-    others = [d for d in external if d not in breakers]
-    switch = None
-    in_box = bool(breakers and others)
-    if in_box:
-        switch = others[0]
-    else:
-        switch = next((d for d in dc.disconnects if d.integrated_in == inverter.id), None)
-        if switch is None and len(others) == 1 and not breakers:
-            switch = others[0]
     inv_ports = get_symbol("PVSLD_INV")
+    row = {s.id: placement.inverter[1] + inv_ports.port(s.mppt).y for s in strings}
+    order = sorted(strings, key=lambda s: -row[s.id])  # upper string first
+    dc = spec.dc_bos
+    switch = next((d for d in dc.disconnects if not d.integrated_in and d not in devices), None)
+    integrated = next((d for d in dc.disconnects if d.integrated_in == inverter.id), None)
+    terminal_r = get_symbol("PVSLD_TERMINAL").bounds()[2] / 2 * k
     instances: list[SymbolInstance] = []
-    chains: dict[str, _DcChain] = {}
-    order = sorted(strings, key=lambda s: -inv_ports.port(s.mppt).y)  # upper string first
-    for index, string in enumerate(strings):
-        y = placement.inverter[1] + inv_ports.port(string.mppt).y
-        chain: list[str] = []
-        if breakers:
-            b = breakers[index]
-            instances.append(
-                _instance(
-                    "PVSLD_CB_DC",
-                    b.id,
-                    placement.dc_box_x + DC_BOX_INSET_MM,
-                    y,
-                    {
-                        "TAG": b.id,
-                        "DESC": f"{b.poles}P {_g(b.ie_a)} A",
-                        "ROLE": "ITM CD",
-                        "POLES": str(b.poles),
-                        "RATING_A": _g(b.ie_a),
-                        "VOLT_V": _g(b.ue_v),
-                        "KAIC_KA": NO_VALUE,
-                    },
-                    scale=placement.dc_scale,
-                )
-            )
-            chain.append(b.id)
-        if switch is not None:
-            comp_id = switch.id if len(strings) == 1 else f"{switch.id}/{string.id}"
-            instances.append(
-                _instance(
-                    "PVSLD_DC_DISCONNECT",
-                    comp_id,
-                    placement.dc_disconnect_x + (0.0 if in_box else SWITCH_OUTSIDE_MM),
-                    y,
-                    {
-                        # One tag for the whole switch, on the upper pole pair.
-                        "TAG": switch.id if string is order[0] else "",
-                        "DESC": "",  # the protection schedule says where it is (no room here)
-                        "ROLE": "DCD",
-                        "POLES": str(switch.poles),
-                        "RATING_A": _g(switch.ie_a),
-                        "VOLT_V": _g(switch.ue_v),
-                        "LOAD_BREAK": "SI",
-                    },
-                    scale=placement.dc_scale,
-                )
-            )
-            chain.append(comp_id)
-        chains[string.id] = _DcChain(tuple(chain))
-    gang = _gang_link(instances) if switch is not None and len(strings) > 1 else ()
+    stops: dict[str, list[_Stop]] = {s.id: [] for s in strings}
+    by_string = dict(zip((s.id for s in strings), devices, strict=True))
+    for string in strings:
+        y, device = row[string.id], by_string[string.id]
+        connector, entry = f"CX-{string.id}", f"XE-{string.id}"
+        instances += [
+            _instance(
+                "PVSLD_PV_CONNECTOR",
+                connector,
+                string_out[string.id].x + CONNECTOR_GAP_MM,
+                y,
+                {"TAG": "", "DESC": "", "RATING_A": NO_VALUE, "VOLT_V": NO_VALUE},
+                scale=k,
+            ),
+            _instance(
+                "PVSLD_TERMINAL",
+                entry,
+                x0 - terminal_r,
+                y,
+                {"TAG": "", "DESC": "", "TERMINAL_NO": ""},
+                scale=k,
+                layer=layers.DC_CONDUCTORS,  # BYBLOCK colour: the terminal shows in DC blue
+            ),
+            _string_device(device, x0 + DC_BOX_INSET_MM, y, k),
+        ]
+        stops[string.id] += [_Stop(connector), _Stop(entry, "L", "R"), _Stop(device.id)]
+    device_out = max(
+        i.port_xy("OUT").x for i in instances if i.symbol in STRING_DEVICE_SYMBOLS.values()
+    )
     spd_instance = None
-    taps: list[tuple[PortRef, float]] = []
-    upper = order[0] if order else None
-    if dc.spds and upper is not None and chains[upper.id].devices:
+    taps: list[tuple[PortRef, str, float]] = []
+    junctions: list[SymbolSample] = []
+    x_after = device_out
+    if dc.spds:
         spd = dc.spds[0]
-        tap = chains[upper.id].devices[0]
-        tap_item = next(i for i in instances if i.comp_id == tap)
-        k = placement.dc_spd_scale
-        if breakers:
-            # The owner's reference: every string, after its breaker, into the SPD.
-            point = tap_item.port_xy("OUT")
-            spd_x = point.x + SPD_OFFSET_MM
-            taps.append((PortRef(tap, "OUT"), spd_x))
-            taps += [
-                (PortRef(b, "OUT"), point.x + SPD_TAP_MM)
-                for b in (chains[s.id].devices[0] for s in order[1:])
-            ]
-        else:
-            # Before the disconnect (the SPD must not hang by the inverter), where the box would
-            # be, on the string conductor (the tap runs back along it).
-            point = tap_item.port_xy("IN")
-            spd_x = (placement.dc_box_x or point.x - DC_BOX_SIZE_MM[0]) + DC_BOX_SIZE_MM[0] / 2
-            taps.append((PortRef(tap, "IN"), spd_x))
+        lower_y = min(row.values())
+        x_spd = device_out + SPD_TAP_MM
         volts = spd.ucpv_v if spd.ucpv_v is not None else spd.uc_v
         spd_instance = _instance(
-            "PVSLD_SPD",
+            "PVSLD_SPD_DC_BOX",
             spd.id,
-            spd_x,
-            point.y - (SPD_BOX_DROP_MM if breakers else SPD_DROP_MM) * k,
+            x_spd,
+            lower_y - SPD_BOX_DROP_MM,
             {
                 "TAG": spd.id,
                 "DESC": f"DPS CD {spd.spd_type}",
@@ -1080,76 +1098,217 @@ def _dc_devices(spec: PvSystemSpec, inverter: Inverter, placement: Placement) ->
             },
             scale=k,
         )
-    return _DcDevices(tuple(instances), chains, spd_instance, tuple(taps), in_box, gang)
-
-
-def _gang_link(instances: Sequence[SymbolInstance]) -> tuple[PolylineItem, ...]:
-    """Dashes tying the operators of the pole pairs of one DC disconnect, as in the reference."""
-    poles = sorted((i for i in instances if i.symbol == "PVSLD_DC_DISCONNECT"), key=lambda i: -i.y)
-    if len(poles) < 2:
-        return ()
-    top, bottom = poles[0], poles[-1]
-    k = top.scale
-    x = rnd(top.x + 8.75 * k)  # the operator's dotted stem in PVSLD_DC_DISCONNECT
-    y_from, y_to = top.y - 6.25 * k, bottom.y + 3.75 * k
-    dash, gap = GANG_DASH_MM
-    layer = get_symbol("PVSLD_DC_DISCONNECT").layer
-    items: list[PolylineItem] = []
-    y = y_from
-    while y > y_to:
-        end = max(y - dash, y_to)
-        items.append(PolylineItem(layer, (Point(x, rnd(y)), Point(x, rnd(end)))))
-        y = end - gap
-    return tuple(items)
-
-
-DC_BOX_CAPTIONS = ("CAJA DE PROTECCIONES CD", "CAJA DE PROT. CD", "PROTECCIONES CD")
-DC_BOX_CAPTION_MM = 1.5
-DC_BOX_INSET_MM = 1.0
-"""Gap between the left side of the DC protection box and the string breakers."""
-DC_BOX_SIZE_MM = (30.0, 35.0)
-"""Width and height of the DC protection box: the size of the load centre (owner request)."""
-
-
-def _dc_box_outline(
-    instances: Sequence[SymbolInstance], placement: Placement, *, switch_in_box: bool
-) -> tuple[PolylineItem, TextItem] | None:
-    """The dashed enclosure around the string breakers, the SPD and the box disconnect.
-
-    It is as tall as the load centre; as wide as it too, or longer to hold the disconnect.
-    """
-    boxed = [
-        i for i in instances if i.symbol in ("PVSLD_CB_DC", "PVSLD_SPD") and i.space == "model"
-    ]
-    if not any(i.symbol == "PVSLD_CB_DC" for i in boxed):  # no breakers, no box
-        return None
-    width, height = DC_BOX_SIZE_MM
-    x0 = rnd(placement.dc_box_x or 0)
-    x1 = rnd(x0 + width)
-    # Never narrower than what it holds (the SPD's tag), longer with the disconnect inside.
-    held = [box.x1 for item in boxed for _name, box in item.boxes()]
-    x1 = rnd(max(x1, max(held) + DC_BOX_INSET_MM))
-    switches = [i for i in instances if i.symbol == "PVSLD_DC_DISCONNECT"]
-    if switch_in_box and switches:
-        x1 = rnd(max(i.port_xy("OUT").x for i in switches) + DC_BOX_INSET_MM)
-    # 1 mm above centre: the upper breaker's tag rises higher than the lower one's description.
-    y0 = rnd(placement.inverter[1] - height / 2 + 1)
-    y1 = rnd(placement.inverter[1] + height / 2 + 1)
+        for string, port in zip(order, ("L1", "L2"), strict=False):
+            rise = spd_instance.port_xy(port).x
+            taps.append((PortRef(by_string[string.id].id, "OUT"), port, rise))
+            junctions.append(
+                SymbolSample(
+                    "PVSLD_JUNCTION",
+                    rnd(rise),
+                    rnd(row[string.id]),
+                    JUNCTION_SCALE,
+                    get_symbol("PVSLD_JUNCTION").layer,
+                    "model",
+                )
+            )
+        x_after = max(spd_instance.port_xy(port).x for _tap, port, _x in taps)
+    if switch is not None:
+        name = dc_disconnect_name(len(strings))
+        top = row[order[0].id]
+        instances.append(
+            _instance(
+                name,
+                switch.id,
+                x_after + SWITCH_GAP_MM,
+                top,
+                {
+                    "TAG": switch.id,
+                    "DESC": "",  # the protection schedule says what it is
+                    "N_STRINGS": str(len(strings)),
+                    "ROLE": "DCD",
+                    "POLES": str(switch.poles),
+                    "RATING_A": _g(switch.ie_a),
+                    "VOLT_V": _g(switch.ue_v),
+                    "LOAD_BREAK": "SI",
+                },
+            )
+        )
+        for index, string in enumerate(order, start=1):
+            stops[string.id].append(_Stop(switch.id, f"IN{index}", f"OUT{index}"))
+        x_after = instances[-1].port_xy("OUT1").x
+    boxed = [i for i in instances if not i.comp_id.startswith("CX-")]
+    if spd_instance is not None:
+        boxed.append(spd_instance)
+    parts = [box for item in boxed for _name, box in item.boxes()]
+    x1 = rnd(max(x_after, *(b.x1 for b in parts)) + 1.0 + terminal_r)
+    for string in strings:
+        exit_id = f"XS-{string.id}"
+        instances.append(
+            _instance(
+                "PVSLD_TERMINAL",
+                exit_id,
+                x1 - terminal_r,
+                row[string.id],
+                {"TAG": "", "DESC": "", "TERMINAL_NO": ""},
+                scale=k,
+                layer=layers.DC_CONDUCTORS,  # BYBLOCK colour: the terminal shows in DC blue
+            )
+        )
+        stops[string.id].append(_Stop(exit_id, "L", "R"))
+    if switch is None and integrated is not None:
+        for string in strings:
+            comp_id = integrated.id if len(strings) == 1 else f"{integrated.id}/{string.id}"
+            instances.append(
+                _disconnect_instance(
+                    integrated,
+                    comp_id,
+                    x1 + SWITCH_OUTSIDE_MM,
+                    row[string.id],
+                    k,
+                    tag=string is order[0],
+                )
+            )
+            stops[string.id].append(_Stop(comp_id))
+    y1 = rnd(max(b.y1 for b in parts) + 1.0)
+    y0 = rnd(min(b.y0 for b in parts) - 1.0)
     outline = PolylineItem(
         layers.ENCLOSURES,
         (Point(x0, y0), Point(x1, y0), Point(x1, y1), Point(x0, y1)),
         closed=True,
     )
-    limit_x = placement.inverter[0]
-    if switches and not switch_in_box:
-        limit_x = min(i.x for i in switches)
-    # The longest caption that ends before the inverter.
     text = next(
-        (c for c in DC_BOX_CAPTIONS if x0 + text_width_mm(c, DC_BOX_CAPTION_MM) < limit_x - 1),
+        (
+            c
+            for c in DC_BOX_CAPTIONS
+            if x0 + text_width_mm(c, DC_BOX_CAPTION_MM) < placement.inverter[0] - 1
+        ),
         DC_BOX_CAPTIONS[-1],
     )
     caption = TextItem(layers.ENCLOSURES, x0, rnd(y1 + 1.5), DC_BOX_CAPTION_MM, text)
-    return outline, caption
+    chains = {s.id: _DcChain(tuple(stops[s.id]), circuit_run=1) for s in strings}
+    return _DcDevices(
+        tuple(instances), chains, spd_instance, tuple(taps), tuple(junctions), (outline, caption)
+    )
+
+
+def _string_device(device: DcDisconnect, x: float, y: float, k: float) -> SymbolInstance:
+    """The string protection: a gPV fuse-disconnector (FUS-) or a DC breaker (DCB-)."""
+    symbol = STRING_DEVICE_SYMBOLS[device.id[:4]]
+    if symbol == "PVSLD_FUSE_DISC_DC":
+        values = {
+            "TAG": device.id,
+            "DESC": f"gPV {_g(device.ie_a)} A",
+            "POLES": str(device.poles),
+            "RATING_A": NO_VALUE,  # the holder's own rating is chosen with the fuse
+            "VOLT_V": _g(device.ue_v),
+            "FUSE_A": _g(device.ie_a),
+            "FUSE_CLASS": "gPV",
+        }
+    else:
+        values = {
+            "TAG": device.id,
+            "DESC": f"{device.poles}P {_g(device.ie_a)} A",
+            "ROLE": "ITM CD",
+            "POLES": str(device.poles),
+            "RATING_A": _g(device.ie_a),
+            "VOLT_V": _g(device.ue_v),
+            "KAIC_KA": NO_VALUE,
+        }
+    return _instance(symbol, device.id, x, y, values, scale=k)
+
+
+def _disconnect_instance(
+    switch: DcDisconnect, comp_id: str, x: float, y: float, k: float, *, tag: bool = True
+) -> SymbolInstance:
+    """One pole pair of a disconnect drawn on a string conductor (``PVSLD_DC_DISCONNECT``)."""
+    return _instance(
+        "PVSLD_DC_DISCONNECT",
+        comp_id,
+        x,
+        y,
+        {
+            "TAG": switch.id if tag else "",  # one tag for the whole switch, on the upper pole
+            "DESC": "",  # the protection schedule says where it is (no room here)
+            "ROLE": "DCD",
+            "POLES": str(switch.poles),
+            "RATING_A": _g(switch.ie_a),
+            "VOLT_V": _g(switch.ue_v),
+            "LOAD_BREAK": "SI",
+        },
+        scale=k,
+    )
+
+
+def _dc_devices_without_box(
+    spec: PvSystemSpec, inverter: Inverter, placement: Placement
+) -> _DcDevices:
+    """No string protection: the integrated (or single external) disconnect before the inverter,
+    and the SPD tapped from the upper string before it."""
+    assert placement.dc_box_x is not None
+    assert placement.dc_disconnect_x is not None
+    dc = spec.dc_bos
+    strings = list(spec.strings)
+    switch = next((d for d in dc.disconnects if d.integrated_in == inverter.id), None)
+    external = [d for d in dc.disconnects if not d.integrated_in]
+    if switch is None and len(external) == 1:
+        switch = external[0]
+    inv_ports = get_symbol("PVSLD_INV")
+    row = {s.id: placement.inverter[1] + inv_ports.port(s.mppt).y for s in strings}
+    order = sorted(strings, key=lambda s: -row[s.id])
+    instances: list[SymbolInstance] = []
+    chains: dict[str, _DcChain] = {}
+    for string in strings:
+        if switch is None:
+            chains[string.id] = _DcChain(())
+            continue
+        comp_id = switch.id if len(strings) == 1 else f"{switch.id}/{string.id}"
+        instances.append(
+            _disconnect_instance(
+                switch,
+                comp_id,
+                placement.dc_disconnect_x + SWITCH_OUTSIDE_MM,
+                row[string.id],
+                placement.dc_scale,
+                tag=string is order[0],
+            )
+        )
+        chains[string.id] = _DcChain((_Stop(comp_id),))
+    if not dc.spds or not order or not chains[order[0].id].devices:
+        return _DcDevices(tuple(instances), chains)
+    spd = dc.spds[0]
+    tap = chains[order[0].id].devices[0].comp_id
+    point = next(i for i in instances if i.comp_id == tap).port_xy("IN")
+    k = placement.dc_spd_scale
+    # Before the disconnect (the SPD must not hang by the inverter), on the string conductor.
+    spd_x = placement.dc_disconnect_x - SPD_BEFORE_SWITCH_MM
+    volts = spd.ucpv_v if spd.ucpv_v is not None else spd.uc_v
+    spd_instance = _instance(
+        "PVSLD_SPD",
+        spd.id,
+        spd_x,
+        point.y - SPD_DROP_MM * k,
+        {
+            "TAG": spd.id,
+            "DESC": f"DPS CD {spd.spd_type}",
+            "SPEC": "",  # Uc and In are in the protection schedule
+            "SPD_TYPE": spd.spd_type,
+            "UC_V": _g(volts) if volts else NO_VALUE,
+            "UP_KV": NO_VALUE,
+            "IN_KA": _g(spd.in_ka),
+        },
+        scale=k,
+    )
+    junction = SymbolSample(
+        "PVSLD_JUNCTION",
+        rnd(spd_x),
+        rnd(point.y),
+        JUNCTION_SCALE,
+        get_symbol("PVSLD_JUNCTION").layer,
+        "model",
+    )
+    return _DcDevices(
+        tuple(instances), chains, spd_instance, ((PortRef(tap, "IN"), "L", spd_x),), (junction,)
+    )
 
 
 def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) -> Schematic:
@@ -1289,7 +1448,10 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
             },
         )
     )
-    dc = _dc_devices(spec, inverter, placement)
+    string_out = {
+        i.comp_id: i.port_xy("OUT") for i in instances if i.comp_id in {s.id for s in spec.strings}
+    }
+    dc = _dc_devices(spec, inverter, placement, string_out)
     dc_chains = dc.chains
     spd_instance = dc.spd
     instances += dc.instances
@@ -1334,11 +1496,11 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
         chain = dc_chains.get(string.id, _DcChain(()))
         stops = [
             PortRef(string.id, "OUT"),
-            *(PortRef(c, port) for c in chain.devices for port in ("IN", "OUT")),
+            *(PortRef(d.comp_id, port) for d in chain.devices for port in (d.in_port, d.out_port)),
             PortRef(inverter.id, string.mppt),
         ]
         for segment, (start, end) in enumerate(zip(stops[::2], stops[1::2], strict=True)):
-            first = segment == 0
+            first = segment == chain.circuit_run
             connect(
                 (circuit.id if circuit else f"DC-{string.id}") + ("" if first else f"-{segment}"),
                 "pv_source",
@@ -1383,28 +1545,15 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
         PortRef(GROUND_COMP_ID, "PE"),
         route="vh",
     )
-    dots: list[CircleItem] = []
     if spd_instance is not None:
-        # A dot where each tap leaves its string and, with two taps, where they meet: the earth
-        # line of the SPD crosses the lower string without one.
-        line_port = spd_instance.port_xy("L")
-        junctions = [
-            (bend_x, by_id[tap.comp_id].port_xy(tap.port).y) for tap, bend_x in dc.spd_taps
-        ]
-        if len(dc.spd_taps) > 1:
-            junctions.append((line_port.x, line_port.y))
-        dots += [
-            CircleItem(layers.DC_CONDUCTORS, rnd(x), rnd(y), JUNCTION_DOT_MM, filled=True)
-            for x, y in junctions
-        ]
-        for index, (tap, bend_x) in enumerate(dc.spd_taps):
+        for index, (tap, port, rise_x) in enumerate(dc.spd_taps):
             connect(
                 f"DC-{spd_instance.comp_id}" + (f"-{index + 1}" if index else ""),
                 "pv_source",
                 layers.DC_CONDUCTORS,
                 tap,
-                PortRef(spd_instance.comp_id, "L"),
-                bend_x=bend_x,
+                PortRef(spd_instance.comp_id, port),
+                bend_x=rise_x,
             )
         connect(
             f"GND-{spd_instance.comp_id}",
@@ -1418,13 +1567,12 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
     gec_ac = f"GEC CA: {spec.grounding.gec_ac} Cu desnudo"
     texts.append(TextItem(layers.TAGS, *placement.gec_dc_text, 2.5, gec_dc))
     texts.append(TextItem(layers.TAGS, *placement.gec_ac_text, 2.5, gec_ac))
-    outline = _dc_box_outline(instances, placement, switch_in_box=dc.switch_in_box)
-    polylines: tuple[PolylineItem, ...] = dc.gang
-    if outline is not None:
-        polylines = (outline[0], *polylines)
-        texts.append(outline[1])
+    polylines: tuple[PolylineItem, ...] = ()
+    if dc.outline is not None:
+        polylines = (dc.outline[0],)
+        texts.append(dc.outline[1])
     return Schematic(
-        tuple(instances), tuple(connections), tuple(texts), i1, i2, polylines, tuple(dots)
+        tuple(instances), tuple(connections), tuple(texts), i1, i2, polylines, dc.junctions
     )
 
 

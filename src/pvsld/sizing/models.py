@@ -77,8 +77,17 @@ class SizingRequest(BaseModel):
     optimizers_on_all_modules: bool = False
     dc_ocpd: Literal["auto", "always"] = Field(
         default="always",
-        description="'always' (default, owner decision 2026-10-08): one DC breaker per string in "
+        description="'always' (default, owner decision 2026-10-08): one protection per string in "
         "the DC protection box; 'auto': only where NOM 690-9(a) needs one",
+    )
+    dc_ocpd_device: Literal["fuse", "breaker"] = Field(
+        default="fuse",
+        description="String protection of the box: 'fuse' (default, owner decision 2026-10-08), a "
+        "gPV fuse in a fuse-disconnector, falling back to a breaker when no catalogue fuse "
+        "qualifies; 'breaker': a DC breaker",
+    )
+    dc_fuses: list[str] | Literal["auto"] = Field(
+        default="auto", description="Catalogue gPV fuse ids to choose from, or 'auto' for all"
     )
     dc_breakers: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue DC breaker ids to choose from, or 'auto' for all"
@@ -228,11 +237,16 @@ class Rejection:
 
 @dataclass(frozen=True)
 class DcOcpdChoice:
-    """String overcurrent protection: needed or not, and the catalogue breaker chosen."""
+    """String overcurrent protection: needed or not, and the catalogue device chosen.
+
+    ``device`` says what ``device_id`` is: a DC breaker, or a gPV fuse in a fuse-disconnector (the
+    default of the DC protection box, owner decision 2026-10-08).
+    """
 
     required: bool
     reason_es: str
-    breaker_id: str | None = None
+    device_id: str | None = None
+    device: Literal["breaker", "fuse"] = "breaker"
     rating_a: float | None = None
     ue_v: float | None = None
     poles: int = 2

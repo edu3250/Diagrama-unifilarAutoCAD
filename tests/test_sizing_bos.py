@@ -58,7 +58,7 @@ def _select(isc_a: float, voc_v: float, breakers: list, module_id: str = JINKO_6
 def test_schneider_20_a_is_undersized_for_the_jinko_650() -> None:
     # 1.25 x 1.25 x 16.44 A (STC) = 25.7 A: the owner's check; 28.4 A with the BNPI current
     choice = _select(16.44, 538.0, SCHNEIDER)
-    assert choice.breaker_id is None
+    assert choice.device_id is None
     assert choice.minimum_rating_a == pytest.approx(25.69, abs=0.01)
     assert "A9N61652" in choice.reason_es
     assert "20 A < 25.7 A" in choice.reason_es
@@ -66,7 +66,7 @@ def test_schneider_20_a_is_undersized_for_the_jinko_650() -> None:
 
 def test_suntree_32_a_is_the_smallest_adequate_breaker() -> None:
     choice = _select(18.16, 538.0, BOTH)
-    assert choice.breaker_id == "SUNTREE-SL7N-63-32A"
+    assert choice.device_id == "SUNTREE-SL7N-63-32A"
     assert choice.rating_a == 32
     assert choice.minimum_rating_a == pytest.approx(28.375)
     assert choice.poles == 2
@@ -96,20 +96,20 @@ def test_breaker_rating_cannot_exceed_the_module_series_fuse() -> None:
         required=True,
         reason_es="por diseño",
     )
-    assert choice.breaker_id is None
+    assert choice.device_id is None
     assert "32 A > 30 A" in choice.reason_es
 
 
 def test_breaker_needs_a_rated_voltage_above_the_string_voltage() -> None:
     assert _select(18.16, 700.0, SUNTREE).ue_v == 800
     unavailable = _select(18.16, 850.0, SUNTREE)
-    assert unavailable.breaker_id is None
+    assert unavailable.device_id is None
     assert "850.0 V" in unavailable.reason_es
 
 
 def test_breaking_capacity_follows_the_circuit_voltage() -> None:
     schneider_only = _select(10.0, 700.0, SCHNEIDER, module_id=ET_550)
-    assert schneider_only.breaker_id == SCHNEIDER_20A
+    assert schneider_only.device_id == SCHNEIDER_20A
     assert schneider_only.icu_ka == 1.5  # 800 V entry for a 700 V circuit
     assert _select(10.0, 600.0, SCHNEIDER, module_id=ET_550).icu_ka == 3.0  # 650 V entry
 
@@ -125,12 +125,12 @@ def test_no_selection_when_the_ocpd_is_not_required() -> None:
         reason_es="No se requiere",
     )
     assert not choice.required
-    assert choice.breaker_id is None
+    assert choice.device_id is None
 
 
 def test_an_empty_catalogue_explains_itself() -> None:
     choice = _select(18.16, 538.0, [])
-    assert choice.breaker_id is None
+    assert choice.device_id is None
     assert "catálogo sin interruptores" in choice.reason_es
 
 
@@ -270,3 +270,45 @@ def test_an_ambient_with_no_ampacity_leaves_no_safe_size() -> None:
     )
     assert choice is None
     assert issues[0].rule_id == "CON-002"
+
+
+# --- Which gPV fuse? ------------------------------------------------------------------------------
+
+SPF = [c for c in registry().dc_fuses() if c.manufacturer == "Littelfuse"]
+
+
+def _fuse(**overrides: object) -> object:
+    arguments: dict[str, object] = {
+        "module": registry().get(ET_550),
+        "isc_a": 14.04,
+        "strings_per_input": 1,
+        "voc_cold_string_v": 400.0,
+        "fuses": SPF,
+        "required": True,
+        "reason_es": "Por diseño.",
+    }
+    return bos.select_string_fuse(**{**arguments, **overrides})  # type: ignore[arg-type]
+
+
+def test_the_smallest_gpv_fuse_inside_the_window_wins() -> None:
+    choice = _fuse()  # 1.25 x 1.25 x 14.04 = 21.9 A <= rating <= 25 A (module maximum)
+    assert (choice.device, choice.device_id, choice.rating_a) == (  # type: ignore[attr-defined]
+        "fuse",
+        "LITTELFUSE-SPF025",
+        25,
+    )
+    assert choice.icu_ka == 50  # type: ignore[attr-defined]
+    reasons = dict(choice.rejected)  # type: ignore[attr-defined]
+    assert reasons["LITTELFUSE-SPF020"].startswith("20 A < 21.9 A")
+    assert reasons["LITTELFUSE-SPF030"].startswith("30 A > 25 A")
+
+
+def test_no_gpv_fuse_rated_for_the_string_voltage_leaves_the_choice_empty() -> None:
+    choice = _fuse(voc_cold_string_v=1100.0)
+    assert choice.device_id is None  # type: ignore[attr-defined]
+    assert "1000 V < 1100.0 V" in choice.reason_es  # type: ignore[attr-defined]
+
+
+def test_no_fuse_is_chosen_when_no_string_protection_is_required() -> None:
+    choice = _fuse(required=False)
+    assert (choice.required, choice.device_id, choice.device) == (False, None, "fuse")  # type: ignore[attr-defined]

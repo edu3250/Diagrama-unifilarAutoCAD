@@ -2,8 +2,8 @@
 
 One YAML record per datasheet family lives in ``datasheets/records/<type>/``. Every power level or
 model is its own variant with its own ``component_id``; :class:`ComponentRegistry` expands the
-variants into standalone components (:class:`PVModule`, :class:`Inverter`, :class:`DcBreaker`) so
-the sizing engine and the rule pack never see the family/variant split.
+variants into standalone components (:class:`PVModule`, :class:`Inverter`, :class:`DcBreaker`,
+:class:`DcFuse`) so the sizing engine and the rule pack never see the family/variant split.
 
 Example::
 
@@ -26,6 +26,9 @@ from pvsld.catalogue.protection import (
     BreakingCapacity,
     DcBreaker,
     DcBreakerVariant,
+    DcFuse,
+    DcFuseFamily,
+    DcFuseVariant,
     PoleOption,
     ProtectionFamily,
     Terminals,
@@ -47,6 +50,9 @@ __all__ = [
     "ComponentRegistry",
     "DcBreaker",
     "DcBreakerVariant",
+    "DcFuse",
+    "DcFuseFamily",
+    "DcFuseVariant",
     "ElectricalPoint",
     "Family",
     "Inverter",

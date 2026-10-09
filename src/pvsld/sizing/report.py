@@ -35,11 +35,13 @@ def _selected_section(candidate: Candidate) -> list[str]:
         f"{m.strings_per_mppt} per MPPT)",
         f"  string OCPD: {bos.dc_ocpd.reason_es}",
     ]
-    if bos.dc_ocpd.breaker_id:
+    if bos.dc_ocpd.device_id:
         d = bos.dc_ocpd
         lines.append(
-            f"    -> {d.breaker_id} {d.rating_a:g} A, {d.poles}P {d.ue_v:g} V, "
-            f"Icu {d.icu_ka:g} kA (minimum {d.minimum_rating_a:.1f} A)"
+            f"    -> {'gPV fuse' if d.device == 'fuse' else 'DC breaker'} {d.device_id} "
+            f"{d.rating_a:g} A, {d.poles}P {d.ue_v:g} V, "
+            f"{'interrupting' if d.device == 'fuse' else 'Icu'} {d.icu_ka:g} kA "
+            f"(minimum {d.minimum_rating_a:.1f} A)"
         )
     lines.append(f"  inverter-output breaker: {bos.ac_ocpd_a:g} A (>= 1.25 x I_ac max)")
     for c in bos.conductors:

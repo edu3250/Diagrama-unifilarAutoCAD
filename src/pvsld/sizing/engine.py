@@ -20,7 +20,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from pvsld.catalogue import ComponentRegistry, DcBreaker, UnknownComponentError
+from pvsld.catalogue import ComponentRegistry, DcBreaker, DcFuse, UnknownComponentError
 from pvsld.catalogue import Inverter as CatalogueInverter
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
@@ -53,11 +53,16 @@ DC_SWITCH_ASSUMPTION = (
     "DCD-1 (desconectador integrado): tensión e intensidad tomadas de los límites de entrada del "
     "inversor; el catálogo no registra la capacidad del interruptor integrado."
 )
+STRING_BREAKER_PREFIX = "DCB-"
+"""Id prefix of a string breaker of the DC protection box (the layout draws ``PVSLD_CB_DC``)."""
+STRING_FUSE_PREFIX = "FUS-"
+"""Id prefix of a string fuse-disconnector (gPV) of the box (``PVSLD_FUSE_DISC_DC``)."""
 BOX_SWITCH_ID = "DCD-CD1"
 """The disconnect of the DC protection box, after the string breakers and the DC SPD."""
 BOX_SWITCH_ASSUMPTION = (
     f"{BOX_SWITCH_ID} (seccionador de la caja de protecciones CD): tensión y corriente iguales a "
-    "las del ITM CD de cadena, dos polos por cadena; el catálogo aún no registra seccionadores."
+    "las de la protección de cadena, dos polos por cadena; el catálogo aún no registra "
+    "seccionadores."
 )
 ITM_ASSUMPTION = (
     "kAIC del interruptor de salida: se toma la corriente de falla disponible del servicio como "
@@ -145,6 +150,7 @@ def _size_bos(
     standards: Standards,
     tables: NomTables,
     breakers: Sequence[DcBreaker],
+    fuses: Sequence[DcFuse] = (),
 ) -> tuple[BosSpec | None, list[Issue]]:
     metrics, config = evaluation.metrics, evaluation.config
     site, routing = request.site, request.routing
@@ -157,16 +163,23 @@ def _size_bos(
     if request.dc_ocpd == "always" and not needed:
         needed = True
         reason = "Una protección por rama por decisión de diseño (dc_ocpd: always)."
-    dc_ocpd = bos.select_string_breaker(
-        module=module,
-        isc_a=metrics.isc_design_a,
-        strings_per_input=metrics.strings_per_mppt,
-        voc_cold_string_v=metrics.voc_cold_string_v,
-        breakers=breakers,
-        required=needed,
-        reason_es=reason,
-    )
-    if dc_ocpd.required and dc_ocpd.breaker_id is None:
+    window = {
+        "module": module,
+        "isc_a": metrics.isc_design_a,
+        "strings_per_input": metrics.strings_per_mppt,
+        "voc_cold_string_v": metrics.voc_cold_string_v,
+        "required": needed,
+    }
+    dc_ocpd = None
+    if request.dc_ocpd_device == "fuse":
+        dc_ocpd = bos.select_string_fuse(**window, fuses=fuses, reason_es=reason)
+        if dc_ocpd.required and dc_ocpd.device_id is None:
+            # No catalogue fuse fits this module: the box keeps a breaker, and says why.
+            reason = f"{dc_ocpd.reason_es} Se usa un ITM de CD."
+            dc_ocpd = None
+    if dc_ocpd is None:
+        dc_ocpd = bos.select_string_breaker(**window, breakers=breakers, reason_es=reason)
+    if dc_ocpd.required and dc_ocpd.device_id is None:
         return None, [Issue("OCP-002", Severity.ERROR, dc_ocpd.reason_es, subject=config.label)]
 
     ac_ocpd = bos.ac_ocpd_rating_a(inverter.max_ac_output_current_a, tables)
@@ -312,10 +325,11 @@ def _build_spec(
             }
         )
     dc_ocpd = bos_spec.dc_ocpd
-    if dc_ocpd.breaker_id is not None and dc_ocpd.rating_a is not None:
+    if dc_ocpd.device_id is not None and dc_ocpd.rating_a is not None:
+        prefix = STRING_FUSE_PREFIX if dc_ocpd.device == "fuse" else STRING_BREAKER_PREFIX
         disconnects += [
             {
-                "id": f"DCB-S{index + 1}",
+                "id": f"{prefix}S{index + 1}",
                 "integrated_in": None,
                 "poles": dc_ocpd.poles,
                 "ue_v": dc_ocpd.ue_v,
@@ -450,6 +464,11 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
         if request.dc_breakers == "auto"
         else [_lookup(registry, name, DcBreaker, "dc_breaker") for name in request.dc_breakers]
     )
+    fuses: list[DcFuse] = (
+        registry.dc_fuses()
+        if request.dc_fuses == "auto"
+        else [_lookup(registry, name, DcFuse, "dc_fuse") for name in request.dc_fuses]
+    )
 
     site = request.site
     standards = _standards(request.template)
@@ -503,6 +522,7 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             standards=standards,
             tables=tables,
             breakers=breakers,
+            fuses=fuses,
         )
         if bos_spec is None:
             rejected.append(
