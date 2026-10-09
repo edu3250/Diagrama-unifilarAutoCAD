@@ -24,14 +24,21 @@ from pvsld.catalogue.inverters import (
 )
 from pvsld.catalogue.modules import ElectricalPoint, ModuleVariant, PVModule, PVModuleFamily
 from pvsld.catalogue.protection import (
+    AcBreaker,
+    AcBreakerFamily,
+    AcBreakerVariant,
     BreakingCapacity,
     DcBreaker,
     DcBreakerVariant,
     DcFuse,
     DcFuseFamily,
     DcFuseVariant,
+    DcSwitch,
+    DcSwitchFamily,
+    DcSwitchVariant,
     PoleOption,
     ProtectionFamily,
+    SwitchRating,
     Terminals,
 )
 from pvsld.catalogue.registry import (
@@ -44,6 +51,9 @@ from pvsld.catalogue.registry import (
 )
 
 __all__ = [
+    "AcBreaker",
+    "AcBreakerFamily",
+    "AcBreakerVariant",
     "BatteryPort",
     "BreakingCapacity",
     "Cable",
@@ -57,6 +67,9 @@ __all__ = [
     "DcFuse",
     "DcFuseFamily",
     "DcFuseVariant",
+    "DcSwitch",
+    "DcSwitchFamily",
+    "DcSwitchVariant",
     "ElectricalPoint",
     "Family",
     "Inverter",
@@ -70,6 +83,7 @@ __all__ = [
     "PoleOption",
     "ProtectionFamily",
     "Provenance",
+    "SwitchRating",
     "Terminals",
     "UnknownComponentError",
     "load_records",

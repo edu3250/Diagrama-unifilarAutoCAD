@@ -693,7 +693,7 @@ def _protection_table(spec: PvSystemSpec) -> Table:
                 str(b.poles),
                 f"{_g(b.rating_a)} A",
                 NO_VALUE,
-                NO_VALUE,
+                f"{_g(b.kaic_ka)} kA" if b.kaic_ka is not None else NO_VALUE,
                 panel,
             )
         )

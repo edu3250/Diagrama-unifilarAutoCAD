@@ -374,3 +374,190 @@ class DcFuse(DcFuseSpec, DcFuseVariant):
     def reviewed(self) -> bool:
         """True once the owner has approved the record this fuse came from."""
         return self.source.reviewed
+
+
+# --- AC breakers ----------------------------------------------------------------------------------
+
+
+class AcBreakerVariant(Strict):
+    """One current rating of an AC breaker range (one catalogue reference)."""
+
+    component_id: ComponentId = Field(description="Catalogue reference, e.g. SQUARED-QO220")
+    rated_current_a: PositiveFloat
+    interrupting_ka: PositiveFloat = Field(description="UL interrupting rating at rated voltage")
+
+
+class AcBreakerSpec(Strict):
+    """Values every rating of an AC breaker range shares (field group, not used on its own)."""
+
+    manufacturer: str = Field(min_length=1)
+    range_name: str = Field(min_length=1)
+    poles: PositiveInt
+    rated_voltage: str = Field(min_length=1, description="As printed, e.g. 120/240 Vac")
+    voltage_v: PositiveFloat = Field(description="Highest line-to-line voltage of the rating")
+    mounting: str | None = None
+    standards: list[str] = Field(min_length=1)
+    certifications: list[str] | None = None
+    terminals: str | None = None
+
+
+class AcBreakerFamily(AcBreakerSpec):
+    """A datasheet range of AC breakers: shared values once, one variant per current rating."""
+
+    component_type: Literal["ac_breaker"]
+    family_id: ComponentId
+    variants: list[AcBreakerVariant] = Field(min_length=1)
+    source: Provenance
+
+    @model_validator(mode="after")
+    def _plausible_variants(self) -> AcBreakerFamily:
+        problems = [
+            f"duplicate variant component_id {name!r}"
+            for name in duplicates([v.component_id for v in self.variants])
+        ]
+        problems += [
+            f"duplicate rated_current_a {name} A in the family"
+            for name in duplicates([f"{v.rated_current_a:g}" for v in self.variants])
+        ]
+        raise_problems(problems)
+        return self
+
+    def expand(self) -> list[AcBreaker]:
+        """One standalone ``AcBreaker`` per variant (family values + variant values)."""
+        shared = {name: getattr(self, name) for name in AcBreakerSpec.model_fields}
+        return [
+            AcBreaker(
+                component_type=self.component_type,
+                family_id=self.family_id,
+                source=self.source,
+                **shared,
+                **{name: getattr(variant, name) for name in AcBreakerVariant.model_fields},
+            )
+            for variant in self.variants
+        ]
+
+
+class AcBreaker(AcBreakerSpec, AcBreakerVariant):
+    """A single AC breaker reference as the sizing engine sees it."""
+
+    component_type: Literal["ac_breaker"]
+    family_id: ComponentId
+    source: Provenance
+
+    @property
+    def reviewed(self) -> bool:
+        """True once the owner has approved the record this breaker came from."""
+        return self.source.reviewed
+
+
+# --- DC switch-disconnectors (PV) -----------------------------------------------------------------
+
+
+class SwitchRating(Strict):
+    """Rated operational current for one way of wiring the poles, up to a DC voltage.
+
+    ``poles_per_circuit`` is how many poles each circuit goes through: 2 when two strings share a
+    four-pole switch (one pole per conductor), 4 when one string uses every pole in series.
+    """
+
+    poles_per_circuit: PositiveInt
+    voltage_v: PositiveFloat
+    ie_a: PositiveFloat
+
+
+class DcSwitchVariant(Strict):
+    """One current version of the switch range (one catalogue reference)."""
+
+    component_id: ComponentId = Field(description="Catalogue reference, e.g. SUNTREE-SISO-40-32")
+    enclosed_thermal_current_a: PositiveFloat = Field(description="Ithe, in its enclosure")
+    ratings: list[SwitchRating] = Field(min_length=1)
+
+
+class DcSwitchSpec(Strict):
+    """Values every version of a PV switch-disconnector range shares."""
+
+    manufacturer: str = Field(min_length=1)
+    range_name: str = Field(min_length=1)
+    poles: PositiveInt
+    utilization_category: str = Field(min_length=1)
+    insulation_voltage_v: PositiveFloat
+    standards: list[str] = Field(min_length=1)
+    certifications: list[str] | None = None
+    ip_rating: str | None = None
+    short_time_withstand: str | None = None
+    mechanical_life_ops: PositiveInt | None = None
+    electrical_life_ops: PositiveInt | None = None
+    storage_temp_c: Range | None = None
+
+    @model_validator(mode="after")
+    def _plausible(self) -> DcSwitchSpec:
+        problem = (
+            check_range("storage_temp_c", self.storage_temp_c) if self.storage_temp_c else None
+        )
+        raise_problems([problem] if problem else [])
+        return self
+
+
+class DcSwitchFamily(DcSwitchSpec):
+    """A datasheet range of PV switch-disconnectors, one variant per current version."""
+
+    component_type: Literal["dc_switch"]
+    family_id: ComponentId
+    variants: list[DcSwitchVariant] = Field(min_length=1)
+    source: Provenance
+
+    @model_validator(mode="after")
+    def _plausible_variants(self) -> DcSwitchFamily:
+        problems = [
+            f"duplicate variant component_id {name!r}"
+            for name in duplicates([v.component_id for v in self.variants])
+        ]
+        for variant in self.variants:
+            problems += [
+                f"variant {variant.component_id}: {r.poles_per_circuit} poles per circuit is "
+                f"more than the {self.poles} poles of the switch"
+                for r in variant.ratings
+                if r.poles_per_circuit > self.poles
+            ]
+        raise_problems(problems)
+        return self
+
+    def expand(self) -> list[DcSwitch]:
+        """One standalone ``DcSwitch`` per variant (family values + variant values)."""
+        shared = {name: getattr(self, name) for name in DcSwitchSpec.model_fields}
+        return [
+            DcSwitch(
+                component_type=self.component_type,
+                family_id=self.family_id,
+                source=self.source,
+                **shared,
+                **{name: getattr(variant, name) for name in DcSwitchVariant.model_fields},
+            )
+            for variant in self.variants
+        ]
+
+
+class DcSwitch(DcSwitchSpec, DcSwitchVariant):
+    """One PV switch-disconnector as the sizing engine sees it."""
+
+    component_type: Literal["dc_switch"]
+    family_id: ComponentId
+    source: Provenance
+
+    def rating_a(self, poles_per_circuit: int, voltage_v: float) -> tuple[float, float] | None:
+        """Current (A) and voltage step (V) for circuits wired through ``poles_per_circuit``
+        poles at ``voltage_v``: the lowest tabulated voltage at or above it, capped by the
+        enclosed thermal current. ``None`` when the switch has no such rating."""
+        steps = sorted(
+            (r for r in self.ratings if r.poles_per_circuit == poles_per_circuit),
+            key=lambda r: r.voltage_v,
+        )
+        step = next((r for r in steps if r.voltage_v >= voltage_v), None)
+        if step is None:
+            return None
+        return min(step.ie_a, self.enclosed_thermal_current_a), step.voltage_v
+
+    @property
+    def reviewed(self) -> bool:
+        """True once the owner has approved the record this switch came from."""
+        return self.source.reviewed

@@ -1,0 +1,51 @@
+# Test copy of datasheets/records/protection/squared-qo-2p.yaml, marked reviewed so the sizing tests can use it.
+# Facts from the manufacturer catalogue (the PDF is not redistributed). Family + one variant per current rating.
+# Standard QO plug-on, 2 poles, 120/240 Vac. The catalogue gives the interrupting rating by current range (Table 1)
+# and the catalogue-number ranges (QO210-QO280, QO2110-QO2125, QO2150-QO2200), not one row per rating: the ratings
+# below are the NOM 240-6(a) standard ratings inside those ranges, to be confirmed against the distributor's list.
+component_type: ac_breaker
+family_id: SQUARED-QO-2P
+manufacturer: Schneider Electric (Square D)
+range_name: QO miniature circuit breakers, plug-on, 2 poles
+poles: 2
+rated_voltage: 120/240 Vac
+voltage_v: 240
+mounting: plug-on (QO load centers)
+standards: [UL 489, CSA C22.2 No. 5, NOM/ANCE, NEMA AB1]
+certifications: [UL Listed (File E84967), CSA (Master Contract 153555)]
+terminals: 10-30 A 14-8 AWG; 35-70 A 8-2 AWG; 80-125 A 4-2/0 AWG; 150-200 A 4 AWG-300 kcmil (Al/Cu)
+variants:
+  - {component_id: SQUARED-QO210,    rated_current_a: 10, interrupting_ka: 10}
+  - {component_id: SQUARED-QO215,    rated_current_a: 15, interrupting_ka: 10}
+  - {component_id: SQUARED-QO220,    rated_current_a: 20, interrupting_ka: 10}
+  - {component_id: SQUARED-QO225,    rated_current_a: 25, interrupting_ka: 10}
+  - {component_id: SQUARED-QO230,    rated_current_a: 30, interrupting_ka: 10}
+  - {component_id: SQUARED-QO235,    rated_current_a: 35, interrupting_ka: 10}
+  - {component_id: SQUARED-QO240,    rated_current_a: 40, interrupting_ka: 10}
+  - {component_id: SQUARED-QO245,    rated_current_a: 45, interrupting_ka: 10}
+  - {component_id: SQUARED-QO250,    rated_current_a: 50, interrupting_ka: 10}
+  - {component_id: SQUARED-QO260,    rated_current_a: 60, interrupting_ka: 10}
+  - {component_id: SQUARED-QO270,    rated_current_a: 70, interrupting_ka: 10}
+  - {component_id: SQUARED-QO280,    rated_current_a: 80, interrupting_ka: 10}
+  - {component_id: SQUARED-QO290,    rated_current_a: 90, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2100,   rated_current_a: 100, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2110,   rated_current_a: 110, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2125,   rated_current_a: 125, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2150,   rated_current_a: 150, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2175,   rated_current_a: 175, interrupting_ka: 10}
+  - {component_id: SQUARED-QO2200,   rated_current_a: 200, interrupting_ka: 10}
+source:
+  filename: 0730CT9801.pdf
+  sha256: 683ff56dcb7d778ff816bfedf24eef2188079fc74f5351a227a69e0aa6760dbb
+  title: Square D QO and QOB Miniature Circuit Breakers, catalog 0730CT9801 (07/2008)
+  pages: [3, 5, 7]
+  extraction_method: pdf_text_layer
+  extraction_date: 2026-10-09
+  reviewed_by: "test fixture"
+  review_date: 2026-10-09
+  notes: >-
+    Downloaded from Schneider Electric (download.schneider-electric.com, document 0730CT9801) on 2026-10-09. Table 1
+    (page 5): QO 2-pole 10-70 A, 80-100 A and 110-200 A are all 10 kA at 120 and 120/240 Vac (10-100 A also at
+    240 Vac); QO-VH 2-pole 15-200 A is 22 kA (not recorded here). Page 3: UL 489, CSA C22.2 No. 5, NOM/ANCE, NEMA AB1;
+    catalogue-number ranges QO280-QO210 (UL type QOA/QOB), QO2110-QO2125 (QOC), QO2150-QO2200 (QOC). Terminations
+    from Table 2 (page 7): 10-30 A pressure plate, 35-200 A box lugs, 75 °C conductors from 35 A.

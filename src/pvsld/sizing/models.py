@@ -95,6 +95,14 @@ class SizingRequest(BaseModel):
         description="Catalogue family id of the PV cable of the strings (its diameter fills the "
         "raceway), or 'auto' for the first PV cable family",
     )
+    ac_breakers: list[str] | Literal["auto"] = Field(
+        default="auto",
+        description="Catalogue AC breaker ids for ITM-1 and ITM-P, or 'auto' for all",
+    )
+    dc_switches: list[str] | Literal["auto"] = Field(
+        default="auto",
+        description="Catalogue PV switch-disconnector ids for the box disconnect, or 'auto'",
+    )
     dc_fuses: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue gPV fuse ids to choose from, or 'auto' for all"
     )
@@ -292,6 +300,21 @@ class ConductorChoice:
 
 
 @dataclass(frozen=True)
+class DeviceChoice:
+    """A catalogue device chosen for one position (ITM-1, ITM-P, DCD-CD1)."""
+
+    position: str
+    device_id: str
+    rating_a: float
+    voltage_v: float
+    interrupting_ka: float | None = None
+    note_es: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
 class RacewayChoice:
     """The EMT raceway of one circuit type: what it holds and the designation chosen."""
 
@@ -320,6 +343,11 @@ class BosSpec:
     conductors: tuple[ConductorChoice, ...]
     todo: tuple[str, ...] = ()
     raceways: tuple[RacewayChoice, ...] = ()
+    devices: tuple[DeviceChoice, ...] = ()
+    """Catalogue devices for ITM-1, ITM-P and the box disconnect (absent when none fits)."""
+
+    def device(self, position: str) -> DeviceChoice | None:
+        return next((d for d in self.devices if d.position == position), None)
 
     def to_dict(self, *, with_alternatives: bool = False) -> dict[str, Any]:
         return {
@@ -327,6 +355,7 @@ class BosSpec:
             "ac_ocpd_a": self.ac_ocpd_a,
             "conductors": [c.to_dict() for c in self.conductors],
             "raceways": [r.to_dict() for r in self.raceways],
+            "devices": [d.to_dict() for d in self.devices],
             "todo": list(self.todo),
         }
 

@@ -212,6 +212,9 @@ class DcDisconnect(_Strict):
     poles: PositiveInt
     ue_v: PositiveFloat
     ie_a: PositiveFloat
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
 
 
 class Spd(_Strict):
@@ -239,6 +242,9 @@ class Ocpd(_Strict):
     kaic_ka: PositiveFloat
     backfed: bool = False
     at: str | None = None
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
     manual: bool | None = Field(default=None, description="Manually operated (DIS-003)")
     lockable: bool | None = Field(default=None, description="Can be locked open (DIS-003)")
 
@@ -267,6 +273,12 @@ class MainBreaker(_Strict):
     poles: PositiveInt
     rating_a: PositiveFloat
     bidirectional: bool = False
+    kaic_ka: PositiveFloat | None = Field(
+        default=None, description="Interrupting rating, when the breaker is known"
+    )
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
 
 
 class PointOfConnection(_Strict):

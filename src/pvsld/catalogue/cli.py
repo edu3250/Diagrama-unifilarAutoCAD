@@ -26,7 +26,7 @@ from pvsld.catalogue.conductors import Cable
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter
 from pvsld.catalogue.modules import PVModule
-from pvsld.catalogue.protection import DcBreaker, DcFuse
+from pvsld.catalogue.protection import AcBreaker, DcBreaker, DcFuse, DcSwitch
 from pvsld.catalogue.registry import RECORD_FOLDERS, Component, ComponentRegistry, load_records
 
 DEFAULT_RECORDS = Path("datasheets") / "records"
@@ -40,6 +40,10 @@ def _rating(component: Component) -> str:
             f"{component.rated_ac_power_w / 1000:g} kW AC, "
             f"{component.recommended_max_pv_power_wp / 1000:g} kWp DC max"
         )
+    if isinstance(component, AcBreaker):
+        return f"{component.rated_current_a:g} A {component.interrupting_ka:g} kA"
+    if isinstance(component, DcSwitch):
+        return f"{component.poles}P {component.enclosed_thermal_current_a:g} A"
     if isinstance(component, Cable):
         return f"{component.size} {component.outer_diameter_mm:g} mm"
     if isinstance(component, DcFuse):
