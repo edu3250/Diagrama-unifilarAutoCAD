@@ -27,6 +27,7 @@ from __future__ import annotations
 import math
 import re
 from collections.abc import Mapping
+from dataclasses import replace
 
 from pvsld.core import layers
 from pvsld.symbols.cfe.model import (
@@ -2067,6 +2068,195 @@ BOUNDARY = _spec(
         "utility side and the user side, as the captions of D1/D2 describe."
     ),
 )
+
+# --- DC protection box after the owner's reference (proposed 2026-10-08) -----------------------
+
+MAX_DC_DISCONNECT_POLES = 12
+DC_DISCONNECT_PITCH = 20.0
+"""Distance between the pole pairs of a multi-string DC disconnect: the MPPT input spacing."""
+_DCD_K = 0.6
+"""The poles are the library's DC disconnect at 60 %, the size it has in the protection box."""
+
+
+def dc_disconnect_name(n_strings: int) -> str:
+    """Block name of the DC disconnect that opens ``n_strings`` strings."""
+    return f"PVSLD_DC_DISCONNECT_{n_strings}S"
+
+
+def dc_disconnect_multi(n_strings: int) -> SymbolSpec:
+    """One DC switch-disconnector for ``n_strings`` strings: a pole pair per string, ganged.
+
+    Pole ``i`` runs from ``IN<i>`` to ``OUT<i>``, ``DC_DISCONNECT_PITCH`` below the previous one;
+    the operator handle sits on the top pole and the dotted mechanical link runs through every
+    blade, as in the reference box.
+
+    Raises:
+        ValueError: ``n_strings`` is outside ``1..MAX_DC_DISCONNECT_POLES``.
+    """
+    if not 1 <= n_strings <= MAX_DC_DISCONNECT_POLES:
+        raise ValueError(
+            f"a DC disconnect opens 1 to {MAX_DC_DISCONNECT_POLES} strings, not {n_strings}"
+        )
+    k = _DCD_K
+    rows = [_r(-DC_DISCONNECT_PITCH * i) for i in range(n_strings)]
+    geometry: list[Primitive] = []
+    for y in rows:
+        geometry += [
+            Line(0, y, 5 * k, y, _EQ_DC),
+            Line(5 * k, y, 12.5 * k, _r(y + 7.5 * k), _EQ_DC),
+            Line(12.5 * k, y, 25 * k, y, _EQ_DC),
+        ]
+    top, mid = rows[0], 8.75 * k
+    geometry += [
+        # Handle on the top pole, then the link through every blade (a single dotted line).
+        Line(_r(mid), _r(top + 3.75 * k), 5 * k, _r(top + 8.75 * k), _EQ_DC, linetype=_DOTTED),
+        Line(5 * k, _r(top + 8.75 * k), _r(mid), _r(top + 8 * k), _EQ_DC),
+        Line(5 * k, _r(top + 8.75 * k), _r(5.25 * k), _r(top + 4.75 * k), _EQ_DC),
+    ]
+    if n_strings > 1:
+        geometry.append(
+            Line(
+                _r(mid),
+                _r(top + 3.75 * k),
+                _r(mid),
+                _r(rows[-1] + 3.75 * k),
+                _EQ_DC,
+                linetype=_DOTTED,
+            )
+        )
+    ports = tuple(
+        port
+        for i, y in enumerate(rows, start=1)
+        for port in (
+            Port(f"IN{i}", 0, y, "left", "DC"),
+            Port(f"OUT{i}", _r(25 * k), y, "right", "DC"),
+        )
+    )
+    spec = _spec(
+        dc_disconnect_name(n_strings),
+        "Desconectador de CD multipolar",
+        f"{_COMPOSITION}: interruptor manual por polo y unión mecánica (IEC 60617)",
+        _EQ_DC,
+        tuple(geometry),
+        ports,
+        iec_ref="IEC 60617 (interruptor-seccionador; unión mecánica)",
+        nmx_ref=_nmx("4.2.94 y 4.2.119 (con carga)"),
+        tag_xy=(0, _r(top + 10 * k)),
+        desc_xy=(0, _r(rows[-1] - 6 * k)),
+        extra=(
+            AttDef("N_STRINGS", "Cadenas", 0, 0, visible=False, default=str(n_strings)),
+            *_hidden(
+                ("ROLE", "Función"),
+                ("POLES", "Polos"),
+                ("RATING_A", "Corriente nominal (A)"),
+                ("VOLT_V", "Tensión (V)"),
+                ("LOAD_BREAK", "Con capacidad de corte con carga"),
+            ),
+        ),
+        family=F_SWITCH,
+        note=(
+            "One switch for every string of the protection box (owner's reference, 2026-10-08): "
+            "the DC disconnect contact at 60 % per string, 20 mm apart, the handle on the top "
+            "pole and one dotted mechanical link through all blades. Parametric "
+            "(dc_disconnect_multi(n), 1 to 12 strings); the legend shows two."
+        ),
+    )
+    # Drawn at the box size already: its texts match the 60 % breakers next to it.
+    return replace(
+        spec,
+        attdefs=tuple(
+            replace(a, height=_r(a.height * k)) if a.visible else a for a in spec.attdefs
+        ),
+    )
+
+
+DC_DISCONNECT_2S = dc_disconnect_multi(2)
+
+FUSE_SWITCH_DC = _spec(
+    "PVSLD_FUSE_DISC_DC",
+    "Fusible-seccionador de CD (portafusible gPV)",
+    _nmx("4.2.176 (FUS-SECC, IEC S00369)"),
+    _EQ_DC,
+    _blade_with_fuse(_EQ_DC, bar=True),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 25, 0, "right", "DC")),
+    iec_ref="IEC 60617 S00369",
+    nmx_ref=_nmx("4.2.176 (alt. 4.2.177, S00370)"),
+    extra=_hidden(
+        ("POLES", "Polos"),
+        ("RATING_A", "Corriente nominal del portafusible (A)"),
+        ("VOLT_V", "Tensión (V)"),
+        ("FUSE_A", "Fusible (A)"),
+        ("FUSE_CLASS", "Clase (gPV)"),
+    ),
+    family=F_SWITCH,
+    note=(
+        "PVSLD_FUSE_DISC on the DC equipment layer with DC ports: the string fuse holder of a "
+        "protection box, which isolates the string when opened."
+    ),
+)
+
+SPD_DC_BOX = _spec(
+    "PVSLD_SPD_DC_BOX",
+    "DPS de CD en módulo (varias entradas)",
+    f"{_COMPOSITION}: varistor en envolvente de equipo (IEC 60617)",
+    _EQ_DC,
+    (
+        Line(0, 0, 0, -2.5, _EQ_DC),
+        Line(5, 0, 5, -2.5, _EQ_DC),
+        Polyline(_rect(-2.5, -12.5, 7.5, -2.5), _EQ_DC, closed=True),
+        Polyline(_rect(1.5, -10.5, 3.5, -4.5), _EQ_DC, closed=True),
+        Polyline(((0.5, -10.5), (0.5, -8.5), (4.5, -6.5), (4.5, -4.5)), _EQ_DC),
+        Line(2.5, -12.5, 2.5, -17.5, _EQ_DC),
+    ),
+    (
+        Port("L1", 0, 0, "up", "DC"),
+        Port("L2", 5, 0, "up", "DC", required=False),
+        Port("PE", 2.5, -17.5, "down", "PE"),
+    ),
+    iec_ref="IEC 60617 (objeto; varistor)",
+    nmx_ref=_nmx("4.2.308 (SPD, forma distinta)"),
+    tag_xy=(9, -6),
+    desc_xy=(9, -10),
+    extra=(
+        AttDef("SPEC", "Datos del DPS", 9, -14),
+        *_hidden(
+            ("SPD_TYPE", "Tipo (1, 2, 3)"),
+            ("UC_V", "Tensión máxima de operación continua (V)"),
+            ("UP_KV", "Nivel de protección (kV)"),
+            ("IN_KA", "Corriente nominal de descarga (kA)"),
+        ),
+    ),
+    family=F_PROT,
+    note=(
+        "The SPD module of the owner's reference box: a 10 mm equipment square holding the "
+        "varistor, two line inputs on top (one per string in single-line form, L2 optional) "
+        "and the earth lead below."
+    ),
+)
+
+PV_CONNECTOR = _spec(
+    "PVSLD_PV_CONNECTOR",
+    "Conector de CD enchufable (tipo MC4)",
+    "IEC 60617 (clavija y base, contacto macho y hembra)",
+    _EQ_DC,
+    (
+        Line(0, 0, 2.5, 0, _EQ_DC),
+        Arc(5, 0, 2.5, 90, 270, _EQ_DC),
+        Fill(((4, -0.9), (7.5, -0.9), (7.5, 0.9), (4, 0.9)), _EQ_DC),
+        Line(7.5, 0, 10, 0, _EQ_DC),
+    ),
+    (Port("IN", 0, 0, "left", "DC"), Port("OUT", 10, 0, "right", "DC")),
+    iec_ref="IEC 60617 (clavija y base)",
+    tag_xy=(0, 3.5),
+    desc_xy=(0, -5),
+    extra=_hidden(("RATING_A", "Corriente nominal (A)"), ("VOLT_V", "Tensión (V)")),
+    family=F_ANNOT,
+    note=(
+        "Plug and socket: the socket arc on the string side, the filled plug towards the "
+        "equipment. Marks the field connectors (MC4 type) where a string enters the box."
+    ),
+)
+
 
 # Order of the legend: families as the owner asked (generation, conversion, protection, switching,
 # measurement, grid and loads, earthing, medium voltage, annotation); inside each, the CFE symbols
