@@ -207,7 +207,7 @@ class _Values:
             return None
         compact = re.sub(r"[\s-]", "", text) if what != "correo" else text
         if not re.fullmatch(regex, compact):
-            self.issue(key, f"«{text}» no es {what} válido.")
+            self.issue(key, f"«{text}» no es válido: se espera {what}.")
             return None
         return compact
 
