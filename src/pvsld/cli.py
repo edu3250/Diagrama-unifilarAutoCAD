@@ -10,6 +10,7 @@ Usage::
     pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC.yaml] [--json]
     pvsld report SPEC.yaml -o DIR [--explanation TEXT]
     pvsld design REQUEST.yaml -o DIR [--no-autocad] [--include-unreviewed]
+    pvsld pro new DIR | design SHEET.xlsx -o DIR [--no-autocad]
     pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
     pvsld sheet import TEMPLATE.dwg [-o PATH] | check [PATH]
 
@@ -24,7 +25,8 @@ file and prints the selection, the ranked alternatives and why every other confi
 rejected; the exit code is 1 when no configuration survives. ``-o`` writes the selected
 parameter specification, ready for ``validate`` and ``generate``. ``report`` writes the
 calculation report (xlsx and pdf), the project sheet and the bill of materials of a spec.
-``design`` does everything in one step for the plugin's quick mode (:mod:`pvsld.design`).
+``design`` does everything in one step for the plugin's quick mode (:mod:`pvsld.design`);
+``pro`` is the professional mode, driven by the project sheet (:mod:`pvsld.design.pro`).
 ``symbols`` builds, lists and validates the symbol library (``symbols/pvsld-symbols.dxf``, see
 :mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
@@ -211,6 +213,57 @@ def _design(args: argparse.Namespace) -> int:
         *(f"problem: {problem}" for problem in result.problems),
         result.bom_text,
         *(f"wrote {path}" for path in result.files.values()),
+    ]
+    print("\n".join(lines))
+    return 0
+
+
+def _pro(args: argparse.Namespace) -> int:
+    """Professional mode (Stage 3.6.2): a blank project sheet, or a design from a filled one."""
+    from pvsld.design.pipeline import PROJECT_SHEET
+    from pvsld.design.pro import ProjectSheetError, design_from_sheet, write_reviewed_sheet
+    from pvsld.report import write_project_sheet
+
+    try:
+        registry = ComponentRegistry.load(
+            args.catalogue, include_unreviewed=args.include_unreviewed
+        )
+        if args.pro_command == "new":
+            path = write_project_sheet(args.output / PROJECT_SHEET, registry)
+            print(f"wrote {path}")
+            return 0
+        result = design_from_sheet(
+            args.path,
+            registry,
+            args.output,
+            use_autocad="never" if args.no_autocad else "auto",
+        )
+    except (CatalogueError, ProjectSheetError, SizingInputError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    except OSError as error:
+        print(f"error: cannot write: {error}", file=sys.stderr)
+        return 1
+    if result.issues:
+        reviewed = args.path.with_name(f"{args.path.stem}_revisar.xlsx")
+        try:
+            write_reviewed_sheet(args.path, reviewed, result.issues)
+        except OSError as error:
+            print(f"error: cannot write {reviewed}: {error}", file=sys.stderr)
+            return 1
+        for issue in result.issues:
+            print(f"{issue.sheet} > {issue.label}: {issue.message_es}", file=sys.stderr)
+        print(f"wrote {reviewed} (cells to fix in red)", file=sys.stderr)
+        return 1
+    design = result.design
+    if design is None or not design.ok:
+        print(f"error: the design failed at {result.stage}", file=sys.stderr)
+        return 1
+    lines = [
+        f"why: {design.explanation_es}",
+        *(f"problem: {problem}" for problem in design.problems),
+        design.bom_text,
+        *(f"wrote {path}" for path in design.files.values()),
     ]
     print("\n".join(lines))
     return 0
@@ -539,6 +592,40 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-autocad", action="store_true", help="do not use AutoCAD even when it is installed"
     )
     design.set_defaults(run=_design)
+
+    pro = subcommands.add_parser(
+        "pro",
+        help="professional mode: blank project sheet, or design from a filled one (Stage 3.6.2)",
+    )
+    pro_commands = pro.add_subparsers(dest="pro_command", required=True)
+    pro_new = pro_commands.add_parser("new", help="write a blank project sheet into DIR")
+    pro_new.add_argument("output", type=Path, metavar="DIR", help="project folder")
+    pro_design = pro_commands.add_parser(
+        "design",
+        help="design from a filled project sheet; on a problem, write <sheet>_revisar.xlsx with "
+        "the cells to fix in red",
+    )
+    pro_design.add_argument("path", type=Path, metavar="SHEET", help="filled project sheet (.xlsx)")
+    pro_design.add_argument(
+        "-o", "--output", type=Path, required=True, metavar="DIR", help="project folder"
+    )
+    pro_design.add_argument(
+        "--no-autocad", action="store_true", help="do not use AutoCAD even when it is installed"
+    )
+    for command in (pro_new, pro_design):
+        command.add_argument(
+            "--catalogue",
+            type=Path,
+            default=catalogue_cli.DEFAULT_RECORDS,
+            metavar="DIR",
+            help="component records folder (default datasheets/records)",
+        )
+        command.add_argument(
+            "--include-unreviewed",
+            action="store_true",
+            help="also use records the owner has not reviewed (development only)",
+        )
+    pro.set_defaults(run=_pro)
 
     size.add_argument("path", type=Path, metavar="REQUEST", help="sizing request YAML or JSON file")
     size.add_argument(

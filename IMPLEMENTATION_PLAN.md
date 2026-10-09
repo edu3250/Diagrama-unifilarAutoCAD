@@ -606,7 +606,7 @@ A plain request also triggers the skill.
 - CI checks the manifest JSON.
 - Owner's manual run of both modes on a clean install.
 
-**Status:** In Progress (3.6.0 and 3.6.1a merged; 3.6.1b in review)
+**Status:** In Progress (3.6.0, 3.6.1 and 3.6.2a merged; 3.6.2b in review)
 
 ---
 

@@ -54,6 +54,8 @@ TOOLS = [
     "get_component",
     "size_pv_system",
     "design_and_draw",
+    "new_project_sheet",
+    "design_from_project_sheet",
 ]
 # Claude Code stops a tool result at 25k tokens; four characters per token is the conservative
 # estimate (real text of this kind is closer to three, but the image is base64 that counts as text).

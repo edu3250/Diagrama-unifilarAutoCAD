@@ -109,8 +109,10 @@ def _location(spec: PvSystemSpec) -> str:
     """Address and coordinates as given; blank when the user gave none (personal data)."""
     site = spec.project.site
     parts = [address_text(site.address)]
-    if site.lat is not None and site.lon is not None:
-        parts.append(f"{site.lat:.5f}, {site.lon:.5f}")
+    coordinates = [
+        c if isinstance(c, str) else f"{c:.5f}" for c in (site.lat, site.lon) if c is not None
+    ]
+    parts.append(", ".join(coordinates))
     return " — ".join(part for part in parts if part)
 
 

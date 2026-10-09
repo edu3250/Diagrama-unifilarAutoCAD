@@ -8,6 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Professional mode (Stage 3.6.2b): design from the project sheet the user fills in.
+  - `pvsld.design.pro`:
+    - `read_project_sheet` reads the parameter rows by label, so moved or inserted rows still work;
+    - `sheet_request` checks every cell and maps it to a sizing request that keeps the fixed values (inverter, strings, modules per string, fuse without breaker fallback, DC breaker, switch, ITM-1, ITM-P, cable, conductor sizes, EMT, lengths, voltage-drop limits, SPDs, bus, grounding), the service and the personal data;
+    - `design_from_sheet` runs the one-step design.
+  - Personal data is free text: the CP, RPU, cédula, e-mail and coordinates are taken as written, in the sheet and in the spec (owner decision 2026-10-09: its format is the user's business; the spec drops their patterns and the Mexico bounds of lat/lon, and a coordinate may be text).
+  - A cell that cannot be used (a voltage CFE does not supply, 3 × 3 strings for 8 modules, a 3F-4H service) or a fixed value the calculation rejects (a fuse below 1.56 × Isc, a conductor too small) becomes an issue on its cell. When the equipment is complete, both kinds are reported in one round.
+  - `write_reviewed_sheet` returns the user's own workbook with those cells in red, the reason as a comment and a summary on Instrucciones. A model missing from the catalogue is reported as a missing component (for Stage 3.6.3).
+  - The project sheet among the deliverables is the user's workbook with its "Último cálculo" column refreshed (`design_and_draw(project_sheet=...)`).
+  - MCP tools:
+    - `new_project_sheet` writes a blank sheet into `<output>/<name>/`;
+    - `design_from_project_sheet` designs from `<output>/<name>/hoja_de_proyecto.xlsx`, or writes `hoja_de_proyecto_revisar.xlsx` and lists the cells.
+    - The server instructions describe both modes.
+  - CLI: `pvsld pro new DIR`, `pvsld pro design SHEET -o DIR [--no-autocad]`.
 - Values the user fixes are kept and checked, never replaced (Stage 3.6.2a, for the professional mode). New sizing request fields:
   - `n_strings` and `n_series` pin the string layout; a string count above the inverter's inputs is rejected (REQ-002);
   - `dc_conductor_size` and `ac_conductor_size` are checked for ampacity and protection (CON-002 names the smallest safe size) and for voltage drop (warning);

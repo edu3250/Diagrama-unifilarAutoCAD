@@ -51,13 +51,10 @@ def test_unsupported_schema_version_is_rejected() -> None:
     ("change", "location"),
     [
         (lambda s: s["project"]["site"].update({"t_min_c": -50}), "t_min_c"),
-        (lambda s: s["project"]["site"].update({"lat": 60}), "lat"),
-        (lambda s: s["utility"].update({"rpu": "123"}), "rpu"),
         (lambda s: s["utility"].update({"nominal_voltage_v": 230}), "nominal_voltage_v"),
         (lambda s: s["modules"][0].update({"vmp_v": 60.0}), "vmp_v"),
         (lambda s: s["modules"][0].update({"imp_a": 15.0}), "imp_a"),
         (lambda s: s["strings"][0].update({"n_series": 0}), "n_series"),
-        (lambda s: s["title_block"]["responsible"].update({"cedula_profesional": "12"}), "cedula"),
         (lambda s: s["circuits"][0]["conductors"].update({"material": "Al"}), "material"),
         (lambda s: s["circuits"][0]["conductors"].update({"size": "7 AWG"}), "size"),
     ],
@@ -65,6 +62,25 @@ def test_unsupported_schema_version_is_rejected() -> None:
 def test_out_of_range_values_are_rejected(change: Any, location: str) -> None:
     with pytest.raises(ValidationError, match=location):
         parse_spec(mutated(change))
+
+
+def test_personal_data_is_accepted_as_written() -> None:
+    """Its format is the user's business (owner decision 2026-10-09)."""
+
+    def free(spec: dict[str, Any]) -> None:
+        spec["utility"]["rpu"] = "123"
+        spec["project"]["site"]["address"]["cp"] = "481129"
+        spec["project"]["site"]["lat"] = "20°43' N"
+        spec["project"]["site"]["lon"] = 60
+        spec["project"]["client"]["email"] = "sin correo"
+        spec["title_block"]["responsible"]["cedula_profesional"] = "en trámite"
+
+    spec = parse_spec(mutated(free))
+    assert spec.utility.rpu == "123"
+    assert spec.project.site.address.cp == "481129"
+    assert spec.project.site.lat == "20°43' N"
+    assert spec.project.site.lon == 60
+    assert spec.title_block.responsible.cedula_profesional == "en trámite"
 
 
 @pytest.mark.parametrize(

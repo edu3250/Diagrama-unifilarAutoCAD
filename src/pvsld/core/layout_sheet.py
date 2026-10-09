@@ -204,8 +204,11 @@ def _strings_summary(spec: PvSystemSpec) -> tuple[int, str]:
     return n_modules, text
 
 
-def _degrees(value: float | None) -> str | None:
-    return None if value is None else f"{value:.5f}°"
+def _degrees(value: float | str | None) -> str | None:
+    """A number in decimal degrees; text the user wrote stays as written."""
+    if value is None or isinstance(value, str):
+        return value
+    return f"{value:.5f}°"
 
 
 def _service(spec: PvSystemSpec) -> str:

@@ -48,14 +48,16 @@ class _Strict(BaseModel):
 
 # Personal data (owner, address, coordinates, service identifiers, responsible engineer) is
 # optional (Stage 3.6.2): what the user gives is drawn and reported, what is missing stays a blank
-# line to fill by hand. Nothing is ever invented.
+# line to fill by hand. Nothing is ever invented. Its format is the user's business (owner decision
+# 2026-10-09): any text is accepted as written, with no pattern or range check.
 OptionalText = Annotated[str | None, Field(min_length=1)]
+Coordinate = float | Annotated[str, Field(min_length=1)] | None
 
 
 class Client(_Strict):
     name: OptionalText = None
     phone: OptionalText = None
-    email: str | None = Field(default=None, min_length=3, pattern=r"^[^@\s]+@[^@\s]+$")
+    email: OptionalText = None
 
 
 class Address(_Strict):
@@ -64,7 +66,7 @@ class Address(_Strict):
     colonia: OptionalText = None
     municipio: OptionalText = None
     estado: OptionalText = None
-    cp: str | None = Field(default=None, pattern=r"^\d{5}$")
+    cp: OptionalText = None
 
 
 def address_text(address: Address) -> str:
@@ -78,8 +80,8 @@ def address_text(address: Address) -> str:
 
 class Site(_Strict):
     address: Address = Address()
-    lat: float | None = Field(default=None, ge=14, le=33, description="Mexico bounds, degrees")
-    lon: float | None = Field(default=None, ge=-118, le=-86, description="Mexico bounds, degrees")
+    lat: Coordinate = Field(default=None, description="Degrees, or the text the user wrote")
+    lon: Coordinate = Field(default=None, description="Degrees, or the text the user wrote")
     occupancy: Literal[
         "vivienda_unifamiliar",
         "vivienda_bifamiliar",
@@ -122,7 +124,7 @@ class ServiceMain(_Strict):
 
 class Utility(_Strict):
     supplier: str = Field(min_length=1)
-    rpu: str | None = Field(default=None, pattern=r"^\d{12}$", description="CFE RPU, 12 digits")
+    rpu: OptionalText = Field(default=None, description="CFE RPU, as the user wrote it")
     service_number: OptionalText = None
     meter_number: OptionalText = None
     tariff: str = Field(min_length=1)
@@ -392,9 +394,7 @@ class Monitoring(_Strict):
 
 class Responsible(_Strict):
     name: OptionalText = None
-    cedula_profesional: str | None = Field(
-        default=None, pattern=r"^\d{7,8}$", description="Cedula, 7 or 8 digits"
-    )
+    cedula_profesional: OptionalText = None
     company: OptionalText = None
 
 

@@ -165,6 +165,7 @@ def design_and_draw(
     runner: Runner = run_process,
     today: date | None = None,
     base_dir: Path | None = None,
+    project_sheet: Path | None = None,
 ) -> DesignResult:
     """Design one installation and write its deliverables into ``folder`` (created if missing).
 
@@ -178,6 +179,8 @@ def design_and_draw(
         runner: the Core Console runner (tests pass a fake).
         today: date of the title block in quick mode (default: today).
         base_dir: folder a relative ``template_file`` is read from.
+        project_sheet: the user's project sheet (professional mode): the deliverable is that
+            workbook with its "Último cálculo" column refreshed, instead of a new sheet.
 
     Raises:
         SizingInputError: the request is malformed (unknown component, bad template...).
@@ -236,13 +239,16 @@ def design_and_draw(
     summary = bom_text(report.spec, report.derived)
     files[MEMORIA_XLSX] = write_memoria_xlsx(memoria, folder / MEMORIA_XLSX)
     files[MEMORIA_PDF] = write_memoria_pdf(memoria, folder / MEMORIA_PDF)
-    files[PROJECT_SHEET] = write_project_sheet(
-        folder / PROJECT_SHEET,
-        registry,
-        report.spec,
-        report.derived,
-        explanation_es=selected.explanation_es,
+    fresh = folder / (f".{PROJECT_SHEET}" if project_sheet else PROJECT_SHEET)
+    write_project_sheet(
+        fresh, registry, report.spec, report.derived, explanation_es=selected.explanation_es
     )
+    if project_sheet is not None:
+        from pvsld.design.pro import refresh_last_calculation
+
+        refresh_last_calculation(project_sheet, fresh, folder / PROJECT_SHEET)
+        fresh.unlink()
+    files[PROJECT_SHEET] = folder / PROJECT_SHEET
     (folder / BOM_TXT).write_text(summary + "\n", encoding="utf-8")
     files[BOM_TXT] = folder / BOM_TXT
     files[SPEC_YAML] = _write_spec(folder / SPEC_YAML, spec)

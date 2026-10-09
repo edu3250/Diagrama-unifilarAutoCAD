@@ -1,11 +1,13 @@
 """The MCP server of ADR-0001 (layer L1): workflow tools and resources over stdio.
 
-Six tools: ``list_components`` and ``get_component`` read the component catalogue,
+Eight tools: ``list_components`` and ``get_component`` read the component catalogue,
 ``size_pv_system`` sizes a design from it (Stage 3.5), ``validate_pv_design`` checks a spec,
 ``generate_single_line_diagram`` draws it and ``design_and_draw`` does all of it in one step and
 adds the AutoCAD (or pvsld) PDF, the calculation report, the project sheet and the bill of
-materials (Stage 3.6.1). Four resources: the spec schema, the rule pack, the
-symbol library and an example of the non-sizing sections a sizing request needs.
+materials (Stage 3.6.1); ``new_project_sheet`` and ``design_from_project_sheet`` are the
+professional mode, driven by the project sheet the user fills in (Stage 3.6.2). Four resources:
+the spec schema, the rule pack, the symbol library and an example of the non-sizing sections a
+sizing request needs.
 
 Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
 tool surface is deliberately small and has no primitive drawing tool and no code execution, so the
@@ -49,7 +51,13 @@ from pvsld.catalogue.registry import ComponentRegistry
 from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, export_json_schema
 from pvsld.core.rules import rulepack_catalogue
 from pvsld.core.validation import ValidationReport
-from pvsld.mcp.design_tool import DesignOutput, design_text, run_design
+from pvsld.mcp.design_tool import (
+    DesignOutput,
+    design_text,
+    run_design,
+    run_new_sheet,
+    run_pro_design,
+)
 from pvsld.mcp.models import (
     GenerateOutput,
     ValidationOutput,
@@ -111,30 +119,25 @@ def _ensure_spec_size(spec: dict[str, Any]) -> None:
 
 
 INSTRUCTIONS = f"""\
-Designs Mexican photovoltaic systems and draws their single-line diagrams (CFE distributed \
-generation, NOM-001-SEDE-2012) as DXF R2018.
-Quick mode: when the user asks for a diagram with little detail ("un diagrama con 5 paneles \
-Jinko"), find the module with list_components and call design_and_draw once: it sizes, \
-validates, draws and writes the DWG or DXF, the PDF, the calculation report, the project sheet \
-and the bill of materials into one folder. Pass on its explanation and summary in Spanish.
-Step by step (when the user wants to choose):
-1. Equipment comes from the component catalogue: list_components finds modules, inverters and DC \
-breakers, get_component gives their datasheet values. Never invent equipment data or \
+Designs Mexican PV systems and draws their single-line diagrams (CFE distributed generation, \
+NOM-001-SEDE-2012).
+Quick mode ("un diagrama con 5 paneles Jinko"): find the module with list_components, then call \
+design_and_draw once; it writes the DWG or DXF, the PDF, the calculation report, the project \
+sheet and the bill of materials into one project folder. Pass on its explanation and summary in \
+Spanish.
+Professional mode: new_project_sheet gives a blank project sheet; the user fills it in the \
+project folder; design_from_project_sheet designs from it or lists the cells to fix.
+Step by step:
+1. list_components / get_component give catalogue equipment. Never invent equipment data or \
 identifiers (Voc, Isc, ratings, RPU, cedula profesional): ask the user, or ask for the datasheet \
-when a component is not in the catalogue.
-2. To size a system, call size_pv_system with a module, inverters (or "auto"), a target and the \
-non-sizing sections of the spec (example: resource {SIZING_TEMPLATE_URI}). It returns the \
-selected design with a complete spec, ranked alternatives and why other configurations were \
-rejected. Show the selection to the user before drawing.
-3. Call validate_pv_design with the whole spec (the one size_pv_system returned, or one built \
-from the schema {SCHEMA_URI}). Fix every error finding and validate again. The rules are in \
-{RULEPACK_URI}, the drawing symbols in {SYMBOLS_URI}.
-4. Call generate_single_line_diagram with the same spec, only when validation has no errors. It \
-re-validates, writes the DXF into the server's output folder, verifies the file by reading it \
-back and returns a PNG preview: look at it.
-There are no tools to draw lines or run code; the server computes the geometry. Explain findings \
-to the user in Spanish. Drawings are drafts: a responsible engineer must review and sign them \
-before they are submitted.
+of a component not in the catalogue.
+2. size_pv_system sizes from a module, inverters (or "auto"), a target and the non-sizing \
+sections of the spec (resource {SIZING_TEMPLATE_URI}); show the selection before drawing.
+3. validate_pv_design checks the spec (schema {SCHEMA_URI}, rules {RULEPACK_URI}); fix every \
+error and validate again.
+4. generate_single_line_diagram draws a valid spec and returns a PNG preview: look at it.
+The server computes all geometry. Explain findings in Spanish. Drawings are drafts that a \
+responsible engineer must review and sign.
 """
 
 
@@ -207,6 +210,24 @@ data.
 Returns the folder, the files, explanation_es (why this inverter: tell the user), bom_text (the \
 installation summary to show), whether AutoCAD was used, and a PNG preview. No configuration that \
 meets the rules is a normal result with the rejections, not an error."""
+
+NEW_SHEET_DESCRIPTION = """\
+Write a blank project sheet (hoja de proyecto, xlsx) into the project folder <output>/<name>/: \
+one yellow cell per parameter, AUTO where the calculation may decide, catalogue dropdowns. The \
+user fills it in and saves it there; then call design_from_project_sheet. A quick design \
+(design_and_draw) already leaves a prefilled sheet in its folder."""
+
+PRO_DESCRIPTION = """\
+Professional mode: design from the project sheet the user filled, \
+<output>/<name>/hoja_de_proyecto.xlsx. Every value the user fixed is kept and checked (inverter, \
+strings, modules per string, fuse, breakers, conductor sizes, conduit); AUTO cells are decided \
+by the calculation; personal data the user filled in reaches the drawing and the report.
+
+If a cell cannot be used or a fixed value breaks a rule (a fuse below 1.56 x Isc, a conductor too \
+small), nothing is designed: the result lists each cell with its Spanish reason, and \
+hoja_de_proyecto_revisar.xlsx marks them in red. A model missing from the catalogue is listed in \
+missing_components. Otherwise the result is the same as design_and_draw, written into the same \
+folder (the sheet's "Ultimo calculo" column is refreshed). 5 to 20 s."""
 
 LIST_COMPONENTS_DESCRIPTION = """\
 List the components of the catalogue (datasheet records the owner has reviewed): PV modules, \
@@ -721,6 +742,76 @@ def create_server(
                 max_preview_bytes=preview_limit,
             )
         _log_call("design_and_draw", started, ok=output.ok, files=len(output.files))
+        content: list[TextContent | ImageContent] = [_text(design_text(output))]
+        if image is not None:
+            content.append(image)
+        return CallToolResult(
+            content=content,
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    project_name = Field(description=f"Project folder name; {NAME_RULE}.")
+
+    @server.tool(
+        name="new_project_sheet",
+        title="New project sheet",
+        description=NEW_SHEET_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="New project sheet",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def new_project_sheet_tool(
+        name: Annotated[str, project_name],
+        overwrite: Annotated[bool, Field(description=OVERWRITE_DESCRIPTION)] = False,
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        output = run_new_sheet(
+            box, load_registry(include_unreviewed), name=name, overwrite=overwrite
+        )
+        _log_call("new_project_sheet", started, ok=output.ok)
+        return CallToolResult(
+            content=[_text(design_text(output))],
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        name="design_from_project_sheet",
+        title="Design from project sheet",
+        description=PRO_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Design from project sheet",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def design_from_project_sheet_tool(
+        name: Annotated[str, project_name],
+        use_autocad: Annotated[
+            Literal["auto", "never"],
+            Field(
+                description="auto (default): use AutoCAD when installed; never: DXF + pvsld PDF."
+            ),
+        ] = "auto",
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        registry = load_registry(include_unreviewed)
+        with generation_lock:
+            output, image = run_pro_design(
+                box,
+                registry,
+                name=name,
+                use_autocad=use_autocad,
+                max_preview_bytes=preview_limit,
+            )
+        _log_call("design_from_project_sheet", started, ok=output.ok, issues=len(output.issues))
         content: list[TextContent | ImageContent] = [_text(design_text(output))]
         if image is not None:
             content.append(image)
