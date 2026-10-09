@@ -8,6 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Values the user fixes are kept and checked, never replaced (Stage 3.6.2a, for the professional mode). New sizing request fields:
+  - `n_strings` and `n_series` pin the string layout; a string count above the inverter's inputs is rejected (REQ-002);
+  - `dc_conductor_size` and `ac_conductor_size` are checked for ampacity and protection (CON-002 names the smallest safe size) and for voltage drop (warning);
+  - `main_breaker` takes the catalogue device of ITM-P, separate from `ac_breakers`, which restrict ITM-1 only;
+  - `dc_fuse_fallback: false` rejects a configuration whose listed fuses do not fit instead of switching to a DC breaker.
+- Personal data reaches the drawing and the calculation report when the spec gives it (Stage 3.6.2a, owner plan 2026-10-09: "si los llena, aparecen en el plano y la memoria; si no, quedan en blanco"):
+  - the owner, address, coordinates, RPU, service and meter numbers, the responsible engineer and the reviewer are optional in the spec, and missing ones stay blank lines;
+  - on the A3 sheet a given value is cut with "…" to the length of the blank line it replaces;
+  - the responsible's company replaces "COMPAÑÍA INSTALADORA";
+  - the quick template no longer carries "SIN DATOS" markers.
 - One-step design for the plugin's quick mode (Stage 3.6.1b): `pvsld.design.design_and_draw`, the MCP tool `design_and_draw` and `pvsld design REQUEST -o DIR [--no-autocad]`. From a module and a size it sizes, validates and draws the installation, finishes it with the local AutoCAD (DWG and PDF) or renders the PDF itself, and writes the calculation report (xlsx, pdf), the project sheet, the bill of materials and the spec into one folder per project (`<output>/<name>/`, default `sfv_<kWp>kWp`). Without a template the quick defaults apply (`quick_template.yaml`: CFE BT 2F-3H 220/127 V, 10 kA, 100 A main breaker, a DC SPD in the box, default temperatures, personal fields blank on the sheet). A failed AutoCAD run falls back to the pvsld PDF and says so
 - `render_pdf` / `write_pdf`: the A3 sheet as a one-page vector PDF, black on white like the AutoCAD plot with `monochrome.ctb`, byte-identical for the same drawing (for users without AutoCAD)
 - `detect_autocad` / `AutocadInfo`: whether Core Console is installed and which AutoCAD release holds it

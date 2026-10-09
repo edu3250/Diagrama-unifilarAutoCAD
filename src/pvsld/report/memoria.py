@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from pvsld.core.calc import Derived
-from pvsld.core.model import Circuit, PvSystemSpec
+from pvsld.core.model import Circuit, PvSystemSpec, address_text
 from pvsld.core.rules import Finding
 from pvsld.core.tables import get_tables
 from pvsld.report.bom import (
@@ -105,6 +105,27 @@ def _g(value: float) -> str:
     return f"{value:g}"
 
 
+def _location(spec: PvSystemSpec) -> str:
+    """Address and coordinates as given; blank when the user gave none (personal data)."""
+    site = spec.project.site
+    parts = [address_text(site.address)]
+    if site.lat is not None and site.lon is not None:
+        parts.append(f"{site.lat:.5f}, {site.lon:.5f}")
+    return " — ".join(part for part in parts if part)
+
+
+def _owner(spec: PvSystemSpec) -> str:
+    client, utility = spec.project.client, spec.utility
+    rpu = f"RPU {utility.rpu}" if utility.rpu else ""
+    return ", ".join(part for part in (client.name, rpu) if part)
+
+
+def _responsible(spec: PvSystemSpec) -> str:
+    who = spec.title_block.responsible
+    cedula = f"cédula {who.cedula_profesional}" if who.cedula_profesional else ""
+    return ", ".join(part for part in (who.name, cedula, who.company) if part)
+
+
 def _raceway_owner(spec: PvSystemSpec, circuit: Circuit) -> Circuit:
     if circuit.raceway.ref is None:
         return circuit
@@ -144,16 +165,16 @@ def build_memoria(
         general=[
             ("Proyecto", spec.project.name),
             ("Norma", spec.standards.nom_edition),
-            ("Ubicación", ""),
+            ("Ubicación", _location(spec)),
             (
                 "Servicio",
                 f"{spec.utility.supplier} {spec.utility.system} "
                 f"{_g(spec.utility.nominal_voltage_v)} V, tarifa {spec.utility.tariff}",
             ),
-            ("Propietario", ""),
+            ("Propietario", _owner(spec)),
             ("Esquema", "Medición neta, conexión del lado de la carga"),
-            ("Responsable", ""),
-            ("Fecha", ""),
+            ("Responsable", _responsible(spec)),
+            ("Fecha", spec.title_block.date.strftime("%d/%m/%Y")),
         ],
         equipment=[
             (

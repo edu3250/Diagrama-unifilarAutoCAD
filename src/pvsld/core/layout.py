@@ -50,6 +50,7 @@ from pvsld.core.model import (
     Panel,
     PvSystemSpec,
     Raceway,
+    address_text,
 )
 from pvsld.core.tables import NomTables, get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
@@ -912,22 +913,21 @@ def _title_block(spec: PvSystemSpec, derived: Derived) -> SymbolInstance:
         _check_title_block(
             {
                 "PROYECTO": spec.project.name,
-                "CLIENTE": spec.project.client.name,
-                "UBICACION": f"{address.street} {address.number}, {address.colonia}, "
-                f"{address.municipio}, {address.estado}, C.P. {address.cp}",
-                "RPU": utility.rpu,
-                "NUM_SERVICIO": utility.service_number,
-                "NUM_MEDIDOR": utility.meter_number,
+                "CLIENTE": spec.project.client.name or NO_VALUE,
+                "UBICACION": address_text(address) or NO_VALUE,
+                "RPU": utility.rpu or NO_VALUE,
+                "NUM_SERVICIO": utility.service_number or NO_VALUE,
+                "NUM_MEDIDOR": utility.meter_number or NO_VALUE,
                 "TARIFA": utility.tariff,
                 "TENSION_SUMINISTRO": f"{_g(utility.nominal_voltage_v)} V {utility.system}",
                 "CAPACIDAD": f"{_n(derived.kwp_total, 2)} kWp / {_n(derived.kwac_total, 2)} kWac",
-                "RESPONSABLE": tb.responsible.name,
-                "CEDULA": tb.responsible.cedula_profesional,
+                "RESPONSABLE": tb.responsible.name or NO_VALUE,
+                "CEDULA": tb.responsible.cedula_profesional or NO_VALUE,
                 "UVIE": tb.uvie or "NO APLICA",
                 "FECHA": tb.date.isoformat(),
-                "EMPRESA": tb.responsible.company,
+                "EMPRESA": tb.responsible.company or NO_VALUE,
                 "DIBUJO": tb.drawn_by,
-                "REVISO": tb.checked_by,
+                "REVISO": tb.checked_by or NO_VALUE,
                 "APROBO": tb.approved_by or NO_VALUE,
                 "NORMA": spec.standards.nom_edition,
                 "TITULO": "Diagrama unifilar fotovoltaico",
@@ -1413,7 +1413,7 @@ def build_schematic(spec: PvSystemSpec, derived: Derived, placement: Placement) 
                 "METER_TYPE": "MF",
                 "BIDIRECTIONAL": "SI" if meter.bidirectional else "NO",
                 "OWNER": meter.owner,
-                "METER_NO": meter.meter_no,
+                "METER_NO": meter.meter_no or "",
             },
         )
     )

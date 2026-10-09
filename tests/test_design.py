@@ -88,7 +88,8 @@ def test_the_written_spec_validates_and_carries_the_quick_defaults(quick: Design
     assert report.spec.title_block.date == TODAY
     assert report.spec.project.name.endswith(" kWp")
     assert "{kwp}" not in report.spec.project.name
-    assert report.spec.project.client.name == "SIN DATOS"
+    assert report.spec.project.client.name is None
+    assert report.spec.utility.rpu is None
     assert [s.id for s in report.spec.dc_bos.spds] == ["DPS-CD1"]
 
 

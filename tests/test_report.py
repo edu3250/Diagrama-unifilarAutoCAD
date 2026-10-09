@@ -153,3 +153,22 @@ def test_the_report_command_writes_the_four_files(
         "hoja_de_proyecto.xlsx",
         "resumen_materiales.txt",
     }
+
+
+def test_the_memoria_shows_the_personal_data_given_and_blanks_the_rest(
+    design: tuple[ValidationReport, str],
+) -> None:
+    report, _ = design
+    assert report.spec is not None
+    assert report.derived is not None
+    general = dict(build_memoria(report.spec, report.derived).general)
+    assert general["Propietario"] == "Juan Pérez, RPU 000000000000"
+    assert general["Ubicación"].startswith("Av. Ejemplo 123, Centro, Zapopan, Jalisco, C.P. 45000")
+    assert "Ing. Nombre Apellido" in general["Responsable"]
+    project = report.spec.project.model_copy(
+        update={"client": report.spec.project.client.model_construct()}
+    )
+    blank_utility = report.spec.utility.model_copy(update={"rpu": None})
+    anonymous = report.spec.model_copy(update={"project": project, "utility": blank_utility})
+    general = dict(build_memoria(anonymous, report.derived).general)
+    assert general["Propietario"] == ""

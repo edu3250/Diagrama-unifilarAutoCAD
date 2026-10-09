@@ -5,19 +5,14 @@
 # CFE low voltage 2F-3H 220/127 V, 10 kA available, 100 A main breaker, 125 A load centre, net
 # metering. Temperatures are general defaults (owner decision 2026-10-09: not asked in quick mode).
 #
-# Personal data is never invented. The schema requires these fields, so they hold the marker
-# "SIN DATOS" or zeros; the sheet and the calculation report leave every personal field blank
-# whatever it holds (layout_sheet.py), and the professional mode replaces them with what the user
-# fills in.
+# Personal data is never invented: owner, address, coordinates, RPU, service and meter numbers
+# and the responsible engineer are left out, so the sheet keeps blank lines to fill by hand. The
+# professional mode (project sheet) adds what the user fills in.
 schema_version: "0.1.0"
 project:
   id: "SFV"
   name: "Sistema fotovoltaico interconectado {kwp} kWp"
-  client: {name: "SIN DATOS", phone: "SIN DATOS", email: "sin-datos@example.com"}
   site:
-    address: {street: "SIN DATOS", number: "S/N", colonia: "SIN DATOS", municipio: "SIN DATOS", estado: "SIN DATOS", cp: "00000"}
-    lat: 23.63
-    lon: -102.55
     occupancy: vivienda_unifamiliar
     array_on_building: true
     t_min_c: -3
@@ -30,9 +25,6 @@ standards:
   vd_limits_pct: {dc: 1.5, ac: 2.0, total: 3.0}
 utility:
   supplier: CFE
-  rpu: "000000000000"
-  service_number: "SIN DATOS"
-  meter_number: "SIN DATOS"
   tariff: "1"
   voltage_level: BT
   system: "2F-3H"
@@ -55,7 +47,7 @@ ac_bos:
     - {id: ITM-P, role: I2, poles: 2, rating_a: 100, bidirectional: true}
   point_of_connection: {id: PI-1, type: load_side, panel: CC-1, breaker: ITM-1, position: opposite_end}
   meters:
-    - {id: M-1, role: MF, bidirectional: true, owner: CFE, meter_no: "SIN DATOS"}
+    - {id: M-1, role: MF, bidirectional: true, owner: CFE}
 grounding:
   dc_system: ungrounded_690_35
   electrodes: [{type: "varilla copperweld", length_m: 3.05, qty: 1}]
@@ -69,10 +61,8 @@ title_block:
   sheet: "1 de 1"
   revision: "A"
   date: 2026-01-01
-  responsible: {name: "SIN DATOS", cedula_profesional: "0000000", company: "SIN DATOS"}
   uvie: null
   drawn_by: "pvsld"
-  checked_by: "SIN DATOS"
   revisions: [{rev: "A", date: 2026-01-01, description: "Emisión para solicitud de interconexión", by: "pvsld"}]
 layout:
   template: "a3_plantilla_v1"

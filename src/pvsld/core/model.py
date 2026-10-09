@@ -46,25 +46,40 @@ class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
 
 
+# Personal data (owner, address, coordinates, service identifiers, responsible engineer) is
+# optional (Stage 3.6.2): what the user gives is drawn and reported, what is missing stays a blank
+# line to fill by hand. Nothing is ever invented.
+OptionalText = Annotated[str | None, Field(min_length=1)]
+
+
 class Client(_Strict):
-    name: str = Field(min_length=1)
-    phone: str = Field(min_length=1)
-    email: str = Field(min_length=3, pattern=r"^[^@\s]+@[^@\s]+$")
+    name: OptionalText = None
+    phone: OptionalText = None
+    email: str | None = Field(default=None, min_length=3, pattern=r"^[^@\s]+@[^@\s]+$")
 
 
 class Address(_Strict):
-    street: str = Field(min_length=1)
-    number: str = Field(min_length=1)
-    colonia: str = Field(min_length=1)
-    municipio: str = Field(min_length=1)
-    estado: str = Field(min_length=1)
-    cp: str = Field(pattern=r"^\d{5}$")
+    street: OptionalText = None
+    number: OptionalText = None
+    colonia: OptionalText = None
+    municipio: OptionalText = None
+    estado: OptionalText = None
+    cp: str | None = Field(default=None, pattern=r"^\d{5}$")
+
+
+def address_text(address: Address) -> str:
+    """The address on one line from the parts given ("" when none is)."""
+    street = " ".join(part for part in (address.street, address.number) if part)
+    parts = [street, address.colonia, address.municipio, address.estado]
+    if address.cp:
+        parts.append(f"C.P. {address.cp}")
+    return ", ".join(part for part in parts if part)
 
 
 class Site(_Strict):
-    address: Address
-    lat: float = Field(ge=14, le=33, description="Mexico bounds, degrees")
-    lon: float = Field(ge=-118, le=-86, description="Mexico bounds, degrees")
+    address: Address = Address()
+    lat: float | None = Field(default=None, ge=14, le=33, description="Mexico bounds, degrees")
+    lon: float | None = Field(default=None, ge=-118, le=-86, description="Mexico bounds, degrees")
     occupancy: Literal[
         "vivienda_unifamiliar",
         "vivienda_bifamiliar",
@@ -82,7 +97,7 @@ class Site(_Strict):
 class Project(_Strict):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
-    client: Client
+    client: Client = Client()
     site: Site
 
 
@@ -107,9 +122,9 @@ class ServiceMain(_Strict):
 
 class Utility(_Strict):
     supplier: str = Field(min_length=1)
-    rpu: str = Field(pattern=r"^\d{12}$", description="CFE RPU, 12 digits")
-    service_number: str = Field(min_length=1)
-    meter_number: str = Field(min_length=1)
+    rpu: str | None = Field(default=None, pattern=r"^\d{12}$", description="CFE RPU, 12 digits")
+    service_number: OptionalText = None
+    meter_number: OptionalText = None
     tariff: str = Field(min_length=1)
     voltage_level: Literal["BT", "MT"]
     system: Literal["1F-2H", "2F-3H", "3F-4H", "MT-3F-3H", "MT-3F-4H"]
@@ -294,7 +309,7 @@ class Meter(_Strict):
     role: Literal["MF", "MCE"]
     bidirectional: bool
     owner: str = Field(min_length=1)
-    meter_no: str = Field(min_length=1)
+    meter_no: OptionalText = None
 
 
 class AcBos(_Strict):
@@ -376,9 +391,11 @@ class Monitoring(_Strict):
 
 
 class Responsible(_Strict):
-    name: str = Field(min_length=1)
-    cedula_profesional: str = Field(pattern=r"^\d{7,8}$", description="Cedula, 7 or 8 digits")
-    company: str = Field(min_length=1)
+    name: OptionalText = None
+    cedula_profesional: str | None = Field(
+        default=None, pattern=r"^\d{7,8}$", description="Cedula, 7 or 8 digits"
+    )
+    company: OptionalText = None
 
 
 class Revision(_Strict):
@@ -394,10 +411,10 @@ class TitleBlock(_Strict):
     sheet: str = Field(min_length=1)
     revision: str = Field(min_length=1)
     date: date
-    responsible: Responsible
+    responsible: Responsible = Responsible()
     uvie: str | None = None
     drawn_by: str = Field(min_length=1)
-    checked_by: str = Field(min_length=1)
+    checked_by: OptionalText = None
     approved_by: str | None = None
     revisions: list[Revision] = Field(min_length=1)
 
