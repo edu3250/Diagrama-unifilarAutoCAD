@@ -36,7 +36,16 @@ def test_project_identity(pyproject: dict[str, Any]) -> None:
 
 def test_runtime_dependencies(pyproject: dict[str, Any]) -> None:
     names = {_requirement_name(dep) for dep in pyproject["project"]["dependencies"]}
-    assert names == {"ezdxf", "matplotlib", "mcp", "pillow", "pydantic", "pyyaml"}
+    assert names == {
+        "ezdxf",
+        "matplotlib",
+        "mcp",
+        "openpyxl",
+        "pillow",
+        "pydantic",
+        "pyyaml",
+        "reportlab",
+    }
 
 
 def test_dev_extra_carries_the_toolchain(pyproject: dict[str, Any]) -> None:
