@@ -37,7 +37,16 @@ CATALOGUE_DIR_ENV = "PVSLD_CATALOGUE_DIR"
 _REPO_RECORDS = Path(__file__).resolve().parents[3] / "datasheets" / "records"
 MAX_ALTERNATIVES = 5
 """Ranked alternatives listed besides the selection (their full specs are never sent)."""
-COMPONENT_TYPES = ("pv_module", "string_inverter", "hybrid_inverter", "dc_breaker", "dc_fuse")
+COMPONENT_TYPES = (
+    "pv_module",
+    "string_inverter",
+    "hybrid_inverter",
+    "dc_breaker",
+    "dc_fuse",
+    "ac_breaker",
+    "dc_switch",
+    "conductor",
+)
 
 
 def catalogue_dir_from_environment() -> Path:
@@ -52,6 +61,10 @@ class ComponentBrief(BaseModel):
     manufacturer: str
     rating: str = Field(description="Main rating: Wp, kW AC and kWp DC limit, or amperes.")
     reviewed: bool = Field(description="False: the owner has not checked it against its datasheet.")
+    local: bool = Field(
+        default=False,
+        description="True: the user added it to the local catalogue from a datasheet.",
+    )
 
 
 class ComponentListOutput(BaseModel):
@@ -112,13 +125,14 @@ class SizingOutput(BaseModel):
 # --- builders -----------------------------------------------------------------------------------
 
 
-def _brief(component: Component) -> ComponentBrief:
+def _brief(component: Component, registry: ComponentRegistry) -> ComponentBrief:
     return ComponentBrief(
         component_id=component.component_id,
         component_type=component.component_type,
         manufacturer=component.manufacturer,
         rating=_rating(component),
         reviewed=component.reviewed,
+        local=registry.is_local(component.component_id),
     )
 
 
@@ -128,12 +142,12 @@ def component_list_output(
     found = registry.find(component_type=component_type, manufacturer=manufacturer)
     return ComponentListOutput(
         count=len(found),
-        components=[_brief(c) for c in found],
+        components=[_brief(c, registry) for c in found],
         skipped_unreviewed=list(registry.skipped_unreviewed),
         next_step=(
             "Use a component_id in size_pv_system (module and inverters) or get_component for "
             "its datasheet values. Never invent a component that is not listed: ask the user for "
-            "its datasheet."
+            "its datasheet and add it with add_component_to_catalogue."
         ),
     )
 

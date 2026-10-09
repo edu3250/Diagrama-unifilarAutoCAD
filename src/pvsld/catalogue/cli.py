@@ -15,6 +15,7 @@ invalid; ``--require-reviewed`` also fails while a record has no ``reviewed_by``
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
 from collections import Counter
 from pathlib import Path
@@ -25,6 +26,14 @@ import yaml
 from pvsld.catalogue.conductors import Cable
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter
+from pvsld.catalogue.local import (
+    DATASHEETS_FOLDER,
+    LOCAL_DIR_ENV,
+    LOCAL_REVIEWER,
+    add_local_record,
+    load_catalogue,
+    local_catalogue_dir,
+)
 from pvsld.catalogue.modules import PVModule
 from pvsld.catalogue.protection import AcBreaker, DcBreaker, DcFuse, DcSwitch
 from pvsld.catalogue.registry import RECORD_FOLDERS, Component, ComponentRegistry, load_records
@@ -81,7 +90,41 @@ def _validate(args: argparse.Namespace) -> int:
 
 
 def _load(args: argparse.Namespace) -> ComponentRegistry:
-    return ComponentRegistry.load(args.records, include_unreviewed=args.include_unreviewed)
+    """The bundled records merged with the user's local catalogue (Stage 3.6.3)."""
+    registry = load_catalogue(
+        args.records, local=local_catalogue_dir(), include_unreviewed=args.include_unreviewed
+    )
+    for problem in registry.local_problems:
+        print(f"local catalogue: {problem}", file=sys.stderr)
+    return registry
+
+
+def _add(args: argparse.Namespace) -> int:
+    """Add a record the user confirmed to the local catalogue, with its datasheet."""
+    local = local_catalogue_dir()
+    try:
+        data = yaml.safe_load(args.record.read_text(encoding="utf-8"))
+        registry = _load(args)
+        sheets = local / DATASHEETS_FOLDER
+        sheets.mkdir(parents=True, exist_ok=True)
+        datasheet = sheets / args.datasheet.name
+        if args.datasheet.resolve() != datasheet.resolve():
+            shutil.copyfile(args.datasheet, datasheet)
+        added = add_local_record(
+            data,
+            local,
+            datasheet=datasheet,
+            registry=registry,
+            reviewed_by=args.reviewed_by,
+            overwrite=args.overwrite,
+        )
+    except CatalogueError as error:
+        return _fail(error)
+    except (OSError, yaml.YAMLError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    print(f"added {', '.join(added.component_ids)} to the local catalogue: {added.path}")
+    return 0
 
 
 def _list(args: argparse.Namespace) -> int:
@@ -91,7 +134,7 @@ def _list(args: argparse.Namespace) -> int:
         return _fail(error)
     components = registry.find(component_type=args.type, manufacturer=args.manufacturer)
     rows = [
-        (c.component_id, c.component_type, c.manufacturer, _rating(c), _status(c))
+        (c.component_id, c.component_type, c.manufacturer, _rating(c), _status(c, registry))
         for c in components
     ]
     header = ("ID", "TYPE", "MANUFACTURER", "RATING", "STATUS")
@@ -110,7 +153,9 @@ def _list(args: argparse.Namespace) -> int:
     return 0
 
 
-def _status(component: Component) -> str:
+def _status(component: Component, registry: ComponentRegistry | None = None) -> str:
+    if registry is not None and registry.is_local(component.component_id):
+        return "local"
     return "reviewed" if component.reviewed else "UNREVIEWED"
 
 
@@ -160,6 +205,32 @@ def register(subcommands: Any) -> None:
         help="also fail while a record has no reviewed_by",
     )
     validate.set_defaults(run=_validate)
+
+    add = actions.add_parser(
+        "add",
+        help="add a record the user confirmed against its datasheet to the local catalogue",
+        description="Validate RECORD (a YAML record in the format of datasheets/records), copy the "
+        "datasheet into the local catalogue's hojas_tecnicas folder, stamp the provenance "
+        "(SHA-256, "
+        "reviewer, dates) and write the record into the local catalogue "
+        f"(${LOCAL_DIR_ENV}, default %APPDATA%\\pvsld\\catalogo).",
+    )
+    add.add_argument("record", type=Path, metavar="RECORD", help="record YAML file")
+    add.add_argument(
+        "--datasheet", type=Path, required=True, metavar="PDF", help="the datasheet it comes from"
+    )
+    add.add_argument(
+        "--reviewed-by", default=LOCAL_REVIEWER, metavar="NAME", help="who confirmed the values"
+    )
+    add.add_argument("--overwrite", action="store_true", help="replace a local record of that id")
+    add.add_argument(
+        "--records",
+        type=Path,
+        default=DEFAULT_RECORDS,
+        metavar="DIR",
+        help=f"bundled records folder (default {DEFAULT_RECORDS})",
+    )
+    add.set_defaults(run=_add, include_unreviewed=False)
 
     for name, help_text in (("list", "list the components"), ("show", "print one component")):
         action = actions.add_parser(name, help=help_text, description=help_text.capitalize() + ".")

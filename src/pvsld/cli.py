@@ -44,9 +44,10 @@ from pathlib import Path
 import yaml
 
 from pvsld import __version__
-from pvsld.catalogue import ComponentRegistry, UnknownComponentError
+from pvsld.catalogue import UnknownComponentError
 from pvsld.catalogue import cli as catalogue_cli
 from pvsld.catalogue.errors import CatalogueError
+from pvsld.catalogue.local import load_catalogue, local_catalogue_dir
 from pvsld.core.policy import DEFAULT_DC_AC_ERROR_ABOVE, DEFAULT_DC_AC_WARN_ABOVE, DcAcPolicy
 from pvsld.core.rules import Finding
 from pvsld.core.validation import ValidationReport
@@ -146,8 +147,10 @@ def _report(args: argparse.Namespace) -> int:
         _print_findings(report, sys.stderr)
         return 1
     try:
-        registry = ComponentRegistry.load(
-            args.catalogue, include_unreviewed=args.include_unreviewed
+        registry = load_catalogue(
+            args.catalogue,
+            local=local_catalogue_dir(),
+            include_unreviewed=args.include_unreviewed,
         )
     except CatalogueError as error:
         print(f"error: {error}", file=sys.stderr)
@@ -181,8 +184,10 @@ def _design(args: argparse.Namespace) -> int:
 
     try:
         values = load_spec_file(args.path)
-        registry = ComponentRegistry.load(
-            args.catalogue, include_unreviewed=args.include_unreviewed
+        registry = load_catalogue(
+            args.catalogue,
+            local=local_catalogue_dir(),
+            include_unreviewed=args.include_unreviewed,
         )
         result = design_and_draw(
             values,
@@ -225,8 +230,10 @@ def _pro(args: argparse.Namespace) -> int:
     from pvsld.report import write_project_sheet
 
     try:
-        registry = ComponentRegistry.load(
-            args.catalogue, include_unreviewed=args.include_unreviewed
+        registry = load_catalogue(
+            args.catalogue,
+            local=local_catalogue_dir(),
+            include_unreviewed=args.include_unreviewed,
         )
         if args.pro_command == "new":
             path = write_project_sheet(args.output / PROJECT_SHEET, registry)
@@ -272,8 +279,10 @@ def _pro(args: argparse.Namespace) -> int:
 def _size(args: argparse.Namespace) -> int:
     try:
         request = load_request(args.path)
-        registry = ComponentRegistry.load(
-            args.catalogue, include_unreviewed=args.include_unreviewed
+        registry = load_catalogue(
+            args.catalogue,
+            local=local_catalogue_dir(),
+            include_unreviewed=args.include_unreviewed,
         )
         result = size_pv_system(request, registry)
     except (CatalogueError, SizingInputError, UnknownComponentError) as error:

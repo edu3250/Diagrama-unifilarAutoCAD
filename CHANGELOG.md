@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Local catalogue (Stage 3.6.3): equipment the bundled catalogue lacks, added from its datasheet.
+  - `pvsld.catalogue.local`:
+    - `local_catalogue_dir` locates the folder: `$PVSLD_LOCAL_CATALOGUE_DIR`, else `%APPDATA%\pvsld\catalogo`, or `~/.local/share/pvsld/catalogo` elsewhere. It has the layout of `datasheets/records` plus `hojas_tecnicas/` for the PDFs.
+    - `load_catalogue` merges the local records with the bundled ones. A broken local record, or one that repeats a bundled id, is left out and reported (`ComponentRegistry.local_problems`), never fatal. `ComponentRegistry.is_local` tells the local components apart.
+    - `add_local_record` validates a record like any bundled one and stamps its provenance: the PDF's name and SHA-256, the user as reviewer and today's dates. It refuses an id already in the catalogue; a local record can be replaced with overwrite.
+  - MCP:
+    - tool `add_component_to_catalogue` (record, datasheet file name in the local `hojas_tecnicas`, `user_confirmed`);
+    - resource `pvsld://catalogue/record-examples`: one reviewed record per type, the local folders, how to add;
+    - `list_components` marks local components and filters every type (AC breakers, PV switches, cables too);
+    - the instructions tell Claude to offer the datasheet route whenever equipment is missing.
+  - Every CLI command that sizes or designs (`size`, `design`, `pro`, `report`) and `catalogue list/show` see the local records. `pvsld catalogue add RECORD.yaml --datasheet PDF` adds one.
+  - `registry.validate_family` validates a record given as a mapping.
 - Professional mode (Stage 3.6.2b): design from the project sheet the user fills in.
   - `pvsld.design.pro`:
     - `read_project_sheet` reads the parameter rows by label, so moved or inserted rows still work;

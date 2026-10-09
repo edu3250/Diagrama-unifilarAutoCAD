@@ -32,6 +32,7 @@ from pvsld.mcp.server import (
     GENERATE_DESCRIPTION,
     INSTRUCTIONS,
     MAX_SPEC_BYTES,
+    RECORD_EXAMPLES_URI,
     RULEPACK_URI,
     SCHEMA_URI,
     SIZING_TEMPLATE_URI,
@@ -56,6 +57,7 @@ TOOLS = [
     "design_and_draw",
     "new_project_sheet",
     "design_from_project_sheet",
+    "add_component_to_catalogue",
 ]
 # Claude Code stops a tool result at 25k tokens; four characters per token is the conservative
 # estimate (real text of this kind is closer to three, but the image is base64 that counts as text).
@@ -186,13 +188,14 @@ def test_the_instructions_tell_claude_to_validate_first(server: Any) -> None:
     assert "Never invent" in instructions
 
 
-def test_the_server_lists_the_four_resources(server: Any) -> None:
+def test_the_server_lists_the_five_resources(server: Any) -> None:
     resources = run_client(server, lambda client: client.list_resources()).resources
     assert {str(resource.uri) for resource in resources} == {
         SCHEMA_URI,
         RULEPACK_URI,
         SYMBOLS_URI,
         SIZING_TEMPLATE_URI,
+        RECORD_EXAMPLES_URI,
     }
     assert {resource.mime_type for resource in resources} == {"application/json"}
 
