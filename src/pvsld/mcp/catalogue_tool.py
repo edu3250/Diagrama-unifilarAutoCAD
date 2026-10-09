@@ -34,7 +34,8 @@ class AddComponentOutput(BaseModel):
 def datasheet_path(local: Path, name: str) -> Path:
     """The PDF ``name`` inside the local catalogue's datasheet folder; refuses any other place."""
     folder = local / DATASHEETS_FOLDER
-    if not name or Path(name).name != name or name in {".", ".."}:
+    # Separators and drive colons of every system: a Windows path is refused on Linux too.
+    if not name or any(c in name for c in "/\\:") or name in {".", ".."}:
         raise ToolError(f"datasheet must be a file name inside {folder}, not a path: {name!r}")
     if not name.lower().endswith(".pdf"):
         raise ToolError(f"datasheet must be the PDF of the datasheet, got {name!r}")
