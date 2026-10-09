@@ -55,9 +55,14 @@ from pvsld.sizing.strings import EvalContext, Evaluation, enumerate_configs, eva
 
 OBJECTIVE = (
     "Closest deliverable DC power to the target (array STC power minus the estimated current "
-    "clipping); ties: fewer warnings, lower cold string voltage relative to the inverter limit, "
-    "fewer strings, inverter id. With no target the largest deliverable power wins."
+    "clipping; with no target the largest wins); then a DC/AC ratio inside 1.10-1.25 or the "
+    "closest to it (owner decision 2026-10-09), less clipping, fewer warnings, the smaller "
+    "inverter, lower cold string voltage relative to the inverter limit, fewer strings, "
+    "inverter id."
 )
+DC_AC_PREFERRED = (1.10, 1.25)
+"""DC/AC ratio the ranking prefers (owner decision 2026-10-09): enough DC to use the inverter,
+little clipping."""
 AC_BREAKER_VOLTAGE_V = 240.0
 """Rated voltage class of the inverter-output breaker (120/240 V class devices)."""
 DC_SWITCH_ASSUMPTION = (
@@ -129,9 +134,15 @@ def _target_w(request: SizingRequest, module: CatalogueModule) -> float | None:
     return None
 
 
+def dc_ac_gap(ratio: float) -> float:
+    """How far ``ratio`` is from the preferred DC/AC band (0 inside it)."""
+    low, high = DC_AC_PREFERRED
+    return max(low - ratio, ratio - high, 0.0)
+
+
 def _rank_key(
     evaluation: Evaluation, inverter: CatalogueInverter, target_w: float | None
-) -> tuple[float, int, float, int, str]:
+) -> tuple[float, float, float, int, float, float, int, str]:
     metrics = evaluation.metrics
     distance = (
         abs(metrics.deliverable_dc_w - target_w)
@@ -140,11 +151,48 @@ def _rank_key(
     )
     return (
         round(distance, 3),
+        round(dc_ac_gap(metrics.dc_ac_ratio), 4),
+        round(metrics.clipping_pct, 3),
         len(evaluation.warnings),
+        inverter.rated_ac_power_w,
         round(metrics.voc_cold_string_v / inverter.max_input_voltage_v, 6),
         evaluation.config.n_strings,
         inverter.component_id,
     )
+
+
+def explain_choice(candidate_metrics: StringMetrics, inverter: CatalogueInverter) -> str:
+    """One or two plain Spanish sentences on why this inverter: its DC/AC ratio against the
+    preferred band and, when it is outside, why no other inverter in the catalogue did better."""
+    ratio = candidate_metrics.dc_ac_ratio
+    kwp = candidate_metrics.p_dc_w / 1000
+    kw = inverter.rated_ac_power_w / 1000
+    low, high = DC_AC_PREFERRED
+    name = f"{inverter.manufacturer} {inverter.component_id.split('-', 1)[-1]}"
+    head = (
+        f"Se eligió el inversor {name} ({kw:g} kW): con {kwp:.2f} kWp de módulos la relación "
+        f"CD/CA es {ratio:.2f}"
+    )
+    if dc_ac_gap(ratio) == 0:
+        return f"{head}, dentro del rango recomendado de {low:.2f} a {high:.2f}."
+    if ratio < low:
+        why = (
+            f"Ningún inversor del catálogo queda en el rango recomendado de {low:.2f} a "
+            f"{high:.2f} con esta cantidad de módulos: este es el más cercano y uno más grande "
+            "quedaría aún más sobrado"
+        )
+    else:
+        why = (
+            f"Ningún inversor del catálogo queda en el rango recomendado de {low:.2f} a "
+            f"{high:.2f} con esta cantidad de módulos: este es el más cercano y uno más chico "
+            "recortaría más potencia"
+        )
+    clip = (
+        f" Se estima un recorte de {candidate_metrics.clipping_pct:.1f} % en horas pico."
+        if candidate_metrics.clipping_pct > 0
+        else ""
+    )
+    return f"{head}. {why}.{clip}"
 
 
 # --- BOS and specification ------------------------------------------------------------------
@@ -446,7 +494,12 @@ def _build_spec(
                 "integrated_in": None,
                 "poles": dc_ocpd.poles * config.n_strings,
                 **(
-                    {"ue_v": switch.voltage_v, "ie_a": switch.rating_a, "model": switch.device_id}
+                    {
+                        "poles": switch.poles or dc_ocpd.poles * config.n_strings,
+                        "ue_v": switch.voltage_v,
+                        "ie_a": switch.rating_a,
+                        "model": switch.device_id,
+                    }
                     if (switch := bos_spec.device(BOX_SWITCH_ID)) is not None
                     else {"ue_v": dc_ocpd.ue_v, "ie_a": dc_ocpd.rating_a}
                 ),
@@ -701,6 +754,7 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
                 bos=bos_spec,
                 findings=report.findings,
                 spec=spec,
+                explanation_es=explain_choice(evaluation.metrics, inverter),
             )
         )
 

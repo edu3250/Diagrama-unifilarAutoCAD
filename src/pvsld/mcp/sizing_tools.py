@@ -226,6 +226,8 @@ def sizing_text(output: SizingOutput) -> str:
     lines = [output.summary]
     if output.selected is not None:
         selected = output.selected
+        if selected.get("explanation_es"):
+            lines.append(f"  why (tell the user): {selected['explanation_es']}")
         lines += [f"  warning {i['rule_id']}: {i['message_es']}" for i in selected["issues"]]
         bos = selected["bos"]
         dc_ocpd = bos["dc_ocpd"]
