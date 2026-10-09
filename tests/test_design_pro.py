@@ -154,7 +154,7 @@ def test_fixed_values_and_personal_data_reach_the_design(sheet: Path, tmp_path: 
     assert [s["n_series"] for s in spec["strings"]] == [8]
     assert spec["circuits"][0]["conductors"]["size"] == "6 AWG"
     assert spec["project"]["client"] == {"name": "Ana López"}
-    assert spec["utility"]["rpu"] == "123456789012"
+    assert spec["utility"]["rpu"] == "1234 5678 9012"  # as written
     assert spec["project"]["site"]["address"] == {"cp": "45000"}
     assert spec["title_block"]["responsible"] == {"company": "Solar Bajío"}
     assert spec["title_block"]["date"] == date(2026, 2, 1)
@@ -164,9 +164,10 @@ def test_unusable_cells_are_reported_on_their_cells(sheet: Path, tmp_path: Path)
     edit(
         sheet,
         {
-            ("Proyecto", "Código postal"): "4500",
+            ("Proyecto", "Código postal"): 481129,  # personal data: never checked
             ("Proyecto", "RPU"): "123",
-            ("Proyecto", "Cédula profesional"): "12",
+            ("Proyecto", "Cédula profesional"): "21312315555123",
+            ("Proyecto", "Latitud"): "20°43' N",
             ("Proyecto", "Tensión nominal"): 230,
             ("Proyecto", "Sistema de suministro"): "3F-4H",
             ("Equipos", "Número de cadenas"): 3,
@@ -181,9 +182,6 @@ def test_unusable_cells_are_reported_on_their_cells(sheet: Path, tmp_path: Path)
     assert result.design is None
     labels = {issue.label for issue in result.issues}
     assert labels == {
-        "Código postal",
-        "RPU",
-        "Cédula profesional",
         "Tensión nominal",
         "Sistema de suministro",
         "Número de cadenas",
@@ -209,16 +207,16 @@ def test_a_fixed_value_the_calculation_rejects_is_put_back_on_its_cell(
 
 
 def test_the_reviewed_sheet_marks_the_cells_in_red(sheet: Path, tmp_path: Path) -> None:
-    edit(sheet, {("Proyecto", "Código postal"): "4500"})
+    edit(sheet, {("Proyecto", "Tensión nominal"): 230})
     result = design(sheet, tmp_path / "out")
     reviewed = write_reviewed_sheet(sheet, tmp_path / REVIEW_SHEET, result.issues)
     workbook = load_workbook(reviewed)
     (issue,) = result.issues
     cell = workbook["Proyecto"].cell(issue.row, 2)
-    assert cell.value == "4500"  # the user's value is kept
+    assert cell.value == 230  # the user's value is kept
     assert cell.fill.fgColor.rgb.endswith("FFC7CE")
     assert cell.comment is not None
-    assert "código postal" in cell.comment.text
+    assert "tensión normalizada" in cell.comment.text
     guide = workbook["Instrucciones"]
     assert any(
         str(guide.cell(r, 2).value).startswith("REVISIÓN: 1 dato")
@@ -291,13 +289,13 @@ def test_pvsld_pro_new_and_design(
     assert main(["pro", "new", str(tmp_path / "nuevo"), *catalogue]) == 0
     assert (tmp_path / "nuevo" / PROJECT_SHEET).is_file()
 
-    edit(sheet, {("Proyecto", "Código postal"): "4500"})
+    edit(sheet, {("Proyecto", "Tensión nominal"): 230})
     argv = ["pro", "design", str(sheet), "-o", str(tmp_path / "p"), "--no-autocad", *catalogue]
     assert main(argv) == 1
-    assert "Proyecto > Código postal" in capsys.readouterr().err
+    assert "Proyecto > Tensión nominal" in capsys.readouterr().err
     assert sheet.with_name("hoja_de_proyecto_revisar.xlsx").is_file()
 
-    edit(sheet, {("Proyecto", "Código postal"): "45000"})
+    edit(sheet, {("Proyecto", "Tensión nominal"): 220})
     assert main(argv) == 0
     assert capsys.readouterr().out.startswith("why: Se eligió")
 
@@ -306,10 +304,10 @@ def test_sheet_and_calculation_problems_come_in_one_round(sheet: Path, tmp_path:
     edit(
         sheet,
         {
-            ("Proyecto", "Código postal"): "4500",
+            ("Proyecto", "Tensión nominal"): 230,
             ("Protecciones", "Fusible gPV"): "LITTELFUSE-SPF015",
         },
     )
     result = design(sheet, tmp_path / "out")
     assert result.stage == "sheet"
-    assert [issue.label for issue in result.issues] == ["Código postal", "Fusible gPV"]
+    assert [issue.label for issue in result.issues] == ["Tensión nominal", "Fusible gPV"]

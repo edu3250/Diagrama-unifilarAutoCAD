@@ -13,7 +13,8 @@ returns the user's own workbook with those cells in red and the reason in a comm
 is not in the catalogue is reported as a missing component, so the plugin can offer to add it from
 its datasheet (Stage 3.6.3).
 
-Personal data goes to the drawing and the report only when the user fills it in.
+Personal data goes to the drawing and the report only when the user fills it in, as written:
+its format is the user's business (owner decision 2026-10-09), so those cells are never checked.
 """
 
 from __future__ import annotations
@@ -165,6 +166,13 @@ class _Values:
             value = int(value)
         return str(value).strip() or None
 
+    def as_written(self, key: Key) -> float | str | None:
+        """A number stays a number; anything else is kept as the text the user wrote."""
+        value = self.raw(key)
+        if isinstance(value, int | float) and not isinstance(value, bool):
+            return float(value)
+        return self.text(key)
+
     def auto(self, key: Key) -> bool:
         value = self.text(key)
         return value is None or value.upper() == AUTO
@@ -200,16 +208,6 @@ class _Values:
             self.issue(key, f"{number:g} está fuera de rango: debe ser {bounds}.")
             return None
         return number
-
-    def pattern(self, key: Key, regex: str, what: str) -> str | None:
-        text = self.text(key)
-        if text is None:
-            return None
-        compact = re.sub(r"[\s-]", "", text) if what != "correo" else text
-        if not re.fullmatch(regex, compact):
-            self.issue(key, f"«{text}» no es válido: se espera {what}.")
-            return None
-        return compact
 
     def choice(self, key: Key, options: Iterable[str], *, default: str) -> str:
         text = self.text(key)
@@ -309,12 +307,12 @@ def sheet_request(
         "colonia": v.text((p, "Colonia")),
         "municipio": v.text((p, "Municipio")),
         "estado": v.text((p, "Estado")),
-        "cp": v.pattern((p, "Código postal"), r"\d{5}", "un código postal de 5 dígitos"),
+        "cp": v.text((p, "Código postal")),
     }
     site["address"] = {k: x for k, x in address.items() if x is not None}
-    put(site, "lat", v.number((p, "Latitud"), low=14, high=33, required=False))
-    put(site, "lon", v.number((p, "Longitud"), low=-118, high=-86, required=False))
-    put(utility, "rpu", v.pattern((p, "RPU"), r"\d{12}", "un RPU de 12 dígitos"))
+    put(site, "lat", v.as_written((p, "Latitud")))
+    put(site, "lon", v.as_written((p, "Longitud")))
+    put(utility, "rpu", v.text((p, "RPU")))
     put(utility, "service_number", v.text((p, "Número de servicio")))
     meter = v.text((p, "Número de medidor"))
     put(utility, "meter_number", meter)
@@ -346,9 +344,7 @@ def sheet_request(
     utility["regime"] = REGIMES[regime.casefold()]
     responsible = {
         "name": v.text((p, "Ingeniero responsable")),
-        "cedula_profesional": v.pattern(
-            (p, "Cédula profesional"), r"\d{7,8}", "una cédula profesional de 7 u 8 dígitos"
-        ),
+        "cedula_profesional": v.text((p, "Cédula profesional")),
         "company": v.text((p, "Empresa instaladora")),
     }
     block["responsible"] = {k: x for k, x in responsible.items() if x is not None}
