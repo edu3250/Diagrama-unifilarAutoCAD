@@ -44,6 +44,7 @@ __all__ = [
     "DEFAULT_PLOTTER",
     "ENV_ACCORECONSOLE",
     "EXPECTED_DWG_VERSION",
+    "AutocadInfo",
     "FinishOptions",
     "FinishPaths",
     "FinishResult",
@@ -52,6 +53,7 @@ __all__ = [
     "Runner",
     "build_command",
     "build_script",
+    "detect_autocad",
     "find_accoreconsole",
     "finish",
     "plan_paths",
@@ -253,6 +255,42 @@ def find_accoreconsole(
         if candidate.is_file():
             return candidate
     return None
+
+
+@dataclass(frozen=True)
+class AutocadInfo:
+    """Whether this computer can finish drawings with AutoCAD (Stage 3.6.1).
+
+    ``release`` is the install folder name (``AutoCAD 2027``) when Core Console sits in one.
+    Finding the executable does not prove a usable licence: only a finisher run does.
+    """
+
+    executable: Path | None
+    release: str | None = None
+
+    @property
+    def found(self) -> bool:
+        return self.executable is not None
+
+    def describe_es(self) -> str:
+        """One Spanish line for the user."""
+        if self.executable is None:
+            return "AutoCAD no encontrado: se entrega DXF y un PDF generado por pvsld."
+        return f"{self.release or 'AutoCAD'} encontrado: se entrega DWG y PDF de AutoCAD."
+
+
+def detect_autocad(
+    explicit: Path | None = None,
+    *,
+    environ: Mapping[str, str] | None = None,
+    program_dirs: Iterable[Path] | None = None,
+) -> AutocadInfo:
+    """Locate Core Console like :func:`find_accoreconsole` and name the AutoCAD release."""
+    executable = find_accoreconsole(explicit, environ=environ, program_dirs=program_dirs)
+    if executable is None:
+        return AutocadInfo(None)
+    folder = executable.parent.name
+    return AutocadInfo(executable, folder if folder.startswith("AutoCAD") else None)
 
 
 # --- script and command line ----------------------------------------------------------------

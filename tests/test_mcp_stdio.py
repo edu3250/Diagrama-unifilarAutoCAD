@@ -117,6 +117,7 @@ def test_stdout_carries_only_frames_and_logs_go_to_stderr(tmp_path: Path) -> Non
         "list_components",
         "get_component",
         "size_pv_system",
+        "design_and_draw",
     }
     assert "serving on stdio" in stderr
     assert elapsed < STARTUP_BUDGET_S

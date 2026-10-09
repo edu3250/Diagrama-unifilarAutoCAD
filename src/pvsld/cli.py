@@ -8,6 +8,8 @@ Usage::
     pvsld finish out/sld.dxf [-d out/finished] [--no-pdf] [--json]
     pvsld catalogue validate [PATH] | list [--type T] | show ID
     pvsld size REQUEST.yaml [--catalogue DIR] [--include-unreviewed] [-o SPEC.yaml] [--json]
+    pvsld report SPEC.yaml -o DIR [--explanation TEXT]
+    pvsld design REQUEST.yaml -o DIR [--no-autocad] [--include-unreviewed]
     pvsld symbols build [-o PATH] [--png PATH] [--check] | list [--json] | validate [PATH]
     pvsld sheet import TEMPLATE.dwg [-o PATH] | check [PATH]
 
@@ -20,8 +22,10 @@ licensed full AutoCAD); the exit code is 1 unless every output was produced and 
 :mod:`pvsld.catalogue.cli`). ``size`` runs the sizing engine (:mod:`pvsld.sizing`) on a request
 file and prints the selection, the ranked alternatives and why every other configuration was
 rejected; the exit code is 1 when no configuration survives. ``-o`` writes the selected
-parameter specification, ready for ``validate`` and ``generate``. ``symbols`` builds, lists
-and validates the symbol library (``symbols/pvsld-symbols.dxf``, see
+parameter specification, ready for ``validate`` and ``generate``. ``report`` writes the
+calculation report (xlsx and pdf), the project sheet and the bill of materials of a spec.
+``design`` does everything in one step for the plugin's quick mode (:mod:`pvsld.design`).
+``symbols`` builds, lists and validates the symbol library (``symbols/pvsld-symbols.dxf``, see
 :mod:`pvsld.symbols.cfe.cli`).
 Findings are printed in Spanish, as the reviewers read them; the CLI itself speaks English.
 """
@@ -167,6 +171,49 @@ def _report(args: argparse.Namespace) -> int:
     print(summary)
     print("\n".join(f"wrote {path}" for path in written))
     return 0 if memoria.ok else 1
+
+
+def _design(args: argparse.Namespace) -> int:
+    """Size, draw, finish and report one installation into a folder (Stage 3.6.1)."""
+    from pvsld.design import design_and_draw
+
+    try:
+        values = load_spec_file(args.path)
+        registry = ComponentRegistry.load(
+            args.catalogue, include_unreviewed=args.include_unreviewed
+        )
+        result = design_and_draw(
+            values,
+            registry,
+            args.output,
+            use_autocad="never" if args.no_autocad else "auto",
+            base_dir=args.path.parent,
+        )
+    except (SpecFileError, CatalogueError, SizingInputError, UnknownComponentError) as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 1
+    except OSError as error:
+        print(f"error: cannot write the design: {error}", file=sys.stderr)
+        return 1
+    if result.stage == "sizing":
+        print(format_report(result.sizing), file=sys.stderr)
+        return 1
+    if not result.ok:
+        print(f"error: the design failed at {result.stage}", file=sys.stderr)
+        if result.validation is not None:
+            _print_findings(result.validation, sys.stderr)
+        for problem in result.problems:
+            print(f"problem: {problem}", file=sys.stderr)
+        return 1
+    lines = [
+        f"why: {result.explanation_es}",
+        result.autocad.describe_es() if not args.no_autocad else "AutoCAD not used (--no-autocad)",
+        *(f"problem: {problem}" for problem in result.problems),
+        result.bom_text,
+        *(f"wrote {path}" for path in result.files.values()),
+    ]
+    print("\n".join(lines))
+    return 0
 
 
 def _size(args: argparse.Namespace) -> int:
@@ -461,6 +508,38 @@ def build_parser() -> argparse.ArgumentParser:
             "configuration survives."
         ),
     )
+    design = subcommands.add_parser(
+        "design",
+        help="design one installation in one step: diagram, PDF, report, project sheet and bill "
+        "of materials (Stage 3.6.1)",
+        description=(
+            "Read a sizing request (as for 'size'; without template or template_file the quick "
+            "defaults apply), size it, draw it, finish it with AutoCAD when installed (else pvsld "
+            "draws the PDF) and write the calculation report, the project sheet and the bill of "
+            "materials into DIR. Exit code 1 when no configuration survives."
+        ),
+    )
+    design.add_argument("path", type=Path, metavar="REQUEST", help="request YAML or JSON file")
+    design.add_argument(
+        "-o", "--output", type=Path, required=True, metavar="DIR", help="project folder"
+    )
+    design.add_argument(
+        "--catalogue",
+        type=Path,
+        default=catalogue_cli.DEFAULT_RECORDS,
+        metavar="DIR",
+        help="component records folder (default datasheets/records)",
+    )
+    design.add_argument(
+        "--include-unreviewed",
+        action="store_true",
+        help="also use records the owner has not reviewed (development only)",
+    )
+    design.add_argument(
+        "--no-autocad", action="store_true", help="do not use AutoCAD even when it is installed"
+    )
+    design.set_defaults(run=_design)
+
     size.add_argument("path", type=Path, metavar="REQUEST", help="sizing request YAML or JSON file")
     size.add_argument(
         "--catalogue",

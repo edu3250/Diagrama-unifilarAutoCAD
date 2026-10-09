@@ -116,6 +116,13 @@ class OutputSandbox:
             raise SandboxError(f"{target.name} resolves outside the output directory.")
         return target
 
+    def project_dir(self, name: str) -> Path:
+        """The folder of the project ``name``; refuses anything outside the root."""
+        target = self.root / validate_name(name)
+        if target.resolve().parent != self.root:
+            raise SandboxError(f"{target.name} resolves outside the output directory.")
+        return target
+
     @contextmanager
     def staging(self) -> Iterator[Path]:
         """A private empty folder inside the root, removed on exit whatever happens."""
