@@ -20,7 +20,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from pvsld.catalogue import ComponentRegistry, DcBreaker, DcFuse, UnknownComponentError
+from pvsld.catalogue import Cable, ComponentRegistry, DcBreaker, DcFuse, UnknownComponentError
 from pvsld.catalogue import Inverter as CatalogueInverter
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
@@ -151,6 +151,7 @@ def _size_bos(
     tables: NomTables,
     breakers: Sequence[DcBreaker],
     fuses: Sequence[DcFuse] = (),
+    cables: Sequence[Cable] = (),
 ) -> tuple[BosSpec | None, list[Issue]]:
     metrics, config = evaluation.metrics, evaluation.config
     site, routing = request.site, request.routing
@@ -224,15 +225,48 @@ def _size_bos(
     issues += dc_issues + ac_issues
     if dc_choice is None or ac_choice is None:
         return None, issues
+    cable = bos.pv_cable(dc_choice.size, cables)
+    dc_raceway, dc_raceway_issues = bos.size_raceway(
+        circuit_id="C-S",
+        conductors=2 * config.n_strings,
+        conductor_area_mm2=calc.conductor_area_mm2(cable.outer_diameter_mm) if cable else None,
+        egc_size=dc_choice.size,
+        given_trade_size_mm=routing.dc_raceway_trade_size_mm,
+        insulation=_pv_insulation(cable),
+        tables=tables,
+        cable=cable,
+    )
+    thhw = calc.insulated_area_mm2(ac_choice.size, bos.AC_INSULATION, None, tables)
+    ac_raceway, ac_raceway_issues = bos.size_raceway(
+        circuit_id="C-INV",
+        conductors=phases + 1,  # the phases and the neutral
+        conductor_area_mm2=thhw,
+        egc_size=ac_choice.size,
+        given_trade_size_mm=routing.ac_raceway_trade_size_mm,
+        insulation=bos.AC_INSULATION,
+        tables=tables,
+    )
+    raceway_issues = dc_raceway_issues + ac_raceway_issues
+    issues += raceway_issues
+    if any(i.severity == Severity.ERROR for i in raceway_issues):
+        return None, issues
     return (
         BosSpec(
             dc_ocpd=dc_ocpd,
             ac_ocpd_a=ac_ocpd,
             conductors=(dc_choice, ac_choice),
             todo=bos.TODO_STAGE_3_4B,
+            raceways=(dc_raceway, ac_raceway),
         ),
         issues,
     )
+
+
+def _pv_insulation(cable: Cable | None) -> str:
+    """The insulation text of the string conductors: the catalogue cable, or generic PV."""
+    if cable is None:
+        return "PV"
+    return f"PV {cable.rated_voltage_v / 1000:g} kV"
 
 
 def _ac_current_carrying(phases: int) -> int:
@@ -283,6 +317,7 @@ def _build_spec(
         ocpd_max_a=bos_spec.ac_ocpd_a,
     )
     dc_conductor, ac_conductor = bos_spec.conductors
+    dc_raceway, ac_raceway = bos_spec.raceways
     mppt_names = adapters.mppt_ids(inverter)
 
     spec = copy.deepcopy(request.template)
@@ -383,13 +418,18 @@ def _build_spec(
                 "qty": 2,
                 "size": dc_conductor.size,
                 "material": "Cu",
-                "insulation": "PV / THW-2",
+                "insulation": dc_raceway.insulation,
+                **(
+                    {"outer_diameter_mm": dc_raceway.outer_diameter_mm}
+                    if dc_raceway.outer_diameter_mm is not None
+                    else {}
+                ),
             },
-            "egc": {"size": dc_conductor.size, "type": "desnudo"},
+            "egc": {"size": dc_conductor.size, "type": bos.EGC_TYPE},
             "raceway": (
                 {
-                    "type": "PVC",
-                    "trade_size_mm": routing.dc_raceway_trade_size_mm,
+                    "type": dc_raceway.type,
+                    "trade_size_mm": dc_raceway.trade_size_mm,
                     "rooftop_clearance_mm": routing.rooftop_clearance_mm,
                     "ccc_count": 2 * config.n_strings,
                 }
@@ -410,13 +450,13 @@ def _build_spec(
                 "qty": phases,
                 "size": ac_conductor.size,
                 "material": "Cu",
-                "insulation": "THW-2",
+                "insulation": ac_raceway.insulation,
             },
             "neutral": {"size": ac_conductor.size},
-            "egc": {"size": ac_conductor.size, "type": "desnudo"},
+            "egc": {"size": ac_conductor.size, "type": bos.EGC_TYPE},
             "raceway": {
-                "type": "PVC",
-                "trade_size_mm": routing.ac_raceway_trade_size_mm,
+                "type": ac_raceway.type,
+                "trade_size_mm": ac_raceway.trade_size_mm,
                 "ccc_count": _ac_current_carrying(phases),
             },
             "length_m": routing.ac_output_length_m,
@@ -464,6 +504,13 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
         if request.dc_breakers == "auto"
         else [_lookup(registry, name, DcBreaker, "dc_breaker") for name in request.dc_breakers]
     )
+    cables: list[Cable] = [
+        c
+        for c in registry.cables()
+        if request.dc_cable == "auto" or c.family_id == request.dc_cable
+    ]
+    if request.dc_cable != "auto" and not cables:
+        raise SizingInputError(f"no cable family {request.dc_cable!r} in the catalogue")
     fuses: list[DcFuse] = (
         registry.dc_fuses()
         if request.dc_fuses == "auto"
@@ -523,6 +570,7 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             tables=tables,
             breakers=breakers,
             fuses=fuses,
+            cables=cables,
         )
         if bos_spec is None:
             rejected.append(

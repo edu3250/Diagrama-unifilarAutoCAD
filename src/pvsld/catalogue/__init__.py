@@ -13,6 +13,7 @@ Example::
 """
 
 from pvsld.catalogue.common import Provenance
+from pvsld.catalogue.conductors import Cable, CableFamily, CableVariant
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import (
     BatteryPort,
@@ -45,6 +46,9 @@ from pvsld.catalogue.registry import (
 __all__ = [
     "BatteryPort",
     "BreakingCapacity",
+    "Cable",
+    "CableFamily",
+    "CableVariant",
     "CatalogueError",
     "Component",
     "ComponentRegistry",

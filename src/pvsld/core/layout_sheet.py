@@ -53,6 +53,7 @@ from pvsld.core.model import (
     PvSystemSpec,
 )
 from pvsld.core.sheet import SheetTemplate
+from pvsld.core.tables import get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
 
 TEMPLATE = "a3_plantilla_v1"
@@ -356,7 +357,8 @@ def _conductor_lines(spec: PvSystemSpec, circuit: Circuit) -> list[str]:
     return [
         _conductor_text(circuit),
         f"1 x {circuit.egc.size} {circuit.egc.type} (puesta a tierra)",
-        f"{_raceway_text(_raceway(spec, circuit))}   L = {_g(circuit.length_m)} m",
+        f"{_raceway_text(_raceway(spec, circuit), get_tables(spec.standards.nom_edition))}   "
+        f"L = {_g(circuit.length_m)} m",
     ]
 
 

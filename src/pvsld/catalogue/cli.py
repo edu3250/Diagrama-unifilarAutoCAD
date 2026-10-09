@@ -22,6 +22,7 @@ from typing import Any
 
 import yaml
 
+from pvsld.catalogue.conductors import Cable
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter
 from pvsld.catalogue.modules import PVModule
@@ -39,6 +40,8 @@ def _rating(component: Component) -> str:
             f"{component.rated_ac_power_w / 1000:g} kW AC, "
             f"{component.recommended_max_pv_power_wp / 1000:g} kWp DC max"
         )
+    if isinstance(component, Cable):
+        return f"{component.size} {component.outer_diameter_mm:g} mm"
     if isinstance(component, DcFuse):
         return f"{component.rated_current_a:g} A {component.operating_class}"
     assert isinstance(component, DcBreaker)

@@ -300,6 +300,11 @@ class Conductors(_Strict):
     size: ConductorSize
     material: Literal["Cu"] = Field(description="Aluminium tables are not part of schema 0.1.0")
     insulation: str = Field(min_length=1)
+    outer_diameter_mm: PositiveFloat | None = Field(
+        default=None,
+        description="Overall diameter with insulation, from the cable datasheet; without it the "
+        "conduit fill (CON-006) uses NOM Chapter 10, Table 5 for TW/THW/THHW insulation",
+    )
 
 
 class Neutral(_Strict):

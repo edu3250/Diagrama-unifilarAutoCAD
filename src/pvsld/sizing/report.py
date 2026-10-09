@@ -51,6 +51,14 @@ def _selected_section(candidate: Candidate) -> list[str]:
             + f", ampacity {c.ampacity_corrected_a:.1f} A (corrected), "
             f"voltage drop {c.vd_pct:.2f} % (limit {c.vd_limit_pct:g} %), {c.length_m:g} m"
         )
+    for r in bos.raceways:
+        if r.trade_size_mm is None or r.fill_pct is None:
+            continue
+        lines.append(
+            f'  raceway {r.circuit_id}: {r.type} {r.trade_size_mm:g} mm ({r.trade_size_in}"), '
+            f"{r.conductors} conductors ({r.insulation} and the bare EGC), fill {r.fill_pct:.1f} % "
+            f"(limit {r.fill_limit_pct:g} %)"
+        )
     for issue in candidate.issues:
         lines.append(f"  [{issue.severity.value}] {issue.rule_id}: {issue.message_es}")
     shown = {i.rule_id for i in candidate.issues}
