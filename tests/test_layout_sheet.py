@@ -256,27 +256,57 @@ def test_circuits_are_numbered_with_the_template_markers(diagram: Diagram) -> No
     assert all(c.radius == definition.MARKER_RADIUS_MM for c in markers)
 
 
-def test_no_personal_data_reaches_the_sheet(diagram: Diagram) -> None:
+def _without_personal_data(spec: dict[str, Any]) -> None:
+    project = spec["project"]
+    del project["client"]
+    project["site"]["address"] = {}
+    del project["site"]["lat"], project["site"]["lon"]
+    for key in ("rpu", "service_number", "meter_number"):
+        del spec["utility"][key]
+    for meter in spec["ac_bos"]["meters"]:
+        del meter["meter_no"]
+    del spec["title_block"]["responsible"], spec["title_block"]["checked_by"]
+
+
+def test_missing_personal_data_stays_blank(template: SheetTemplate) -> None:
+    diagram = _build(template, _without_personal_data)
     text = "\n".join(t.text for t in diagram.texts)
-    for secret in (
-        SECRET,
-        "Juan Pérez",
-        "cliente@example.com",
-        "+52 33",
-        "Av. Ejemplo",
-        "Zapopan",
-        "45000",
-        "20.72",
-        "103.39",
-        "Ing. Nombre Apellido",
-        "00000000",
-        "Integrador S.A.",
-        "A00000",
-    ):
+    for secret in (SECRET, "Juan Pérez", "Av. Ejemplo", "Zapopan", "45000", "20.72", "Integrador"):
         assert secret not in text, secret
     values = {t.text for t in diagram.texts}
     assert COMPANY in values
     assert "WGS84" in values
+    assert "C.P.: ______   TARIFA: 1C" in values
+
+
+def test_given_personal_data_is_drawn(diagram: Diagram) -> None:
+    values = {t.text for t in diagram.texts}
+    for given in (
+        "Juan Pérez",
+        "CALLE: Av. Ejemplo 123",
+        "COLONIA: Centro",
+        "Zapopan, Jalisco",
+        "C.P.: 45000   TARIFA: 1C",
+        "20.72150°",
+        "-103.39180°",
+        "000000000000",
+        "Ing. Nombre Apellido",
+        "00000000",
+        "INTEGRADOR S.A. DE C.V.",
+        "DEF",
+    ):
+        assert given in values, given
+    assert COMPANY not in values
+
+
+def test_long_personal_data_is_cut_to_its_line(template: SheetTemplate) -> None:
+    def long_name(spec: dict[str, Any]) -> None:
+        spec["project"]["client"]["name"] = "Fideicomiso " + "Muy Largo " * 10
+
+    diagram = _build(template, long_name)
+    names = [t.text for t in diagram.texts if t.text.startswith("Fideicomiso")]
+    assert len(names) == 2  # the owner box and the title block
+    assert all(name.endswith("…") for name in names)
 
 
 def test_every_field_is_written_once_with_the_design_values(diagram: Diagram) -> None:
@@ -344,7 +374,7 @@ def test_everything_is_editable_in_model_space_and_the_file_opens_there(diagram:
     sheet = doc.layouts.get("A3")
     assert {e.dxftype() for e in sheet} == {"VIEWPORT"}  # the layout only plots the model
     texts = {e.dxf.text for e in doc.modelspace().query("TEXT")}
-    assert COMPANY in texts  # the template furniture
+    assert "WGS84" in texts  # a sheet field
     assert "LATITUD:" in texts  # a fixed text of the (synthetic) template
     assert {e.dxf.name for e in doc.modelspace().query("INSERT")} >= {"PVSLD_INV", "PVSLD_CB"}
     unlocked = [layer.dxf.name for layer in doc.layers if not layer.is_locked()]

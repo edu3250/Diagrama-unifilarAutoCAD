@@ -487,12 +487,14 @@ def size_conductor(
     drop_limit_pct: float,
     drop_rule: str,
     tables: NomTables,
+    given_size: str | None = None,
 ) -> tuple[ConductorChoice | None, list[Issue]]:
     """Smallest copper size that satisfies ampacity, protection and voltage drop for one circuit.
 
     ``drop_pct(size)`` returns the voltage drop in percent for a size. Returns ``(None, [error])``
     when no size up to 4/0 AWG is safe, and a warning (with the largest size) when only the voltage
-    drop cannot be met.
+    drop cannot be met. A ``given_size`` (fixed by the user) is checked instead of chosen: an error
+    when it is not safe (naming the smallest safe size), a warning when its drop is too high.
     """
     adder = calc.rooftop_adder_c(clearance_mm, tables) if clearance_mm is not None else 0.0
     t_effective = ambient_c + adder
@@ -523,6 +525,20 @@ def size_conductor(
             )
         ]
     issues: list[Issue] = []
+    if given_size is not None:
+        fixed = next((c for c in safe if c[0] == given_size), None)
+        if fixed is None:
+            return None, [
+                Issue(
+                    "CON-002",
+                    Severity.ERROR,
+                    f"El calibre {given_size} fijado para el circuito {circuit_id} no soporta "
+                    f"{_n(i_max_a)} A a {_g(t_effective)} °C con su protección; el mínimo es "
+                    f"{safe[0][0]}.",
+                    subject=circuit_id,
+                )
+            ]
+        safe = [fixed]
     chosen = next((c for c in safe if drop_pct(c[0]) <= drop_limit_pct), None)
     if chosen is None:
         chosen = safe[-1]

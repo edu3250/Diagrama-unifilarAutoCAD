@@ -17,7 +17,11 @@ STR-004   strings per MPPT x 1.25 x Isc <= max short-circuit current  reject
 STR-005   strings per MPPT x Imp <= max input current (clipping)      warn
 STR-007   array power <= inverter PV power limit; DC/AC policy        reject/warn
 REQ-001   total modules inside the requested range                    reject
+REQ-002   a string count the user fixed fits the inverter's inputs     reject
 ========  ==========================================================  ========
+
+A string count or a modules-per-string value the user fixed (professional mode) pins the
+enumeration to it, so its violations are reported instead of silently replaced.
 
 STR-002 rejects here although the vault pack lists it as a warning: a string that cannot track
 inside the MPPT window on cold mornings is not a design the engine proposes. ``Isc`` is the BNPI
@@ -64,6 +68,8 @@ class EvalContext:
     policy: DcAcPolicy
     module_count_min: int | None = None
     module_count_max: int | None = None
+    n_strings: int | None = None
+    n_series: int | None = None
 
     @property
     def voc_cold_module_v(self) -> float:
@@ -133,8 +139,10 @@ def enumerate_configs(ctx: EvalContext) -> Iterator[tuple[int, int]]:
     minimum to one above the voltage maximum (so the first violation of each bound is reported)."""
     low = max(1, ctx.n_min_operating - 1)
     high = max(low, ctx.n_max + 1)
-    for n_strings in range(1, ctx.max_strings + 1):
-        for n_series in range(low, high + 1):
+    counts = [ctx.n_strings] if ctx.n_strings is not None else range(1, ctx.max_strings + 1)
+    series = [ctx.n_series] if ctx.n_series is not None else range(low, high + 1)
+    for n_strings in counts:
+        for n_series in series:
             yield n_strings, n_series
 
 
@@ -296,6 +304,14 @@ def evaluate_config(ctx: EvalContext, n_strings: int, n_series: int) -> Evaluati
                 f"{_n(ctx.policy.info_below, 2)}.",
             )
 
+    if n_strings > ctx.max_strings:
+        add(
+            "REQ-002",
+            err,
+            f"El inversor {inv_id} admite como máximo {ctx.max_strings} cadena(s) "
+            f"({inverter.mppt_count} MPPT × {inverter.inputs_per_mppt} entrada(s)); se pidieron "
+            f"{n_strings}.",
+        )
     total = n_strings * n_series
     if ctx.module_count_min is not None and total < ctx.module_count_min:
         add(

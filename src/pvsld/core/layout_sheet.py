@@ -6,9 +6,10 @@ module places the schematic in the free area, numbers the circuits with the temp
 capacity, service, calculation summary, notes, circuit boxes, module and inverter data, the
 symbology of the blocks drawn and the drawing number and date.
 
-Personal data is never written (owner decision): location, address, installer, owner names,
-contacts and professional licence numbers are left as blank lines to fill by hand, and the title
-block reads "COMPAÑÍA INSTALADORA".
+Personal data (location, address, owner, RPU, responsible engineer, company) is written only when
+the spec gives it (Stage 3.6.2, professional mode); what is missing stays a blank line to fill by
+hand, and the title block reads "COMPAÑÍA INSTALADORA" without a company. A given value is cut
+with "…" to the length of the blank line it replaces, so the user's data never breaks the sheet.
 """
 
 from __future__ import annotations
@@ -163,6 +164,18 @@ class _Fields:
             )
         self.items.append(item)
 
+    def fit(self, name: str, value: str | None, blank: str, prefix: str = "") -> None:
+        """``prefix + value`` cut to the width of ``prefix + blank``, or the blank line itself."""
+        if not value:
+            self.set(name, prefix + blank)
+            return
+        height = self.template.field(name, blank).height
+        limit = text_width_mm(prefix + blank, height)
+        text = prefix + value
+        while len(text) > len(prefix) + 1 and text_width_mm(text, height) > limit:
+            text = text[:-2] + "…"
+        self.set(name, text)
+
     def lines(self, prefix: str, texts: Sequence[str]) -> None:
         anchors = sorted(
             (name for name in self.template.fields if name.startswith(f"{prefix}.")),
@@ -189,6 +202,10 @@ def _strings_summary(spec: PvSystemSpec) -> tuple[int, str]:
     else:
         text = f"{count} cadenas de {', '.join(map(str, series))} módulos en serie"
     return n_modules, text
+
+
+def _degrees(value: float | None) -> str | None:
+    return None if value is None else f"{value:.5f}°"
 
 
 def _service(spec: PvSystemSpec) -> str:
@@ -530,23 +547,25 @@ def build_sheet_diagram(
         f"DIAGRAMA UNIFILAR  -  GENERACIÓN DISTRIBUIDA EN {level} TENSIÓN "
         f"({REGIMES[utility.regime].upper()})  -  SIMBOLOGÍA CFE G0100-04 / NMX-J-136-ANCE",
     )
-    # Personal data: blank lines (owner decision).
-    for name in ("location.lat", "location.lon", "location.altitude"):
-        fields.set(name, BLANK[:22])
+    # Personal data: what the spec gives, else blank lines to fill by hand.
+    site, client, responsible = spec.project.site, spec.project.client, tb.responsible
+    address = site.address
+    fields.fit("location.lat", _degrees(site.lat), BLANK[:22])
+    fields.fit("location.lon", _degrees(site.lon), BLANK[:22])
+    fields.set("location.altitude", BLANK[:22])
     fields.set("location.datum", "WGS84")
-    fields.lines(
-        "address",
-        [
-            "CALLE: " + BLANK,
-            "COLONIA: " + BLANK[:25],
-            BLANK + "______",
-            f"C.P.: ______   TARIFA: {utility.tariff}",
-        ],
-    )
-    for name in ("installer.name", "installer.email", "installer.contact", "installer.cedula"):
-        fields.set(name, BLANK)
-    fields.set("owner.name", BLANK)
-    fields.set("owner.rpu", BLANK)
+    street = " ".join(part for part in (address.street, address.number) if part)
+    town = ", ".join(part for part in (address.municipio, address.estado) if part)
+    fields.fit("address.1", street, BLANK, "CALLE: ")
+    fields.fit("address.2", address.colonia, BLANK[:25], "COLONIA: ")
+    fields.fit("address.3", town, BLANK + "______")
+    fields.set("address.4", f"C.P.: {address.cp or '______'}   TARIFA: {utility.tariff}")
+    fields.fit("installer.name", responsible.name, BLANK)
+    fields.set("installer.email", BLANK)
+    fields.set("installer.contact", BLANK)
+    fields.fit("installer.cedula", responsible.cedula_profesional, BLANK)
+    fields.fit("owner.name", client.name, BLANK)
+    fields.fit("owner.rpu", utility.rpu, BLANK)
     fields.set("owner.service", _service(spec))
     fields.set("capacity.pdc", f"{_thousands(derived.kwp_total * 1000)} Wp")
     fields.set("capacity.pac", f"{_thousands(inverter.pac_w)} W")
@@ -566,7 +585,8 @@ def build_sheet_diagram(
     fields.lines("inverter", _inverter_lines(spec))
     fields.set("symbology.title", "SIMBOLOGÍA (CFE G0100-04 / NMX-J-136-ANCE)")
 
-    fields.set("company.name", COMPANY)
+    company = responsible.company.upper() if responsible.company else None
+    fields.fit("company.name", company, COMPANY + "_" * 20 if company else COMPANY)
     fields.set("company.city", "")
     fields.set(
         "project",
@@ -574,10 +594,13 @@ def build_sheet_diagram(
         f"{module.manufacturer.split()[0].upper()} {_g(module.pmax_w)} Wp + "
         f"{inverter.manufacturer.upper()} {inverter.model}",
     )
-    for name in ("design.name", "review.name", "owner.title_name"):
-        fields.set(name, BLANK)
-    for name in ("design.cedula", "review.cedula", "owner.contact"):
-        fields.set(name, BLANK_SHORT)
+    contact = " / ".join(part for part in (client.phone, client.email) if part)
+    fields.fit("design.name", responsible.name, BLANK)
+    fields.fit("design.cedula", responsible.cedula_profesional, BLANK_SHORT)
+    fields.fit("review.name", tb.checked_by, BLANK)
+    fields.set("review.cedula", BLANK_SHORT)
+    fields.fit("owner.title_name", client.name, BLANK)
+    fields.fit("owner.contact", contact, BLANK_SHORT)
     fields.set("drawing", f"{tb.drawing_no}   HOJA {tb.sheet.upper()}   REV. {tb.revision}")
     fields.set("date", _date(tb.date))
 

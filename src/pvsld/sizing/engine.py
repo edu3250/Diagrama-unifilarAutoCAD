@@ -211,6 +211,7 @@ def _size_bos(
     cables: Sequence[Cable] = (),
     ac_breakers: Sequence[AcBreaker] = (),
     dc_switches: Sequence[DcSwitch] = (),
+    main_breakers: Sequence[AcBreaker] = (),
 ) -> tuple[BosSpec | None, list[Issue]]:
     metrics, config = evaluation.metrics, evaluation.config
     site, routing = request.site, request.routing
@@ -234,6 +235,10 @@ def _size_bos(
     if request.dc_ocpd_device == "fuse":
         dc_ocpd = bos.select_string_fuse(**window, fuses=fuses, reason_es=reason)
         if dc_ocpd.required and dc_ocpd.device_id is None:
+            if not request.dc_fuse_fallback:  # the user fixed the fuse: report, do not swap
+                return None, [
+                    Issue("OCP-002", Severity.ERROR, dc_ocpd.reason_es, subject=config.label)
+                ]
             # No catalogue fuse fits this module: the box keeps a breaker, and says why.
             reason = f"{dc_ocpd.reason_es} Se usa un ITM de CD."
             dc_ocpd = None
@@ -264,6 +269,7 @@ def _size_bos(
         drop_limit_pct=standards.vd_limits_pct.dc,
         drop_rule="VD-001",
         tables=tables,
+        given_size=request.dc_conductor_size,
     )
     ac_choice, ac_issues = bos.size_conductor(
         circuit_id="C-INV",
@@ -280,6 +286,7 @@ def _size_bos(
         drop_limit_pct=standards.vd_limits_pct.ac,
         drop_rule="VD-002",
         tables=tables,
+        given_size=request.ac_conductor_size,
     )
     issues += dc_issues + ac_issues
     if dc_choice is None or ac_choice is None:
@@ -310,7 +317,16 @@ def _size_bos(
     if any(i.severity == Severity.ERROR for i in raceway_issues):
         return None, issues
     devices, device_issues = _catalogue_devices(
-        request, dc_ocpd, ac_ocpd, phases, string_i_max, metrics, config, ac_breakers, dc_switches
+        request,
+        dc_ocpd,
+        ac_ocpd,
+        phases,
+        string_i_max,
+        metrics,
+        config,
+        ac_breakers,
+        dc_switches,
+        main_breakers,
     )
     issues += device_issues
     return (
@@ -336,6 +352,7 @@ def _catalogue_devices(
     config: StringConfig,
     ac_breakers: Sequence[AcBreaker],
     dc_switches: Sequence[DcSwitch],
+    main_breakers: Sequence[AcBreaker],
 ) -> tuple[tuple[DeviceChoice, ...], list[Issue]]:
     """ITM-1, ITM-P and the box disconnect from the catalogue (Stage 3.4b, owner 2026-10-09)."""
     ac_bos = request.template["ac_bos"]
@@ -359,7 +376,7 @@ def _catalogue_devices(
             poles=main["poles"],
             voltage_v=AC_BREAKER_VOLTAGE_V,
             fault_ka=fault_ka,
-            breakers=ac_breakers,
+            breakers=main_breakers,
             exact=True,  # the service's main keeps its rating; the catalogue gives the device
         )
         issues += found
@@ -639,6 +656,11 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
         if request.ac_breakers == "auto"
         else [_lookup(registry, name, AcBreaker, "ac_breaker") for name in request.ac_breakers]
     )
+    main_breakers: list[AcBreaker] = (
+        [_lookup(registry, request.main_breaker, AcBreaker, "ac_breaker")]
+        if request.main_breaker is not None
+        else registry.ac_breakers()
+    )
     dc_switches: list[DcSwitch] = (
         registry.dc_switches()
         if request.dc_switches == "auto"
@@ -686,6 +708,8 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             policy=request.dc_ac_policy,
             module_count_min=request.module_count_min,
             module_count_max=request.module_count_max,
+            n_strings=request.n_strings,
+            n_series=request.n_series,
         )
         for n_strings, n_series in enumerate_configs(ctx):
             evaluation = evaluate_config(ctx, n_strings, n_series)
@@ -713,6 +737,7 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             cables=cables,
             ac_breakers=ac_breakers,
             dc_switches=dc_switches,
+            main_breakers=main_breakers,
         )
         if bos_spec is None:
             rejected.append(

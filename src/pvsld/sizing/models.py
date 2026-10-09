@@ -20,7 +20,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from pvsld.core.calc import DELTA_T_CELL_C
-from pvsld.core.model import Site, Utility
+from pvsld.core.model import ConductorSize, Site, Utility
 from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.rules import Finding
 from pvsld.core.severity import Severity
@@ -79,6 +79,23 @@ class SizingRequest(BaseModel):
     module_count_min: int | None = Field(default=None, gt=0, description="Total modules, lower")
     module_count_max: int | None = Field(default=None, gt=0, description="Total modules, upper")
     optimizers_on_all_modules: bool = False
+    n_strings: int | None = Field(
+        default=None, gt=0, description="Fix the number of strings (professional mode)"
+    )
+    n_series: int | None = Field(
+        default=None, gt=0, description="Fix the modules per string (professional mode)"
+    )
+    dc_conductor_size: ConductorSize | None = Field(
+        default=None, description="Fix the string conductor size; checked, not chosen"
+    )
+    ac_conductor_size: ConductorSize | None = Field(
+        default=None, description="Fix the inverter-output conductor size; checked, not chosen"
+    )
+    main_breaker: str | None = Field(
+        default=None,
+        description="Catalogue AC breaker id of the service main (ITM-P); default: the catalogue "
+        "device of its rating",
+    )
     dc_ocpd: Literal["auto", "always"] = Field(
         default="always",
         description="'always' (default, owner decision 2026-10-08): one protection per string in "
@@ -105,6 +122,11 @@ class SizingRequest(BaseModel):
     )
     dc_fuses: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue gPV fuse ids to choose from, or 'auto' for all"
+    )
+    dc_fuse_fallback: bool = Field(
+        default=True,
+        description="When no listed gPV fuse fits, protect the strings with a DC breaker "
+        "(default); false: reject the configuration instead (the user fixed the fuse)",
     )
     dc_breakers: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue DC breaker ids to choose from, or 'auto' for all"
