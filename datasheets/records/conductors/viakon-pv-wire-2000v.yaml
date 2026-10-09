@@ -32,8 +32,8 @@ source:
   pages: [1, 2]
   extraction_method: pdf_text_layer
   extraction_date: 2026-10-09
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-09
   notes: >-
     Provided by the owner on 2026-10-09 (the cable they use). Text extracted from the PDF text layer with pypdfium2.
     Dimensions are approximate and subject to manufacturing tolerances (datasheet note); the ampacity columns are the
