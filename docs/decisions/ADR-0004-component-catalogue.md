@@ -76,7 +76,7 @@ class Provenance(BaseModel):
     sha256: str  # of the owner's PDF; the PDF itself is never committed
     title: str  # datasheet title, revision/version and date as printed
     pages: list[int]
-    extraction_method: Literal["markitdown", "rendered_page"]
+    extraction_method: Literal["markitdown", "rendered_page", "pdf_text_layer"]
     extraction_date: date
     reviewed_by: str | None  # None until the owner approves; only reviewed records are committed
     review_date: date | None

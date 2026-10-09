@@ -37,7 +37,7 @@ CATALOGUE_DIR_ENV = "PVSLD_CATALOGUE_DIR"
 _REPO_RECORDS = Path(__file__).resolve().parents[3] / "datasheets" / "records"
 MAX_ALTERNATIVES = 5
 """Ranked alternatives listed besides the selection (their full specs are never sent)."""
-COMPONENT_TYPES = ("pv_module", "string_inverter", "hybrid_inverter", "dc_breaker")
+COMPONENT_TYPES = ("pv_module", "string_inverter", "hybrid_inverter", "dc_breaker", "dc_fuse")
 
 
 def catalogue_dir_from_environment() -> Path:
@@ -230,7 +230,8 @@ def sizing_text(output: SizingOutput) -> str:
         bos = selected["bos"]
         dc_ocpd = bos["dc_ocpd"]
         string_ocpd = (
-            f"{dc_ocpd['breaker_id']} {dc_ocpd['rating_a']:g} A"
+            f"{'gPV fuse' if dc_ocpd['device'] == 'fuse' else 'DC breaker'} "
+            f"{dc_ocpd['device_id']} {dc_ocpd['rating_a']:g} A"
             if dc_ocpd["required"]
             else dc_ocpd["reason_es"]
         )

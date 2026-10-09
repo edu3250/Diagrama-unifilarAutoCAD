@@ -1,4 +1,4 @@
-"""Protection device records. Stage 3.1 covers DC breakers (the first datasheets we have).
+"""Protection device records: DC breakers (Stage 3.1) and PV fuses (gPV, 2026-10-08).
 
 A DC breaker range is configured at design time: the number of poles and the rated DC voltage Ue
 are choices (Suntree SL7N-63: 2P at 550 V or 800 V, 4P at 1000 V or 1200 V), while the catalogue
@@ -8,7 +8,8 @@ the circuit voltage, so the family keeps the datasheet's entries and
 
 A breaking-capacity entry may leave ``poles`` or ``voltage_v`` empty: an empty ``poles`` means
 "any pole count", and an entry with both empty is the fallback for every other configuration
-("Icu = 2 kA for the other configurations"). Fuses, SPDs and AC breakers join the
+("Icu = 2 kA for the other configurations"). A PV fuse range (``dc_fuse``) is simpler: one rated
+voltage and one interrupting rating for every current rating. SPDs and AC breakers join the
 ``component_type`` discriminator when the first datasheet of each arrives.
 """
 
@@ -272,4 +273,104 @@ class DcBreaker(ProtectionSpec, DcBreakerVariant):
     @property
     def reviewed(self) -> bool:
         """True once the owner has approved the record this breaker came from."""
+        return self.source.reviewed
+
+
+# --- DC fuses (gPV) -----------------------------------------------------------------------------
+
+
+class DcFuseVariant(Strict):
+    """One current rating of a PV fuse range (one catalogue reference)."""
+
+    component_id: ComponentId = Field(description="Catalogue reference, e.g. EATON-PV-15A10F")
+    rated_current_a: PositiveFloat
+    breaking_capacity_ka: PositiveFloat = Field(
+        description="DC interrupting rating of this rating (ranges split it by current)"
+    )
+    power_loss_w_at_in: PositiveFloat | None = Field(
+        default=None, description="Watts loss at the rated current"
+    )
+    power_loss_w_at_08in: PositiveFloat | None = Field(
+        default=None, description="Watts loss at 0.8 x the rated current"
+    )
+
+
+class DcFuseSpec(Strict):
+    """Values every rating of a PV fuse range shares (field group, not used on its own)."""
+
+    manufacturer: str = Field(min_length=1)
+    range_name: str = Field(min_length=1, description="Range as printed")
+    size: str = Field(min_length=1, description="Body size, e.g. 10x38 mm")
+    rated_voltage_v: PositiveFloat = Field(description="Rated DC voltage")
+    operating_class: str = Field(min_length=1, description="IEC 60269-6 class, e.g. gPV")
+    time_constant_ms: Range | None = None
+    standards: list[str] = Field(min_length=1)
+    certifications: list[str] | None = None
+    operating_temp_c: Range | None = None
+    wire_range: str | None = None
+    holders: list[str] | None = Field(
+        default=None, description="Recommended fuse holders or blocks, as printed"
+    )
+    sizing_note: str | None = Field(
+        default=None, description="Selection rule the datasheet states, e.g. rating > 1.56 x Isc"
+    )
+
+    @model_validator(mode="after")
+    def _plausible_ranges(self) -> DcFuseSpec:
+        problems = [
+            problem
+            for name in ("operating_temp_c", "time_constant_ms")
+            if (value := getattr(self, name)) is not None
+            and (problem := check_range(name, value)) is not None
+        ]
+        raise_problems(problems)
+        return self
+
+
+class DcFuseFamily(DcFuseSpec):
+    """A datasheet range of PV fuse links: shared values once, one variant per current rating."""
+
+    component_type: Literal["dc_fuse"]
+    family_id: ComponentId
+    variants: list[DcFuseVariant] = Field(min_length=1)
+    source: Provenance
+
+    @model_validator(mode="after")
+    def _plausible_variants(self) -> DcFuseFamily:
+        problems = [
+            f"duplicate variant component_id {name!r}"
+            for name in duplicates([v.component_id for v in self.variants])
+        ]
+        problems += [
+            f"duplicate rated_current_a {name} A in the family"
+            for name in duplicates([f"{v.rated_current_a:g}" for v in self.variants])
+        ]
+        raise_problems(problems)
+        return self
+
+    def expand(self) -> list[DcFuse]:
+        """One standalone ``DcFuse`` per variant (family values + variant values)."""
+        shared = {name: getattr(self, name) for name in DcFuseSpec.model_fields}
+        return [
+            DcFuse(
+                component_type=self.component_type,
+                family_id=self.family_id,
+                source=self.source,
+                **shared,
+                **{name: getattr(variant, name) for name in DcFuseVariant.model_fields},
+            )
+            for variant in self.variants
+        ]
+
+
+class DcFuse(DcFuseSpec, DcFuseVariant):
+    """A single PV fuse reference as the sizing engine sees it."""
+
+    component_type: Literal["dc_fuse"]
+    family_id: ComponentId
+    source: Provenance
+
+    @property
+    def reviewed(self) -> bool:
+        """True once the owner has approved the record this fuse came from."""
         return self.source.reviewed

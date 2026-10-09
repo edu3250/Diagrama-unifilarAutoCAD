@@ -278,8 +278,6 @@ class CircleItem:
     cy: float
     radius: float
     space: Space = "model"
-    filled: bool = False
-    """A junction dot: drawn as a donut (a closed polyline as wide as the radius)."""
 
 
 @dataclass(frozen=True)

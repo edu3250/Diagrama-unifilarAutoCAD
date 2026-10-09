@@ -43,7 +43,7 @@ class Provenance(Strict):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$", description="SHA-256 of the owner's PDF")
     title: str = Field(min_length=1, description="Title, revision and date as printed")
     pages: list[PositiveInt] = Field(min_length=1)
-    extraction_method: Literal["markitdown", "rendered_page"]
+    extraction_method: Literal["markitdown", "rendered_page", "pdf_text_layer"]
     extraction_date: date
     reviewed_by: str | None = Field(description="None until the owner approves the record")
     review_date: date | None = Field(description="None until the owner approves the record")

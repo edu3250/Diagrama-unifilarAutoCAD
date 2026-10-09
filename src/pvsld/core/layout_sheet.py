@@ -79,7 +79,7 @@ PLACEMENT = Placement(
     gec_ac_text=(220.0, 152.0),
     callouts=False,
     pi_description="",
-    dc_box_x=66.0,
+    dc_box_x=74.0,
     dc_disconnect_x=99.0,
     dc_scale=0.6,
     dc_spd_scale=0.5,
@@ -218,9 +218,14 @@ def _memory(spec: PvSystemSpec, derived: Derived, i1: Ocpd) -> list[str]:
         f"{_g(mppt.vmax_v)} V  OK",
     ]
     isc_design = 1.25 * first.isc_a
-    string_breakers = [d for d in spec.dc_bos.disconnects if d.id.startswith("DCB-")]
-    if string_breakers:
-        fuse = f"ITM CD {_g(string_breakers[0].ie_a)} A por cadena en la caja de protecciones CD"
+    protections = {"DCB-": "ITM CD", "FUS-": "Fusible gPV"}
+    string_devices = [d for d in spec.dc_bos.disconnects if d.id[:4] in protections]
+    if string_devices:
+        device = string_devices[0]
+        fuse = (
+            f"{protections[device.id[:4]]} {_g(device.ie_a)} A por cadena en la caja de "
+            "protecciones CD"
+        )
     elif strings_per_mppt == 1:
         fuse = "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
     else:
@@ -618,8 +623,8 @@ def build_sheet_diagram(
         polylines=(*template.polylines, *schematic.polylines),
         tables=(_protections(spec),),
         viewport=viewport,
-        circles=(*template.circles, *circles, *schematic.dots),
-        samples=tuple(samples),
+        circles=(*template.circles, *circles),
+        samples=(*samples, *schematic.junctions),
         text_styles=template.text_styles,
         sheet_in_model=True,  # everything editable in one place (owner request)
     )

@@ -265,15 +265,6 @@ def _build_document(diagram: Diagram) -> Drawing:
             align=text.align,
         )
     for circle in diagram.circles:
-        if circle.filled:  # AutoCAD's DONUT: two half-circle arcs of the radius' width
-            half = circle.radius / 2
-            spaces[circle.space].add_lwpolyline(
-                [(circle.cx - half, circle.cy, 0, 0, 1), (circle.cx + half, circle.cy, 0, 0, 1)],
-                format="xyseb",
-                close=True,
-                dxfattribs={**_attribs(circle.layer), "const_width": circle.radius},
-            )
-            continue
         spaces[circle.space].add_circle(
             (circle.cx, circle.cy), circle.radius, dxfattribs=_attribs(circle.layer)
         )

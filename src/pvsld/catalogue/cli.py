@@ -25,7 +25,7 @@ import yaml
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter
 from pvsld.catalogue.modules import PVModule
-from pvsld.catalogue.protection import DcBreaker
+from pvsld.catalogue.protection import DcBreaker, DcFuse
 from pvsld.catalogue.registry import RECORD_FOLDERS, Component, ComponentRegistry, load_records
 
 DEFAULT_RECORDS = Path("datasheets") / "records"
@@ -39,6 +39,8 @@ def _rating(component: Component) -> str:
             f"{component.rated_ac_power_w / 1000:g} kW AC, "
             f"{component.recommended_max_pv_power_wp / 1000:g} kWp DC max"
         )
+    if isinstance(component, DcFuse):
+        return f"{component.rated_current_a:g} A {component.operating_class}"
     assert isinstance(component, DcBreaker)
     return f"{component.rated_current_a:g} A"
 

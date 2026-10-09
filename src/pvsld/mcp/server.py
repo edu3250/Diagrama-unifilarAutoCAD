@@ -470,7 +470,8 @@ def create_server(
     )
     def list_components(
         component_type: Annotated[
-            Literal["pv_module", "string_inverter", "hybrid_inverter", "dc_breaker"] | None,
+            Literal["pv_module", "string_inverter", "hybrid_inverter", "dc_breaker", "dc_fuse"]
+            | None,
             Field(description="Only this type. Default: every type."),
         ] = None,
         manufacturer: Annotated[
@@ -563,10 +564,17 @@ def create_server(
         dc_ocpd: Annotated[
             Literal["auto", "always"],
             Field(
-                description="always (default): one DC breaker per string in the DC protection "
+                description="always (default): one protection per string in the DC protection "
                 "box; auto: only where NOM 690-9(a) needs one."
             ),
         ] = "always",
+        dc_ocpd_device: Annotated[
+            Literal["fuse", "breaker"],
+            Field(
+                description="fuse (default): a gPV fuse-disconnector per string, or a DC "
+                "breaker when no catalogue fuse fits the module; breaker: a DC breaker."
+            ),
+        ] = "fuse",
         layout_template: Annotated[
             Literal["a3_plantilla_v1", "bt_string_residential_v1"],
             Field(description="Sheet of the drawing (default the owner's A3 template)."),
@@ -580,6 +588,7 @@ def create_server(
             "module": module,
             "inverters": inverters,
             "dc_ocpd": dc_ocpd,
+            "dc_ocpd_device": dc_ocpd_device,
             "layout_template": layout_template,
         }
         optional = {

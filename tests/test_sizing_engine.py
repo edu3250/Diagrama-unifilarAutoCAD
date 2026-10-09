@@ -225,12 +225,15 @@ def test_et_solar_550_on_huawei_5ktl_selects_with_a_clipping_warning() -> None:
 
 
 def test_suntree_breaker_is_selected_when_a_string_breaker_is_requested() -> None:
-    result = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000, dc_ocpd="always")
+    result = size(
+        JINKO_650, [GROWATT_5K], target_dc_power_w=9000, dc_ocpd="always", dc_ocpd_device="breaker"
+    )
     selected = result.selected
     assert selected is not None
     dc = selected.bos.dc_ocpd
     assert dc.required
-    assert dc.breaker_id == "SUNTREE-SL7N-63-32A"
+    assert dc.device == "breaker"
+    assert dc.device_id == "SUNTREE-SL7N-63-32A"
     assert dc.rating_a == 32
     breakers = [d for d in result.spec["dc_bos"]["disconnects"] if d["id"].startswith("DCB-")]  # type: ignore[index]
     assert [b["id"] for b in breakers] == ["DCB-S1", "DCB-S2"]
@@ -255,6 +258,7 @@ def test_schneider_20_a_cannot_protect_the_jinko_650_so_every_configuration_fail
         [GROWATT_5K],
         target_dc_power_w=9000,
         dc_ocpd="always",
+        dc_ocpd_device="breaker",
         dc_breakers=[SCHNEIDER_20A],
     )
     assert not result.ok
@@ -481,3 +485,37 @@ def test_request_rejects_unknown_fields_and_inverted_ranges() -> None:
 def test_candidate_severities_use_the_shared_enum() -> None:
     result = size(ET_550, [HUAWEI_5K], target_dc_power_w=9000)
     assert all(isinstance(i.severity, Severity) for c in result.candidates for i in c.issues)
+
+
+# --- gPV fuse selection, the default of the DC protection box (owner decision 2026-10-08) ------
+
+
+def test_a_gpv_fuse_disconnector_protects_each_string_by_default() -> None:
+    result = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000)
+    selected = result.selected
+    assert selected is not None
+    dc = selected.bos.dc_ocpd
+    assert (dc.device, dc.device_id, dc.rating_a, dc.ue_v) == (
+        "fuse",
+        "LITTELFUSE-SPF030",
+        30,
+        1000,
+    )
+    assert dc.minimum_rating_a is not None
+    assert dc.minimum_rating_a <= 30 <= 35  # >= 1.56 x Isc, <= the module's maximum series fuse
+    disconnects = [d for d in result.spec["dc_bos"]["disconnects"] if not d["integrated_in"]]  # type: ignore[index]
+    assert [d["id"] for d in disconnects] == ["FUS-S1", "FUS-S2", "DCD-CD1"]
+    assert all(d["ie_a"] == 30 and d["poles"] == 2 for d in disconnects[:2])
+    assert validate_selected(result).ok
+
+
+def test_without_a_fitting_fuse_the_box_falls_back_to_a_breaker_and_says_why() -> None:
+    result = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000, dc_fuses=["LITTELFUSE-SPF020"])
+    selected = result.selected
+    assert selected is not None
+    dc = selected.bos.dc_ocpd
+    assert (dc.device, dc.device_id) == ("breaker", "SUNTREE-SL7N-63-32A")
+    assert "LITTELFUSE-SPF020: 20 A <" in dc.reason_es
+    assert dc.reason_es.endswith("Se usa un ITM de CD.")
+    disconnects = [d for d in result.spec["dc_bos"]["disconnects"] if not d["integrated_in"]]  # type: ignore[index]
+    assert [d["id"] for d in disconnects] == ["DCB-S1", "DCB-S2", "DCD-CD1"]

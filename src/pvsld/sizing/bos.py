@@ -12,6 +12,10 @@ Voltage Drop", NOM-001-SEDE-2012; tables in :mod:`pvsld.core.tables`):
   ``rating <= max series fuse`` of the module, a rated voltage at or above Voc(T_min) of the string
   (the smallest offered one is chosen) and a breaking capacity from
   ``DcBreaker.breaking_capacity_ka(poles, voltage)``. The smallest adequate rating wins.
+* **String fuse (gPV).** The default device of the DC protection box (owner decision 2026-10-08),
+  in a two-pole fuse-disconnector: the same current window as the breaker (``>= 1.56 x Isc``, which
+  is also the manufacturer's rule for ganged holders, ``<= max series fuse``), a rated voltage at or
+  above Voc(T_min) and an interrupting rating above the fault current. The smallest wins.
 * **Inverter-output OCPD.** The next standard rating (240-6(a)) >= 1.25 x the inverter's maximum
   AC current (690-8(b)(1)).
 * **Conductors** (copper, 75 and 90 degC columns of Table 310-15(b)(16); the tables of
@@ -29,7 +33,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 
-from pvsld.catalogue import DcBreaker
+from pvsld.catalogue import DcBreaker, DcFuse
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
 from pvsld.core.severity import Severity
@@ -38,6 +42,8 @@ from pvsld.sizing.models import ConductorChoice, DcOcpdChoice, Issue
 
 STRING_BREAKER_POLES = 2
 """A string is a two-wire circuit: both conductors are opened (ungrounded array, NOM 690-35)."""
+STRING_FUSE_POLES = 2
+"""One gPV fuse per conductor of the string, in a two-pole fuse-disconnector."""
 LARGEST_SIZE = "4/0 AWG"
 
 TODO_STAGE_3_4B = (
@@ -96,7 +102,7 @@ def select_string_breaker(
     """Choose the smallest catalogue breaker that satisfies the criteria of the module docstring.
 
     When ``required`` is false nothing is selected. When it is true and no breaker qualifies the
-    returned choice has ``breaker_id`` ``None`` and ``reason_es`` explains each exclusion.
+    returned choice has ``device_id`` ``None`` and ``reason_es`` explains each exclusion.
     """
     if not required:
         return DcOcpdChoice(required=False, reason_es=reason_es)
@@ -151,11 +157,75 @@ def select_string_breaker(
     return DcOcpdChoice(
         required=True,
         reason_es=reason_es,
-        breaker_id=name,
+        device_id=name,
         rating_a=rating,
         ue_v=ue_v,
         poles=STRING_BREAKER_POLES,
         icu_ka=icu_ka,
+        minimum_rating_a=minimum_a,
+        rejected=tuple(rejected),
+    )
+
+
+def select_string_fuse(
+    *,
+    module: CatalogueModule,
+    isc_a: float,
+    strings_per_input: int,
+    voc_cold_string_v: float,
+    fuses: Sequence[DcFuse],
+    required: bool,
+    reason_es: str,
+) -> DcOcpdChoice:
+    """Choose the smallest catalogue gPV fuse that satisfies the criteria of the module docstring.
+
+    Like :func:`select_string_breaker`: nothing when ``required`` is false, ``device_id`` ``None``
+    with every exclusion in ``reason_es`` when no fuse qualifies.
+    """
+    if not required:
+        return DcOcpdChoice(required=False, reason_es=reason_es, device="fuse")
+    minimum_a = calc.ocpd_min_a(calc.ISC_SAFETY_FACTOR * isc_a)
+    maximum_a = module.max_series_fuse_a
+    fault_a = strings_per_input * isc_a
+    qualified: list[tuple[float, str, DcFuse]] = []
+    rejected: list[tuple[str, str]] = []
+    for fuse in sorted(fuses, key=lambda f: f.component_id):
+        name = fuse.component_id
+        if fuse.rated_current_a < minimum_a:
+            why = f"{_g(fuse.rated_current_a)} A < {_n(minimum_a)} A (1.25 × 1.25 × Isc)"
+        elif fuse.rated_current_a > maximum_a:
+            why = f"{_g(fuse.rated_current_a)} A > {_g(maximum_a)} A (fusible máximo)"
+        elif fuse.rated_voltage_v < voc_cold_string_v:
+            why = f"{_g(fuse.rated_voltage_v)} V < {_n(voc_cold_string_v)} V"
+        elif fuse.breaking_capacity_ka * 1000 < fault_a:
+            why = f"capacidad interruptiva {_g(fuse.breaking_capacity_ka)} kA < {_n(fault_a)} A"
+        else:
+            qualified.append((fuse.rated_current_a, name, fuse))
+            continue
+        rejected.append((name, why))
+    if not qualified:
+        details = "; ".join(f"{name}: {why}" for name, why in rejected) or "catálogo sin fusibles"
+        return DcOcpdChoice(
+            required=True,
+            reason_es=(
+                f"{reason_es} Ningún fusible gPV del catálogo cumple "
+                f"(>= {_n(minimum_a)} A, <= {_g(maximum_a)} A, >= {_n(voc_cold_string_v)} V): "
+                f"{details}."
+            ),
+            device="fuse",
+            minimum_rating_a=minimum_a,
+            rejected=tuple(rejected),
+        )
+    rating, name, fuse = min(qualified, key=lambda q: q[:2])
+    return DcOcpdChoice(
+        required=True,
+        reason_es=reason_es,
+        device_id=name,
+        device="fuse",
+        rating_a=rating,
+        ue_v=fuse.rated_voltage_v,
+        poles=STRING_FUSE_POLES,
+        icu_ka=fuse.breaking_capacity_ka,
         minimum_rating_a=minimum_a,
         rejected=tuple(rejected),
     )

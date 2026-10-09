@@ -1,0 +1,44 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rated current.
+# Ferrule version (catalog numbers SPFxxx); the PCB version (SPFxxxR) is another catalogue number.
+component_type: dc_fuse
+family_id: LITTELFUSE-SPF
+manufacturer: Littelfuse
+range_name: POWR-GARD SPF Series, 1000 V dc, 1-30 A
+size: 10x38 mm (midget)
+rated_voltage_v: 1000
+operating_class: gPV (IEC 60269-6)
+time_constant_ms: [0, 2]
+standards: [UL 248-1, UL 248-19, IEC 60269-6]
+certifications: [UL Listed (File E339112), CSA (File 029862_0_000), TUV (Cert. J 50494849), RoHS]
+holders: [LPHV 1000 V dc POWR-Safe series fuse holder, 125003 fuse clips]
+variants:
+  - {component_id: LITTELFUSE-SPF001,  rated_current_a: 1,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.41, power_loss_w_at_in: 0.60}
+  - {component_id: LITTELFUSE-SPF002,  rated_current_a: 2,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.85, power_loss_w_at_in: 1.59}
+  - {component_id: LITTELFUSE-SPF003,  rated_current_a: 3,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.82, power_loss_w_at_in: 1.50}
+  - {component_id: LITTELFUSE-SPF03.5, rated_current_a: 3.5, breaking_capacity_ka: 20, power_loss_w_at_08in: 0.78, power_loss_w_at_in: 1.37}
+  - {component_id: LITTELFUSE-SPF004,  rated_current_a: 4,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.84, power_loss_w_at_in: 1.49}
+  - {component_id: LITTELFUSE-SPF005,  rated_current_a: 5,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.86, power_loss_w_at_in: 1.47}
+  - {component_id: LITTELFUSE-SPF006,  rated_current_a: 6,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.77, power_loss_w_at_in: 1.35}
+  - {component_id: LITTELFUSE-SPF008,  rated_current_a: 8,   breaking_capacity_ka: 20, power_loss_w_at_08in: 0.91, power_loss_w_at_in: 1.61}
+  - {component_id: LITTELFUSE-SPF010,  rated_current_a: 10,  breaking_capacity_ka: 20, power_loss_w_at_08in: 1.00, power_loss_w_at_in: 1.76}
+  - {component_id: LITTELFUSE-SPF012,  rated_current_a: 12,  breaking_capacity_ka: 20, power_loss_w_at_08in: 1.11, power_loss_w_at_in: 1.97}
+  - {component_id: LITTELFUSE-SPF015,  rated_current_a: 15,  breaking_capacity_ka: 20, power_loss_w_at_08in: 1.38, power_loss_w_at_in: 2.28}
+  - {component_id: LITTELFUSE-SPF020,  rated_current_a: 20,  breaking_capacity_ka: 20, power_loss_w_at_08in: 1.57, power_loss_w_at_in: 2.81}
+  - {component_id: LITTELFUSE-SPF025,  rated_current_a: 25,  breaking_capacity_ka: 50, power_loss_w_at_08in: 1.88, power_loss_w_at_in: 3.33}
+  - {component_id: LITTELFUSE-SPF030,  rated_current_a: 30,  breaking_capacity_ka: 50, power_loss_w_at_08in: 2.15, power_loss_w_at_in: 3.85}
+source:
+  filename: SPF-Fuse-datasheet-052925.pdf
+  sha256: 4586921fbb43aa839ff056fc49a966467a0e9e198ea076e64b0a586b4229948e
+  title: Littelfuse POWR-GARD Fuse SPF Series, 1000 V dc 1-30 A (revised 05/29/2025)
+  pages: [1, 2, 3]
+  extraction_method: pdf_text_layer
+  extraction_date: 2026-10-08
+  reviewed_by: null
+  review_date: null
+  notes: >-
+    Downloaded by the owner from littelfuse.com on 2026-10-08. Text extracted from the PDF text layer with pypdfium2.
+    Interrupting rating from the page-1 specifications ("20 kA - 1 A - 20 A, 50 kA - 25 A - 30 A"); the page-3
+    electrical table lists 20 kA for every rating and gives the 25 and 30 A clearing I2t at both 20 and 50 kA, which
+    is consistent with 50 kA being their maximum. Time constant "<= 2 ms" is recorded as (0, 2). The datasheet gives
+    IEC 60269-6 as an applicable standard (the gPV fuse-link standard) but does not print the word gPV. No operating
+    temperature range is printed, only a derating curve (page 4).

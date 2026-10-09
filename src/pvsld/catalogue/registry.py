@@ -25,10 +25,10 @@ from pydantic import Field, TypeAdapter, ValidationError
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter, InverterFamily
 from pvsld.catalogue.modules import PVModule, PVModuleFamily
-from pvsld.catalogue.protection import DcBreaker, ProtectionFamily
+from pvsld.catalogue.protection import DcBreaker, DcFuse, DcFuseFamily, ProtectionFamily
 
-Family = PVModuleFamily | InverterFamily | ProtectionFamily
-Component = PVModule | Inverter | DcBreaker
+Family = PVModuleFamily | InverterFamily | ProtectionFamily | DcFuseFamily
+Component = PVModule | Inverter | DcBreaker | DcFuse
 
 # ``datasheets/records/<folder>/<family-id lowercase>.yaml``
 RECORD_FOLDERS: dict[str, str] = {
@@ -36,6 +36,7 @@ RECORD_FOLDERS: dict[str, str] = {
     "string_inverter": "inverters",
     "hybrid_inverter": "inverters",
     "dc_breaker": "protection",
+    "dc_fuse": "protection",
 }
 
 _FAMILY_ADAPTER: TypeAdapter[Family] = TypeAdapter(
@@ -213,6 +214,10 @@ class ComponentRegistry:
     def dc_breakers(self) -> list[DcBreaker]:
         """Every DC breaker, sorted by id."""
         return [c for c in self if isinstance(c, DcBreaker)]
+
+    def dc_fuses(self) -> list[DcFuse]:
+        """Every PV fuse link, sorted by id."""
+        return [c for c in self if isinstance(c, DcFuse)]
 
     def __contains__(self, component_id: object) -> bool:
         return component_id in self._components

@@ -1,0 +1,47 @@
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per rated current.
+# Cylindrical (ferrule) style PV-(amp)A10F only; the bolt, PCB-tab and in-line crimp styles are other catalogue numbers.
+component_type: dc_fuse
+family_id: EATON-BUSSMANN-PV-10X38
+manufacturer: Eaton (Bussmann series)
+range_name: 10x38mm photovoltaic fuses, 1000 Vdc, 1-20 A
+size: 10x38 mm
+rated_voltage_v: 1000
+operating_class: gPV
+time_constant_ms: [1, 3]
+standards: [IEC 60269-6 (gPV), UL 248-19]
+certifications: [UL Listed (Guide JFGA, File E335324), CSA (File 53787, 1-15 A; 20 A pending), CCC, RoHS]
+operating_temp_c: [-40, 90]
+wire_range: Single conductor, 12-10 AWG 75 °C/90 °C Cu stranded PV
+holders:
+  - CHPV1U / CHPV1IU 1-pole modular fuse holder (data sheet 10430)
+  - CHPV2U / CHPV2IU 2-pole modular fuse holder (data sheet 10430)
+  - BPVM modular PV fuse block (10265)
+  - HPV-DV in-line fuse holder assembly (2157)
+sizing_note: No additional derating in ganged modular fuse holders without spacing, provided that the rating used is > 1.56 x Isc.
+variants:
+  - {component_id: EATON-PV-1A10F,   rated_current_a: 1,   breaking_capacity_ka: 50, power_loss_w_at_08in: 0.8, power_loss_w_at_in: 1.5}
+  - {component_id: EATON-PV-2A10F,   rated_current_a: 2,   breaking_capacity_ka: 50, power_loss_w_at_08in: 0.6, power_loss_w_at_in: 1.0}
+  - {component_id: EATON-PV-3A10F,   rated_current_a: 3,   breaking_capacity_ka: 50, power_loss_w_at_08in: 0.8, power_loss_w_at_in: 1.3}
+  - {component_id: EATON-PV-3-5A10F, rated_current_a: 3.5, breaking_capacity_ka: 50, power_loss_w_at_08in: 0.9, power_loss_w_at_in: 1.4}
+  - {component_id: EATON-PV-4A10F,   rated_current_a: 4,   breaking_capacity_ka: 50, power_loss_w_at_08in: 1.0, power_loss_w_at_in: 1.5}
+  - {component_id: EATON-PV-5A10F,   rated_current_a: 5,   breaking_capacity_ka: 50, power_loss_w_at_08in: 1.0, power_loss_w_at_in: 1.6}
+  - {component_id: EATON-PV-6A10F,   rated_current_a: 6,   breaking_capacity_ka: 50, power_loss_w_at_08in: 1.1, power_loss_w_at_in: 1.8}
+  - {component_id: EATON-PV-8A10F,   rated_current_a: 8,   breaking_capacity_ka: 50, power_loss_w_at_08in: 1.2, power_loss_w_at_in: 2.1}
+  - {component_id: EATON-PV-10A10F,  rated_current_a: 10,  breaking_capacity_ka: 50, power_loss_w_at_08in: 1.2, power_loss_w_at_in: 2.3}
+  - {component_id: EATON-PV-12A10F,  rated_current_a: 12,  breaking_capacity_ka: 50, power_loss_w_at_08in: 1.5, power_loss_w_at_in: 2.7}
+  - {component_id: EATON-PV-15A10F,  rated_current_a: 15,  breaking_capacity_ka: 50, power_loss_w_at_08in: 1.7, power_loss_w_at_in: 2.9}
+  - {component_id: EATON-PV-20A10F,  rated_current_a: 20,  breaking_capacity_ka: 50, power_loss_w_at_08in: 2.1, power_loss_w_at_in: 3.6}
+source:
+  filename: bus-ele-ds-10121-pv10m.pdf
+  sha256: 2228bef55ab84da856a817b284e9a2fd2765673c2bd5ff178ad3e629f04aed51
+  title: Eaton Bussmann series Technical Data 10121, 10x38mm photovoltaic fuses 1000 Vdc 1-20 A (effective September 2017, supersedes July 2017)
+  pages: [1, 2, 4]
+  extraction_method: pdf_text_layer
+  extraction_date: 2026-10-08
+  reviewed_by: null
+  review_date: null
+  notes: >-
+    Downloaded by the owner from eaton.com on 2026-10-08. Text extracted from the PDF text layer with pypdfium2. The
+    energy integrals (I2t) are not recorded: the text layer of the 8 A row reads 3 / 32 A2s, out of line with its
+    neighbours (6 A: 30 / 90), so that column needs the rendered table. Interrupting rating 50 kA and time constant
+    1-3 ms are the page-1 ratings for the whole range. The derating sentence comes from page 4.

@@ -6,11 +6,21 @@ from pathlib import Path
 
 import pytest
 
-from catalogue_helpers import ALL_RECORDS, MODULE, RECORDS, copy_records, mark_reviewed, raw, write
+from catalogue_helpers import (
+    ALL_RECORDS,
+    MODULE,
+    REAL_RECORDS,
+    RECORDS,
+    copy_records,
+    mark_reviewed,
+    raw,
+    write,
+)
 from pvsld.catalogue import (
     CatalogueError,
     ComponentRegistry,
     DcBreaker,
+    DcFuse,
     Inverter,
     PVModule,
     UnknownComponentError,
@@ -120,3 +130,15 @@ def test_load_from_one_file(tmp_path: Path) -> None:
 def test_fixture_snapshot_is_the_expected_set_of_files() -> None:
     on_disk = {path.relative_to(RECORDS).as_posix() for path in RECORDS.rglob("*.yaml")}
     assert on_disk == set(ALL_RECORDS)
+
+
+def test_the_pv_fuse_records_expand_with_their_own_interrupting_rating() -> None:
+    registry = ComponentRegistry.load(REAL_RECORDS, include_unreviewed=True)
+    fuses = {f.component_id: f for f in registry.dc_fuses()}
+    assert all(isinstance(f, DcFuse) for f in fuses.values())
+    spf20, spf25 = fuses["LITTELFUSE-SPF020"], fuses["LITTELFUSE-SPF025"]
+    assert (spf20.breaking_capacity_ka, spf25.breaking_capacity_ka) == (20, 50)
+    assert spf25.rated_voltage_v == 1000
+    assert spf25.operating_class.startswith("gPV")
+    assert fuses["EATON-PV-20A10F"].breaking_capacity_ka == 50
+    assert max(f.rated_current_a for f in fuses.values() if f.family_id.startswith("EATON")) == 20
