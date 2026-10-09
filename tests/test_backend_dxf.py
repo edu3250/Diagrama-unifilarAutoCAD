@@ -557,7 +557,7 @@ def test_a_combiner_is_defined_for_its_string_count_next_to_library_blocks() -> 
         "PVSLD_PV_STRING_7M_DN",
     }
     xdata = doc.blocks.get("PVSLD_COMBINER_3S").block_record.get_xdata("PVSLD")
-    assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.7.0", 5]  # IN1-IN3, OUT, PE
+    assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.8.0", 5]  # IN1-IN3, OUT, PE
     with pytest.raises(KeyError, match="PVSLD_NOPE"):
         define_symbol_blocks(doc, ["PVSLD_NOPE"])
 

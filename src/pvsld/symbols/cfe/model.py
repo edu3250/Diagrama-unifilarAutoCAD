@@ -15,7 +15,7 @@ from typing import Literal
 
 from pvsld.core import layers
 
-LIBRARY_VERSION = "0.7.0"
+LIBRARY_VERSION = "0.8.0"
 """Semantic version of the library (ADR-0005, section 7); also stored in every block record."""
 APP_ID = "PVSLD"
 BLOCK_PREFIX = "PVSLD_"
@@ -89,6 +89,8 @@ class Circle:
     cy: float
     radius: float
     layer: str
+    color_by_block: bool = False
+    """Take the colour of the INSERT (its layer's colour), not the colour of ``layer``."""
 
 
 @dataclass(frozen=True)
