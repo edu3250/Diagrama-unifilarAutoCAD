@@ -737,7 +737,7 @@ def _protection_table(spec: PvSystemSpec) -> Table:
                     f"In {_g(s.in_ka)} kA",
                     f"{_g(volts)} V" if volts is not None else NO_VALUE,
                     NO_VALUE,
-                    s.at,
+                    "Caja CD" if boxed and side == "CD" else s.at,  # drawn inside the box
                 )
             )
     return _auto(

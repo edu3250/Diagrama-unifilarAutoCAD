@@ -95,6 +95,7 @@ allowed-confusables = ["×", "γ"]
 # The deliverables print Spanish engineering text for the user: typographic dashes and minus
 # signs are intended (RUF001), and the sentences of the instruction sheet are kept whole (E501).
 "src/pvsld/report/*.py" = ["RUF001", "E501"]
+"src/pvsld/design/*.py" = ["RUF001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pvsld"]

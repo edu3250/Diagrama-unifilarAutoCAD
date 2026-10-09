@@ -1,8 +1,10 @@
 """The MCP server of ADR-0001 (layer L1): workflow tools and resources over stdio.
 
-Five tools: ``list_components`` and ``get_component`` read the component catalogue,
-``size_pv_system`` sizes a design from it (Stage 3.5), ``validate_pv_design`` checks a spec and
-``generate_single_line_diagram`` draws it. Four resources: the spec schema, the rule pack, the
+Six tools: ``list_components`` and ``get_component`` read the component catalogue,
+``size_pv_system`` sizes a design from it (Stage 3.5), ``validate_pv_design`` checks a spec,
+``generate_single_line_diagram`` draws it and ``design_and_draw`` does all of it in one step and
+adds the AutoCAD (or pvsld) PDF, the calculation report, the project sheet and the bill of
+materials (Stage 3.6.1). Four resources: the spec schema, the rule pack, the
 symbol library and an example of the non-sizing sections a sizing request needs.
 
 Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
@@ -47,6 +49,7 @@ from pvsld.catalogue.registry import ComponentRegistry
 from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, export_json_schema
 from pvsld.core.rules import rulepack_catalogue
 from pvsld.core.validation import ValidationReport
+from pvsld.mcp.design_tool import DesignOutput, design_text, run_design
 from pvsld.mcp.models import (
     GenerateOutput,
     ValidationOutput,
@@ -110,7 +113,11 @@ def _ensure_spec_size(spec: dict[str, Any]) -> None:
 INSTRUCTIONS = f"""\
 Designs Mexican photovoltaic systems and draws their single-line diagrams (CFE distributed \
 generation, NOM-001-SEDE-2012) as DXF R2018.
-Workflow:
+Quick mode: when the user asks for a diagram with little detail ("un diagrama con 5 paneles \
+Jinko"), find the module with list_components and call design_and_draw once: it sizes, \
+validates, draws and writes the DWG or DXF, the PDF, the calculation report, the project sheet \
+and the bill of materials into one folder. Pass on its explanation and summary in Spanish.
+Step by step (when the user wants to choose):
 1. Equipment comes from the component catalogue: list_components finds modules, inverters and DC \
 breakers, get_component gives their datasheet values. Never invent equipment data or \
 identifiers (Voc, Isc, ratings, RPU, cedula profesional): ask the user, or ask for the datasheet \
@@ -182,6 +189,24 @@ PREVIEW_DESCRIPTION = (
     "also saved next to the DXF."
 )
 
+
+DESIGN_DESCRIPTION = f"""\
+Design a grid-tied PV installation in one step and write every deliverable into one project \
+folder: size it from the catalogue (the inverter with a DC/AC ratio nearest 1.10-1.25), validate \
+it, draw the A3 single-line diagram (DXF), finish it with the local AutoCAD (DWG and PDF) or, \
+without AutoCAD, render the PDF itself, then write the calculation report (memoria de calculo, \
+xlsx with live formulas and pdf), the editable project sheet (hoja de proyecto, xlsx) and the bill \
+of materials. 5 to 20 s.
+
+Give module and the size (module_count_min/max for an exact count, or target_dc_power_w). Without \
+template, the quick defaults apply: CFE BT 2F-3H 220/127 V, 10 kA, 100 A main breaker, default \
+temperatures, personal data blank (the user fills it by hand or in the project sheet). Give \
+template (the sections of resource {SIZING_TEMPLATE_URI}) only when the user gave service or site \
+data.
+
+Returns the folder, the files, explanation_es (why this inverter: tell the user), bom_text (the \
+installation summary to show), whether AutoCAD was used, and a PNG preview. No configuration that \
+meets the rules is a normal result with the rejections, not an error."""
 
 LIST_COMPONENTS_DESCRIPTION = """\
 List the components of the catalogue (datasheet records the owner has reviewed): PV modules, \
@@ -607,6 +632,100 @@ def create_server(
         _log_call("size_pv_system", started, ok=output.ok, candidates=len(result.candidates))
         return CallToolResult(
             content=[_text(sizing_text(output))],
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        name="design_and_draw",
+        title="Design and draw PV system",
+        description=DESIGN_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Design and draw PV system",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def design_and_draw_tool(
+        module: Annotated[str, Field(description="component_id of the PV module.")],
+        module_count_min: Annotated[
+            int | None,
+            Field(description="Total modules, lower bound (= max for an exact count).", gt=0),
+        ] = None,
+        module_count_max: Annotated[
+            int | None, Field(description="Total modules, upper bound.", gt=0)
+        ] = None,
+        target_dc_power_w: Annotated[
+            float | None, Field(description="DC power to approach, in W (STC).", gt=0)
+        ] = None,
+        inverters: Annotated[
+            list[str] | Literal["auto"],
+            Field(description='Inverter component_ids to choose from, or "auto" for all.'),
+        ] = "auto",
+        dc_ocpd_device: Annotated[
+            Literal["fuse", "breaker"],
+            Field(description="String protection: gPV fuse-disconnector (default) or DC breaker."),
+        ] = "fuse",
+        routing: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Run lengths when the user gave them: dc_string_length_m (default "
+                "25), ac_output_length_m (default 30)."
+            ),
+        ] = None,
+        template: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Non-sizing sections of the spec, only when the user gave service or "
+                f"site data (see resource {SIZING_TEMPLATE_URI}). Default: the quick defaults."
+            ),
+        ] = None,
+        name: Annotated[
+            str | None,
+            Field(description=f"Project folder name; {NAME_RULE}. Default: sfv_<kWp>kWp."),
+        ] = None,
+        overwrite: Annotated[bool, Field(description=OVERWRITE_DESCRIPTION)] = False,
+        use_autocad: Annotated[
+            Literal["auto", "never"],
+            Field(
+                description="auto (default): use AutoCAD when installed; never: DXF + pvsld PDF."
+            ),
+        ] = "auto",
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        values: dict[str, Any] = {
+            "module": module,
+            "inverters": inverters,
+            "dc_ocpd_device": dc_ocpd_device,
+        }
+        optional = {
+            "module_count_min": module_count_min,
+            "module_count_max": module_count_max,
+            "target_dc_power_w": target_dc_power_w,
+            "routing": routing,
+            "template": template,
+        }
+        values.update({key: value for key, value in optional.items() if value is not None})
+        _ensure_spec_size(values)
+        registry = load_registry(include_unreviewed)
+        with generation_lock:
+            output, image = run_design(
+                box,
+                registry,
+                values,
+                name=name,
+                overwrite=overwrite,
+                use_autocad=use_autocad,
+                max_preview_bytes=preview_limit,
+            )
+        _log_call("design_and_draw", started, ok=output.ok, files=len(output.files))
+        content: list[TextContent | ImageContent] = [_text(design_text(output))]
+        if image is not None:
+            content.append(image)
+        return CallToolResult(
+            content=content,
             structured_content=output.model_dump(mode="json", exclude_none=True),
         )
 

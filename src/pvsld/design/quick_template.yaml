@@ -1,0 +1,82 @@
+# Non-sizing sections of the quick mode (Stage 3.6.1): what `design_and_draw` uses when the user
+# gives only the equipment and a size ("4 paneles Jinko").
+#
+# Service, panel and grounding follow the residential sample (examples/residential_7p7kwp.yaml):
+# CFE low voltage 2F-3H 220/127 V, 10 kA available, 100 A main breaker, 125 A load centre, net
+# metering. Temperatures are general defaults (owner decision 2026-10-09: not asked in quick mode).
+#
+# Personal data is never invented. The schema requires these fields, so they hold the marker
+# "SIN DATOS" or zeros; the sheet and the calculation report leave every personal field blank
+# whatever it holds (layout_sheet.py), and the professional mode replaces them with what the user
+# fills in.
+schema_version: "0.1.0"
+project:
+  id: "SFV"
+  name: "Sistema fotovoltaico interconectado {kwp} kWp"
+  client: {name: "SIN DATOS", phone: "SIN DATOS", email: "sin-datos@example.com"}
+  site:
+    address: {street: "SIN DATOS", number: "S/N", colonia: "SIN DATOS", municipio: "SIN DATOS", estado: "SIN DATOS", cp: "00000"}
+    lat: 23.63
+    lon: -102.55
+    occupancy: vivienda_unifamiliar
+    array_on_building: true
+    t_min_c: -3
+    t_min_source: "Valor general por omisión (modo rápido); ajústelo al sitio"
+    t_amb_max_c: 38
+standards:
+  nom_edition: "NOM-001-SEDE-2012"
+  rulepack: "mx-gd-2026.10"
+  voc_method: coefficient
+  vd_limits_pct: {dc: 1.5, ac: 2.0, total: 3.0}
+utility:
+  supplier: CFE
+  rpu: "000000000000"
+  service_number: "SIN DATOS"
+  meter_number: "SIN DATOS"
+  tariff: "1"
+  voltage_level: BT
+  system: "2F-3H"
+  nominal_voltage_v: 220
+  available_fault_current_ka: 10
+  regime: medicion_neta
+  interconnection_scheme: 1
+  service_main: {rating_a: 100, poles: 2, kaic_ka: 10}
+dc_bos:                     # the engine adds the string protections and the box disconnect
+  combiners: []
+  disconnects: []
+  spds: [{id: DPS-CD1, at: INV1.dc, spd_type: "T2", ucpv_v: 1000, in_ka: 20, iscpv_a: 1000}]
+ac_bos:
+  ocpds: []
+  disconnects: []
+  spds: [{id: DPS-CA1, at: CC-1, spd_type: "T2", uc_v: 175, in_ka: 20}]
+  panels:
+    - {id: CC-1, name: "Centro de carga principal", bus_a: 125, main_ocpd: ITM-P, system: "2F-3H", kaic_ka: 10}
+  main_breakers:
+    - {id: ITM-P, role: I2, poles: 2, rating_a: 100, bidirectional: true}
+  point_of_connection: {id: PI-1, type: load_side, panel: CC-1, breaker: ITM-1, position: opposite_end}
+  meters:
+    - {id: M-1, role: MF, bidirectional: true, owner: CFE, meter_no: "SIN DATOS"}
+grounding:
+  dc_system: ungrounded_690_35
+  electrodes: [{type: "varilla copperweld", length_m: 3.05, qty: 1}]
+  design_resistance_ohm: 25
+  gec_ac: "8 AWG"
+  gec_dc: "8 AWG"
+  dc_ac_bond_method: "690-47(c)(3)"
+storage: {coupling: none}
+title_block:
+  drawing_no: "IE-01"
+  sheet: "1 de 1"
+  revision: "A"
+  date: 2026-01-01
+  responsible: {name: "SIN DATOS", cedula_profesional: "0000000", company: "SIN DATOS"}
+  uvie: null
+  drawn_by: "pvsld"
+  checked_by: "SIN DATOS"
+  revisions: [{rev: "A", date: 2026-01-01, description: "Emisión para solicitud de interconexión", by: "pvsld"}]
+layout:
+  template: "a3_plantilla_v1"
+  sheet: A3
+  flow: left_to_right
+  symbol_style: IEC
+  language: es

@@ -1,8 +1,10 @@
-"""PNG preview of a rendered drawing, through the ezdxf drawing add-on and matplotlib (Agg).
+"""PNG preview and PDF of a rendered drawing, through the ezdxf drawing add-on and matplotlib.
 
-The preview is for Claude's visual self-check and for human review, not for plotting: ezdxf
-approximates fonts and text metrics (ADR-0001, Consequences). It renders the A3 paper-space layout,
-so the viewport, border, title block and the model content all appear as on the sheet.
+The PNG is for Claude's visual self-check and for human review. The PDF is the printable sheet of
+a user without AutoCAD (Stage 3.6.1): vector, A3 at 1:1, black on white like the AutoCAD plot with
+``monochrome.ctb``. Neither is a plot by AutoCAD: ezdxf approximates fonts and text metrics
+(ADR-0001, Consequences). Both render the A3 paper-space layout, so the viewport, border, title
+block and the model content all appear as on the sheet.
 
 Speed. ezdxf draws every text as filled glyph paths, and ``Axes.add_patch`` recomputes the Bezier
 extents of each one to update the data limits: about 10 s for the 300 texts of a sheet. The sheet
@@ -26,6 +28,7 @@ from pvsld.backends.dxf import LAYOUT_NAME
 if TYPE_CHECKING:
     from ezdxf.addons.drawing.backend import BackendProperties
     from ezdxf.path import Path2d
+    from matplotlib.figure import Figure
 
 DEFAULT_DPI = 100
 MM_PER_INCH = 25.4
@@ -74,10 +77,8 @@ def _sheet_backend_class() -> type:
     return _SheetBackend
 
 
-def render_png(
-    document: Drawing, *, dpi: int = DEFAULT_DPI, layout_name: str = LAYOUT_NAME
-) -> bytes:
-    """Render a paper-space layout (the A3 sheet by default) to PNG bytes: white, layer colours."""
+def _render_sheet(document: Drawing, *, layout_name: str, monochrome: bool, dpi: int) -> Figure:
+    """Draw a paper-space layout on a figure of the paper size (millimetre axes, white)."""
     from ezdxf.addons.drawing import Frontend, RenderContext
     from ezdxf.addons.drawing.config import BackgroundPolicy, ColorPolicy, Configuration
     from matplotlib.backends.backend_agg import FigureCanvasAgg
@@ -95,13 +96,45 @@ def render_png(
     axes.set_axis_off()
     config = Configuration(
         background_policy=BackgroundPolicy.WHITE,
-        color_policy=ColorPolicy.COLOR,
+        color_policy=ColorPolicy.BLACK if monochrome else ColorPolicy.COLOR,
     )
     backend = _sheet_backend_class()(axes)
     Frontend(RenderContext(document), backend, config=config).draw_layout(layout, finalize=True)
+    return figure
+
+
+def render_png(
+    document: Drawing, *, dpi: int = DEFAULT_DPI, layout_name: str = LAYOUT_NAME
+) -> bytes:
+    """Render a paper-space layout (the A3 sheet by default) to PNG bytes: white, layer colours."""
+    figure = _render_sheet(document, layout_name=layout_name, monochrome=False, dpi=dpi)
     buffer = io.BytesIO()
     figure.savefig(buffer, format="png", dpi=dpi, facecolor="white")
     return buffer.getvalue()
+
+
+def render_pdf(document: Drawing, *, layout_name: str = LAYOUT_NAME) -> bytes:
+    """Render a paper-space layout to a one-page vector PDF of the paper size, black on white.
+
+    The creation date is left out, so equal drawings give byte-identical files.
+    """
+    figure = _render_sheet(document, layout_name=layout_name, monochrome=True, dpi=DEFAULT_DPI)
+    buffer = io.BytesIO()
+    figure.savefig(
+        buffer,
+        format="pdf",
+        facecolor="white",
+        metadata={"Creator": "pvsld", "Producer": "pvsld", "CreationDate": None},
+    )
+    return buffer.getvalue()
+
+
+def write_pdf(document: Drawing, path: Path, *, layout_name: str = LAYOUT_NAME) -> bytes:
+    """Render the sheet PDF and write it to ``path`` (parent folders are created)."""
+    data = render_pdf(document, layout_name=layout_name)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(data)
+    return data
 
 
 def write_png(

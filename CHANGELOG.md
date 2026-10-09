@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- One-step design for the plugin's quick mode (Stage 3.6.1b): `pvsld.design.design_and_draw`, the MCP tool `design_and_draw` and `pvsld design REQUEST -o DIR [--no-autocad]`. From a module and a size it sizes, validates and draws the installation, finishes it with the local AutoCAD (DWG and PDF) or renders the PDF itself, and writes the calculation report (xlsx, pdf), the project sheet, the bill of materials and the spec into one folder per project (`<output>/<name>/`, default `sfv_<kWp>kWp`). Without a template the quick defaults apply (`quick_template.yaml`: CFE BT 2F-3H 220/127 V, 10 kA, 100 A main breaker, a DC SPD in the box, default temperatures, personal fields blank on the sheet). A failed AutoCAD run falls back to the pvsld PDF and says so
+- `render_pdf` / `write_pdf`: the A3 sheet as a one-page vector PDF, black on white like the AutoCAD plot with `monochrome.ctb`, byte-identical for the same drawing (for users without AutoCAD)
+- `detect_autocad` / `AutocadInfo`: whether Core Console is installed and which AutoCAD release holds it
+- `OutputSandbox.project_dir`: a validated project folder inside the output root
 - `pvsld.report` (Stage 3.6.1a, the owner approved the prototypes on 2026-10-09):
   - the calculation report (memoria de cálculo) as an Excel workbook (Datos with sourced blue inputs, Memoria with live formulas and CUMPLE/NO CUMPLE checks with NOM references, Materiales, Validación) and as a letter-size PDF;
   - the professional-mode project sheet (hoja de proyecto) with AUTO defaults, catalogue dropdowns on a hidden sheet, the last calculation's choices and notes;
@@ -27,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Symbol library 0.7.0: `PVSLD_CB_DC` (the CFE breaker with DC ports); the inverter is 30 x 30 mm and the load centre 30 x 35 mm (owner request: smaller); the DC disconnect shows its tag above and its description below
 
 ### Fixed
+- With the DC protection box, the protection schedule places the DC SPD in "Caja CD" (it gave the spec location, e.g. INV1.dc)
 - The box disconnect DCD-CD1 records the switch's 4 poles when a single string runs through all of them in series
 - Drawings on the owner's sheet template are editable in one place (owner request): the frame, template boxes, fixed texts, fields, symbology, schematic and protection schedule are all in model space at 1:1, and the file opens on the Model tab. The `A3` layout keeps only the 1:1 viewport, for plotting (`Diagram.sheet_in_model`). Every text, line and block can be edited directly; blocks keep their attributes
 - Drawings and the symbol library open on their sheet (`A3`, `Legend`) in AutoCAD: `$TILEMODE` is 0. With ezdxf's default 1 they opened on the Model tab, where the sheet template, frame and title block (paper space) are not visible. The golden DXF, the library DXF and its DWG were regenerated

@@ -47,7 +47,14 @@ T = TypeVar("T")
 GOLDEN = GOLDEN_DIR / "residential_7p7kwp.dxf"
 GENERATE = "generate_single_line_diagram"
 VALIDATE = "validate_pv_design"
-TOOLS = [VALIDATE, GENERATE, "list_components", "get_component", "size_pv_system"]
+TOOLS = [
+    VALIDATE,
+    GENERATE,
+    "list_components",
+    "get_component",
+    "size_pv_system",
+    "design_and_draw",
+]
 # Claude Code stops a tool result at 25k tokens; four characters per token is the conservative
 # estimate (real text of this kind is closer to three, but the image is base64 that counts as text).
 TOKEN_BUDGET = 25_000
