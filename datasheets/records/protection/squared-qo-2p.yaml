@@ -40,8 +40,8 @@ source:
   pages: [3, 5, 7]
   extraction_method: pdf_text_layer
   extraction_date: 2026-10-09
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-09
   notes: >-
     Downloaded from Schneider Electric (download.schneider-electric.com, document 0730CT9801) on 2026-10-09. Table 1
     (page 5): QO 2-pole 10-70 A, 80-100 A and 110-200 A are all 10 kA at 120 and 120/240 Vac (10-100 A also at
