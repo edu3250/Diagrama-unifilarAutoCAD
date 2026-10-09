@@ -10,6 +10,7 @@ import json
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -379,9 +380,35 @@ def test_run_process_captures_output_and_exit_code(tmp_path: Path) -> None:
     assert (tmp_path / "raw.out").read_bytes() == outcome.output
 
 
-def test_run_process_stops_its_own_process_on_timeout(tmp_path: Path) -> None:
+def test_run_process_stops_its_own_process_on_timeout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    raw_output = tmp_path / "raw.out"
+
+    class StartedThenTimed(subprocess.Popen[bytes]):
+        """A real process whose timeout starts only once it has printed ``start``.
+
+        Under load the child interpreter can take more than the 1 s timeout just to start, and it
+        was then killed before printing anything. Holding the first ``wait`` until ``start`` is in
+        the output keeps the real timeout, kill and reap, and makes the captured output certain.
+        """
+
+        gated = False
+
+        def wait(self, timeout: float | None = None) -> int:
+            if not self.gated:
+                self.gated = True
+                deadline = time.monotonic() + 60
+                while b"start" not in raw_output.read_bytes():
+                    if self.poll() is not None or time.monotonic() > deadline:
+                        self.kill()
+                        pytest.fail("the child process never printed 'start'")
+                    time.sleep(0.05)
+            return super().wait(timeout)
+
+    monkeypatch.setattr(core_console_module.subprocess, "Popen", StartedThenTimed)
     command = [sys.executable, "-c", "import time; print('start', flush=True); time.sleep(60)"]
-    outcome = run_process(command, tmp_path, 1.0, tmp_path / "raw.out")
+    outcome = run_process(command, tmp_path, 1.0, raw_output)
     assert outcome.timed_out
     assert outcome.exit_code is not None
     assert outcome.duration_s < 30
