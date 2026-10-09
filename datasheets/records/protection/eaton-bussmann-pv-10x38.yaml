@@ -38,8 +38,8 @@ source:
   pages: [1, 2, 4]
   extraction_method: pdf_text_layer
   extraction_date: 2026-10-08
-  reviewed_by: null
-  review_date: null
+  reviewed_by: edu3250
+  review_date: 2026-10-08
   notes: >-
     Downloaded by the owner from eaton.com on 2026-10-08. Text extracted from the PDF text layer with pypdfium2. The
     energy integrals (I2t) are not recorded: the text layer of the 8 A row reads 3 / 32 A2s, out of line with its
