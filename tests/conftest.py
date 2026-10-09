@@ -45,3 +45,11 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if "autocad" in item.keywords:
             item.add_marker(skip_autocad)
+
+
+@pytest.fixture(autouse=True)
+def _isolated_local_catalogue(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Point the local catalogue (Stage 3.6.3) at an empty folder, never the user's own."""
+    monkeypatch.setenv("PVSLD_LOCAL_CATALOGUE_DIR", str(tmp_path_factory.mktemp("local_catalogue")))

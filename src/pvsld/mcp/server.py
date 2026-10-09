@@ -1,13 +1,15 @@
 """The MCP server of ADR-0001 (layer L1): workflow tools and resources over stdio.
 
-Eight tools: ``list_components`` and ``get_component`` read the component catalogue,
+Nine tools: ``list_components`` and ``get_component`` read the component catalogue (the bundled
+records and the user's local ones), ``add_component_to_catalogue`` adds equipment to the local
+catalogue from its datasheet (Stage 3.6.3),
 ``size_pv_system`` sizes a design from it (Stage 3.5), ``validate_pv_design`` checks a spec,
 ``generate_single_line_diagram`` draws it and ``design_and_draw`` does all of it in one step and
 adds the AutoCAD (or pvsld) PDF, the calculation report, the project sheet and the bill of
 materials (Stage 3.6.1); ``new_project_sheet`` and ``design_from_project_sheet`` are the
-professional mode, driven by the project sheet the user fills in (Stage 3.6.2). Four resources:
-the spec schema, the rule pack, the symbol library and an example of the non-sizing sections a
-sizing request needs.
+professional mode, driven by the project sheet the user fills in (Stage 3.6.2). Five resources:
+the spec schema, the rule pack, the symbol library, an example of the non-sizing sections a
+sizing request needs and example catalogue records (the format of a local record).
 
 Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
 tool surface is deliberately small and has no primitive drawing tool and no code execution, so the
@@ -47,10 +49,12 @@ from pydantic import Field
 
 from pvsld import __version__, service
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
+from pvsld.catalogue.local import load_catalogue, local_catalogue_dir
 from pvsld.catalogue.registry import ComponentRegistry
 from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, export_json_schema
 from pvsld.core.rules import rulepack_catalogue
 from pvsld.core.validation import ValidationReport
+from pvsld.mcp.catalogue_tool import AddComponentOutput, record_examples, run_add_component
 from pvsld.mcp.design_tool import (
     DesignOutput,
     design_text,
@@ -101,6 +105,7 @@ SCHEMA_URI = "pvsld://schema/pv-system-spec"
 RULEPACK_URI = f"pvsld://rulepack/{RULEPACK_ID}"
 SYMBOLS_URI = "pvsld://symbols"
 SIZING_TEMPLATE_URI = "pvsld://examples/sizing-template"
+RECORD_EXAMPLES_URI = "pvsld://catalogue/record-examples"
 _EXAMPLE_SPEC = Path(__file__).resolve().parents[3] / "examples" / "residential_7p7kwp.yaml"
 
 # One installation spec is a few KiB; anything far larger is a mistake or an attempt to exhaust
@@ -128,9 +133,9 @@ Spanish.
 Professional mode: new_project_sheet gives a blank project sheet; the user fills it in the \
 project folder; design_from_project_sheet designs from it or lists the cells to fix.
 Step by step:
-1. list_components / get_component give catalogue equipment. Never invent equipment data or \
-identifiers (Voc, Isc, ratings, RPU, cedula profesional): ask the user, or ask for the datasheet \
-of a component not in the catalogue.
+1. list_components / get_component give catalogue equipment. Never invent equipment data. \
+Equipment not in the catalogue: ask for its datasheet PDF, read it, show the values, and once the \
+user confirms them call add_component_to_catalogue (format: resource {RECORD_EXAMPLES_URI}).
 2. size_pv_system sizes from a module, inverters (or "auto"), a target and the non-sizing \
 sections of the spec (resource {SIZING_TEMPLATE_URI}); show the selection before drawing.
 3. validate_pv_design checks the spec (schema {SCHEMA_URI}, rules {RULEPACK_URI}); fix every \
@@ -228,6 +233,18 @@ small), nothing is designed: the result lists each cell with its Spanish reason,
 hoja_de_proyecto_revisar.xlsx marks them in red. A model missing from the catalogue is listed in \
 missing_components. Otherwise the result is the same as design_and_draw, written into the same \
 folder (the sheet's "Ultimo calculo" column is refreshed). 5 to 20 s."""
+
+ADD_COMPONENT_DESCRIPTION = f"""\
+Add equipment the catalogue lacks (module, inverter, fuse, breaker, switch, cable) to the user's \
+local catalogue, from its datasheet. Steps: copy the user's PDF into the datasheets_folder given \
+by resource {RECORD_EXAMPLES_URI}; read the PDF; write the record in the format of the example of \
+its component_type (every value as printed, never guessed); show the values to the user and ask \
+them to confirm; then call this tool with user_confirmed=true.
+
+The tool validates the record like the bundled ones (missing or implausible values are listed so \
+you can fix them), adds the PDF's SHA-256 and the user as reviewer, and writes it into the local \
+catalogue. From then on every tool sees the new component ids (list_components marks them local) \
+and the project sheet offers them in its lists."""
 
 LIST_COMPONENTS_DESCRIPTION = """\
 List the components of the catalogue (datasheet records the owner has reviewed): PV modules, \
@@ -400,15 +417,19 @@ def create_server(
     *,
     max_preview_bytes: int | None = None,
     catalogue_dir: Path | None = None,
+    local_catalogue: Path | None = None,
 ) -> MCPServer:
     """Build the server.
 
     ``sandbox`` defaults to ``$PVSLD_OUTPUT_DIR`` or ``./out``; ``max_preview_bytes`` (the size of
     the PNG attached to a result) to ``$PVSLD_PREVIEW_MAX_BYTES`` or 62 000; ``catalogue_dir`` (the
-    component records) to ``$PVSLD_CATALOGUE_DIR`` or ``datasheets/records`` of the repository.
+    component records) to ``$PVSLD_CATALOGUE_DIR`` or ``datasheets/records`` of the repository;
+    ``local_catalogue`` (the user's own records, Stage 3.6.3) to ``$PVSLD_LOCAL_CATALOGUE_DIR`` or
+    the per-user data folder.
     """
     box = sandbox if sandbox is not None else OutputSandbox.from_environment()
     catalogue = catalogue_dir if catalogue_dir is not None else catalogue_dir_from_environment()
+    local = local_catalogue if local_catalogue is not None else local_catalogue_dir()
     preview_limit = (
         max_preview_bytes if max_preview_bytes is not None else preview_limit_from_environment()
     )
@@ -492,12 +513,16 @@ def create_server(
         )
 
     def load_registry(include_unreviewed: bool) -> ComponentRegistry:
+        """The bundled catalogue merged with the user's local one (read on every call)."""
         try:
-            return ComponentRegistry.load(catalogue, include_unreviewed=include_unreviewed)
+            registry = load_catalogue(catalogue, local=local, include_unreviewed=include_unreviewed)
         except CatalogueError as error:
             raise ToolError(
                 "the component catalogue is invalid: " + "; ".join(error.problems[:5])
             ) from error
+        for problem in registry.local_problems:
+            log.warning("local catalogue: %s", problem)
+        return registry
 
     unreviewed_field = Field(
         description="Also use records the owner has not reviewed yet (development only; never "
@@ -516,7 +541,16 @@ def create_server(
     )
     def list_components(
         component_type: Annotated[
-            Literal["pv_module", "string_inverter", "hybrid_inverter", "dc_breaker", "dc_fuse"]
+            Literal[
+                "pv_module",
+                "string_inverter",
+                "hybrid_inverter",
+                "dc_breaker",
+                "dc_fuse",
+                "ac_breaker",
+                "dc_switch",
+                "conductor",
+            ]
             | None,
             Field(description="Only this type. Default: every type."),
         ] = None,
@@ -532,7 +566,7 @@ def create_server(
         _log_call("list_components", started, count=output.count)
         lines = [
             f"{c.component_id}  {c.component_type}  {c.manufacturer}  {c.rating}"
-            + ("" if c.reviewed else "  UNREVIEWED")
+            + ("  LOCAL" if c.local else "" if c.reviewed else "  UNREVIEWED")
             for c in output.components
         ]
         lines.append(f"{output.count} component(s)")
@@ -749,6 +783,68 @@ def create_server(
             content=content,
             structured_content=output.model_dump(mode="json", exclude_none=True),
         )
+
+    @server.tool(
+        name="add_component_to_catalogue",
+        title="Add component to local catalogue",
+        description=ADD_COMPONENT_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Add component to local catalogue",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def add_component_to_catalogue_tool(
+        record: Annotated[
+            dict[str, Any],
+            Field(
+                description="The record as read from the datasheet, in the format of the "
+                f"examples of resource {RECORD_EXAMPLES_URI}."
+            ),
+        ],
+        datasheet: Annotated[
+            str,
+            Field(description="File name of the PDF in the local catalogue's datasheets folder."),
+        ],
+        user_confirmed: Annotated[
+            bool,
+            Field(description="True only after the user confirmed the values you showed them."),
+        ],
+        overwrite: Annotated[
+            bool, Field(description="Replace a local record with the same ids (user asked).")
+        ] = False,
+    ) -> Annotated[CallToolResult, AddComponentOutput]:
+        started = time.perf_counter()
+        _ensure_spec_size(record)
+        output = run_add_component(
+            load_registry(include_unreviewed=False),
+            local,
+            record=record,
+            datasheet=datasheet,
+            user_confirmed=user_confirmed,
+            overwrite=overwrite,
+        )
+        _log_call("add_component_to_catalogue", started, components=len(output.component_ids))
+        lines = [output.summary, *(f"id: {i}" for i in output.component_ids), output.next_step]
+        return CallToolResult(
+            content=[_text("\n".join(lines))],
+            structured_content=output.model_dump(mode="json"),
+        )
+
+    @server.resource(
+        RECORD_EXAMPLES_URI,
+        name="catalogue-record-examples",
+        title="Catalogue record examples",
+        description=(
+            "One reviewed record per component type, as written in the catalogue, the local "
+            "catalogue folders and how to add equipment from a datasheet."
+        ),
+        mime_type="application/json",
+    )
+    def record_examples_resource() -> str:
+        return json.dumps(record_examples(catalogue, local), ensure_ascii=False)
 
     project_name = Field(description=f"Project folder name; {NAME_RULE}.")
 
