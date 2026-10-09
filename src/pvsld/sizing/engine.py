@@ -20,7 +20,15 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from pvsld.catalogue import Cable, ComponentRegistry, DcBreaker, DcFuse, UnknownComponentError
+from pvsld.catalogue import (
+    AcBreaker,
+    Cable,
+    ComponentRegistry,
+    DcBreaker,
+    DcFuse,
+    DcSwitch,
+    UnknownComponentError,
+)
 from pvsld.catalogue import Inverter as CatalogueInverter
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
@@ -33,12 +41,15 @@ from pvsld.sizing.models import (
     SUPPORTED_SYSTEMS,
     BosSpec,
     Candidate,
+    DcOcpdChoice,
+    DeviceChoice,
     Issue,
     Rejection,
     SizingInputError,
     SizingRequest,
     SizingResult,
     StringConfig,
+    StringMetrics,
 )
 from pvsld.sizing.strings import EvalContext, Evaluation, enumerate_configs, evaluate_config
 
@@ -60,14 +71,12 @@ STRING_FUSE_PREFIX = "FUS-"
 BOX_SWITCH_ID = "DCD-CD1"
 """The disconnect of the DC protection box, after the string breakers and the DC SPD."""
 BOX_SWITCH_ASSUMPTION = (
-    f"{BOX_SWITCH_ID} (seccionador de la caja de protecciones CD): tensión y corriente iguales a "
-    "las de la protección de cadena, dos polos por cadena; el catálogo aún no registra "
-    "seccionadores."
+    f"{BOX_SWITCH_ID} (seccionador de la caja de protecciones CD): el seccionador FV del catálogo "
+    "con dos polos por cadena; sin uno adecuado, tensión y corriente de la protección de cadena."
 )
 ITM_ASSUMPTION = (
-    "kAIC del interruptor de salida: se toma la corriente de falla disponible del servicio como "
-    "mínimo requerido; elija un interruptor comercial con al menos ese valor (catálogo de CA: "
-    "Etapa 3.4b)."
+    "ITM-1 e ITM-P: interruptores de CA del catálogo con su capacidad interruptiva; sin uno "
+    "adecuado, el kAIC se iguala a la corriente de falla disponible del servicio."
 )
 OPTIMIZER_ASSUMPTION = (
     "Optimizadores en todos los módulos: solo se usa el límite de potencia FV con optimizadores; "
@@ -152,6 +161,8 @@ def _size_bos(
     breakers: Sequence[DcBreaker],
     fuses: Sequence[DcFuse] = (),
     cables: Sequence[Cable] = (),
+    ac_breakers: Sequence[AcBreaker] = (),
+    dc_switches: Sequence[DcSwitch] = (),
 ) -> tuple[BosSpec | None, list[Issue]]:
     metrics, config = evaluation.metrics, evaluation.config
     site, routing = request.site, request.routing
@@ -250,6 +261,10 @@ def _size_bos(
     issues += raceway_issues
     if any(i.severity == Severity.ERROR for i in raceway_issues):
         return None, issues
+    devices, device_issues = _catalogue_devices(
+        request, dc_ocpd, ac_ocpd, phases, string_i_max, metrics, config, ac_breakers, dc_switches
+    )
+    issues += device_issues
     return (
         BosSpec(
             dc_ocpd=dc_ocpd,
@@ -257,9 +272,61 @@ def _size_bos(
             conductors=(dc_choice, ac_choice),
             todo=bos.TODO_STAGE_3_4B,
             raceways=(dc_raceway, ac_raceway),
+            devices=devices,
         ),
         issues,
     )
+
+
+def _catalogue_devices(
+    request: SizingRequest,
+    dc_ocpd: DcOcpdChoice,
+    ac_ocpd_a: float,
+    phases: int,
+    string_i_max_a: float,
+    metrics: StringMetrics,
+    config: StringConfig,
+    ac_breakers: Sequence[AcBreaker],
+    dc_switches: Sequence[DcSwitch],
+) -> tuple[tuple[DeviceChoice, ...], list[Issue]]:
+    """ITM-1, ITM-P and the box disconnect from the catalogue (Stage 3.4b, owner 2026-10-09)."""
+    ac_bos = request.template["ac_bos"]
+    fault_ka = request.utility.available_fault_current_ka
+    devices: list[DeviceChoice] = []
+    issues: list[Issue] = []
+    itm, found = bos.select_ac_breaker(
+        position=ac_bos["point_of_connection"]["breaker"],
+        rating_a=ac_ocpd_a,
+        poles=phases,
+        voltage_v=AC_BREAKER_VOLTAGE_V,
+        fault_ka=fault_ka,
+        breakers=ac_breakers,
+    )
+    issues += found
+    devices += [itm] if itm else []
+    for main in ac_bos.get("main_breakers", []):
+        choice, found = bos.select_ac_breaker(
+            position=main["id"],
+            rating_a=main["rating_a"],
+            poles=main["poles"],
+            voltage_v=AC_BREAKER_VOLTAGE_V,
+            fault_ka=fault_ka,
+            breakers=ac_breakers,
+            exact=True,  # the service's main keeps its rating; the catalogue gives the device
+        )
+        issues += found
+        devices += [choice] if choice else []
+    if dc_ocpd.device_id is not None:
+        switch, found = bos.select_box_switch(
+            position=BOX_SWITCH_ID,
+            n_strings=config.n_strings,
+            voc_cold_string_v=metrics.voc_cold_string_v,
+            string_i_max_a=string_i_max_a,
+            switches=dc_switches,
+        )
+        issues += found
+        devices += [switch] if switch else []
+    return tuple(devices), issues
 
 
 def _pv_insulation(cable: Cable | None) -> str:
@@ -378,8 +445,11 @@ def _build_spec(
                 "id": BOX_SWITCH_ID,
                 "integrated_in": None,
                 "poles": dc_ocpd.poles * config.n_strings,
-                "ue_v": dc_ocpd.ue_v,
-                "ie_a": dc_ocpd.rating_a,
+                **(
+                    {"ue_v": switch.voltage_v, "ie_a": switch.rating_a, "model": switch.device_id}
+                    if (switch := bos_spec.device(BOX_SWITCH_ID)) is not None
+                    else {"ue_v": dc_ocpd.ue_v, "ie_a": dc_ocpd.rating_a}
+                ),
             }
         )
     dc_bos = spec.get("dc_bos") or {}
@@ -399,6 +469,12 @@ def _build_spec(
         "backfed": True,
         "at": ac_bos["point_of_connection"]["panel"],
     }
+    chosen = bos_spec.device(itm_id)
+    if chosen is not None:
+        itm.update(rating_a=chosen.rating_a, kaic_ka=chosen.interrupting_ka, model=chosen.device_id)
+    for main in ac_bos.get("main_breakers", []):
+        if (chosen := bos_spec.device(main["id"])) is not None:
+            main.update(kaic_ka=chosen.interrupting_ka, model=chosen.device_id)
     ac_bos["ocpds"] = [o for o in ac_bos.get("ocpds", []) if o["id"] != itm_id] + [itm]
 
     dc_ambient = (
@@ -504,6 +580,16 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
         if request.dc_breakers == "auto"
         else [_lookup(registry, name, DcBreaker, "dc_breaker") for name in request.dc_breakers]
     )
+    ac_breakers: list[AcBreaker] = (
+        registry.ac_breakers()
+        if request.ac_breakers == "auto"
+        else [_lookup(registry, name, AcBreaker, "ac_breaker") for name in request.ac_breakers]
+    )
+    dc_switches: list[DcSwitch] = (
+        registry.dc_switches()
+        if request.dc_switches == "auto"
+        else [_lookup(registry, name, DcSwitch, "dc_switch") for name in request.dc_switches]
+    )
     cables: list[Cable] = [
         c
         for c in registry.cables()
@@ -571,6 +657,8 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             breakers=breakers,
             fuses=fuses,
             cables=cables,
+            ac_breakers=ac_breakers,
+            dc_switches=dc_switches,
         )
         if bos_spec is None:
             rejected.append(

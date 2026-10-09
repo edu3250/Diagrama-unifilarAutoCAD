@@ -26,10 +26,27 @@ from pvsld.catalogue.conductors import Cable, CableFamily
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter, InverterFamily
 from pvsld.catalogue.modules import PVModule, PVModuleFamily
-from pvsld.catalogue.protection import DcBreaker, DcFuse, DcFuseFamily, ProtectionFamily
+from pvsld.catalogue.protection import (
+    AcBreaker,
+    AcBreakerFamily,
+    DcBreaker,
+    DcFuse,
+    DcFuseFamily,
+    DcSwitch,
+    DcSwitchFamily,
+    ProtectionFamily,
+)
 
-Family = PVModuleFamily | InverterFamily | ProtectionFamily | DcFuseFamily | CableFamily
-Component = PVModule | Inverter | DcBreaker | DcFuse | Cable
+Family = (
+    PVModuleFamily
+    | InverterFamily
+    | ProtectionFamily
+    | DcFuseFamily
+    | CableFamily
+    | AcBreakerFamily
+    | DcSwitchFamily
+)
+Component = PVModule | Inverter | DcBreaker | DcFuse | Cable | AcBreaker | DcSwitch
 
 # ``datasheets/records/<folder>/<family-id lowercase>.yaml``
 RECORD_FOLDERS: dict[str, str] = {
@@ -38,6 +55,8 @@ RECORD_FOLDERS: dict[str, str] = {
     "hybrid_inverter": "inverters",
     "dc_breaker": "protection",
     "dc_fuse": "protection",
+    "ac_breaker": "protection",
+    "dc_switch": "protection",
     "conductor": "conductors",
 }
 
@@ -220,6 +239,14 @@ class ComponentRegistry:
     def dc_fuses(self) -> list[DcFuse]:
         """Every PV fuse link, sorted by id."""
         return [c for c in self if isinstance(c, DcFuse)]
+
+    def ac_breakers(self) -> list[AcBreaker]:
+        """Every AC breaker, sorted by id."""
+        return [c for c in self if isinstance(c, AcBreaker)]
+
+    def dc_switches(self) -> list[DcSwitch]:
+        """Every PV switch-disconnector, sorted by id."""
+        return [c for c in self if isinstance(c, DcSwitch)]
 
     def cables(self) -> list[Cable]:
         """Every cable size, sorted by id."""

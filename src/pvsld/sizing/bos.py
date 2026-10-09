@@ -30,21 +30,35 @@ Voltage Drop", NOM-001-SEDE-2012; tables in :mod:`pvsld.core.tables`):
   diameter (PV cable, Chapter 10 Table 1 note 5), Table 5 for THHW (THHW-LS has no row of its own)
   and Table 8 for the bare conductor. The smallest EMT of Table 4 within the Table 1 fill wins.
 
-TODO Stage 3.4b: EGC per Table 250-122 (the EGC is set to the circuit conductor size), external DC
-disconnects for inverters without an integrated switch (DIS-001),
-inverter maximum OCPD (OCP-005), aluminium conductors and multiple inverters.
+* **Switchgear from the catalogue** (owner 2026-10-09): ITM-1 is the next AC breaker rating up
+  with an interrupting rating at least the service's fault current (110-9); ITM-P keeps the
+  service's rating and takes its device and kAIC; the box disconnect is a PV switch-disconnector
+  with two poles per string (four in series for one string) rated at Voc(T_min) for the string's
+  maximum current. With nothing fitting, the earlier assumptions stay and a warning says so.
+
+The grounding conductor keeps the circuit conductor's size (owner decision 2026-10-09, no Table
+250-122 sizing) and the inverter's maximum output OCPD is not checked (OCP-005 dropped).
+
+TODO: external DC disconnects for inverters without an integrated switch when there is no
+protection box (DIS-001), aluminium conductors and multiple inverters.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 
-from pvsld.catalogue import Cable, DcBreaker, DcFuse
+from pvsld.catalogue import AcBreaker, Cable, DcBreaker, DcFuse, DcSwitch
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
 from pvsld.core.severity import Severity
 from pvsld.core.tables import NomTables
-from pvsld.sizing.models import ConductorChoice, DcOcpdChoice, Issue, RacewayChoice
+from pvsld.sizing.models import (
+    ConductorChoice,
+    DcOcpdChoice,
+    DeviceChoice,
+    Issue,
+    RacewayChoice,
+)
 
 STRING_BREAKER_POLES = 2
 """A string is a two-wire circuit: both conductors are opened (ungrounded array, NOM 690-35)."""
@@ -53,9 +67,9 @@ STRING_FUSE_POLES = 2
 LARGEST_SIZE = "4/0 AWG"
 
 TODO_STAGE_3_4B = (
-    "EGC igual al calibre del conductor del circuito (Tabla 250-122 pendiente).",
-    "Desconectador de CD externo si el inversor no lo integra (DIS-001, pendiente).",
-    "Protección máxima de salida del inversor del fabricante (OCP-005, pendiente).",
+    "EGC del mismo calibre que el conductor del circuito (decisión del propietario).",
+    "Desconectador de CD externo si el inversor no lo integra y no hay caja de protecciones "
+    "(DIS-001, pendiente).",
 )
 
 
@@ -355,6 +369,96 @@ def size_raceway(
             subject=circuit_id,
         )
     ]
+
+
+# --- Catalogue switchgear: AC breakers and the box disconnect ------------------------------------
+
+
+def select_ac_breaker(
+    *,
+    position: str,
+    rating_a: float,
+    poles: int,
+    voltage_v: float,
+    fault_ka: float,
+    breakers: Sequence[AcBreaker],
+    exact: bool = False,
+) -> tuple[DeviceChoice | None, list[Issue]]:
+    """The catalogue breaker for ``position``: ``rating_a`` (or the next one up unless ``exact``),
+    ``poles`` poles, rated for ``voltage_v`` and interrupting at least ``fault_ka`` (NOM 110-9).
+    """
+    fitting = sorted(
+        (
+            b
+            for b in breakers
+            if b.poles == poles
+            and b.voltage_v >= voltage_v
+            and (b.rated_current_a == rating_a if exact else b.rated_current_a >= rating_a)
+        ),
+        key=lambda b: (b.rated_current_a, -b.interrupting_ka, b.component_id),
+    )
+    strong = [b for b in fitting if b.interrupting_ka >= fault_ka]
+    if strong:
+        b = strong[0]
+        return DeviceChoice(
+            position, b.component_id, b.rated_current_a, b.voltage_v, b.interrupting_ka
+        ), []
+    if fitting:
+        b = fitting[0]
+        why = (
+            f"{b.component_id} interrumpe {_g(b.interrupting_ka)} kA, menos que los "
+            f"{_g(fault_ka)} kA de falla disponibles"
+        )
+    else:
+        why = f"ningún interruptor de {poles} polos y {_g(rating_a)} A en el catálogo"
+    return None, [
+        Issue(
+            "OCP-003",
+            Severity.WARNING,
+            f"{position}: {why}; el kAIC queda igual a la corriente de falla del servicio.",
+            subject=position,
+        )
+    ]
+
+
+def select_box_switch(
+    *,
+    position: str,
+    n_strings: int,
+    voc_cold_string_v: float,
+    string_i_max_a: float,
+    switches: Sequence[DcSwitch],
+) -> tuple[DeviceChoice | None, list[Issue]]:
+    """The PV switch-disconnector of the box: every string through two poles (four in series for
+    a single string), rated at Voc(T_min) for at least the string's maximum current (690-8(a)).
+    """
+    poles_per_string = 4 if n_strings == 1 else 2
+    candidates: list[tuple[float, str, DcSwitch, float]] = []
+    for switch in sorted(switches, key=lambda s: s.component_id):
+        if switch.poles < poles_per_string * n_strings:
+            continue
+        rating = switch.rating_a(poles_per_string, voc_cold_string_v)
+        if rating is not None and rating[0] >= string_i_max_a:
+            candidates.append((rating[0], switch.component_id, switch, rating[1]))
+    if not candidates:
+        return None, [
+            Issue(
+                "DIS-001",
+                Severity.WARNING,
+                f"{position}: ningún seccionador del catálogo abre {n_strings} cadena(s) de "
+                f"{_n(string_i_max_a)} A a {_n(voc_cold_string_v)} V; se toman los valores de la "
+                "protección de cadena.",
+                subject=position,
+            )
+        ]
+    ie_a, name, switch, step_v = min(candidates, key=lambda c: c[:2])
+    return DeviceChoice(
+        position,
+        name,
+        ie_a,
+        step_v,
+        note_es=f"{poles_per_string} polos por cadena, {switch.utilization_category}",
+    ), []
 
 
 # --- Inverter-output OCPD ----------------------------------------------------------------------

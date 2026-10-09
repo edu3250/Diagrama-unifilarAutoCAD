@@ -245,8 +245,9 @@ def test_suntree_breaker_is_selected_when_a_string_breaker_is_requested() -> Non
             "id": "DCD-CD1",
             "integrated_in": None,
             "poles": 4,
-            "ue_v": breakers[0]["ue_v"],
-            "ie_a": 32,
+            "ue_v": 600,  # the SISO-40 step at or above Voc(T_min), two poles per string
+            "ie_a": 32,  # 40 A at <= 600 V, capped by its 32 A enclosed thermal current
+            "model": "SUNTREE-SISO-40-32",
         }
     ]
     assert validate_selected(result).ok

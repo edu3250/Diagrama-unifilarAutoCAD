@@ -59,6 +59,12 @@ def _selected_section(candidate: Candidate) -> list[str]:
             f"{r.conductors} conductors ({r.insulation} and the bare EGC), fill {r.fill_pct:.1f} % "
             f"(limit {r.fill_limit_pct:g} %)"
         )
+    for d in bos.devices:
+        kaic = f", {d.interrupting_ka:g} kA" if d.interrupting_ka is not None else ""
+        note = f" ({d.note_es})" if d.note_es else ""
+        lines.append(
+            f"  {d.position}: {d.device_id} {d.rating_a:g} A {d.voltage_v:g} V{kaic}{note}"
+        )
     for issue in candidate.issues:
         lines.append(f"  [{issue.severity.value}] {issue.rule_id}: {issue.message_es}")
     shown = {i.rule_id for i in candidate.issues}
