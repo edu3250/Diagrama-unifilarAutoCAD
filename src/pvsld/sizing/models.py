@@ -76,9 +76,9 @@ class SizingRequest(BaseModel):
     module_count_max: int | None = Field(default=None, gt=0, description="Total modules, upper")
     optimizers_on_all_modules: bool = False
     dc_ocpd: Literal["auto", "always"] = Field(
-        default="auto",
-        description="'auto': a string breaker only where NOM 690-9(a) needs one; 'always': one "
-        "per string by design choice",
+        default="always",
+        description="'always' (default, owner decision 2026-10-08): one DC breaker per string in "
+        "the DC protection box; 'auto': only where NOM 690-9(a) needs one",
     )
     dc_breakers: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue DC breaker ids to choose from, or 'auto' for all"

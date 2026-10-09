@@ -229,7 +229,8 @@ def test_every_module_is_drawn_and_each_string_runs_straight_into_its_mppt(
         assert item.symbol.startswith(f"PVSLD_PV_STRING_{n_series}M_")
         modules = [g for g in get_symbol(item.symbol).geometry if getattr(g, "closed", False)]
         assert len(modules) == n_series
-    for wire in (c for c in diagram.connections if c.kind == "pv_source"):
+    string_ids = {item.comp_id for item in strings}
+    for wire in (c for c in diagram.connections if c.start.comp_id in string_ids):
         assert len(wire.points) == 2
     if len(strings) == 2:  # the upper string grows up, the lower one down: they never meet
         assert [s.symbol[-2:] for s in strings] == ["UP", "DN"]
@@ -250,7 +251,7 @@ def test_the_protection_schedule_lists_every_device_in_the_template_style(
 def test_circuits_are_numbered_with_the_template_markers(diagram: Diagram) -> None:
     numbers = sorted(t.text for t in diagram.texts if t.space == "model" and t.align == "center")
     assert numbers == ["1", "1", "2"]  # two strings, one inverter output
-    markers = [c for c in diagram.circles if c.space == "model"]
+    markers = [c for c in diagram.circles if c.space == "model" and not c.filled]
     assert len(markers) == 3
     assert all(c.radius == definition.MARKER_RADIUS_MM for c in markers)
 
@@ -291,9 +292,7 @@ def test_every_field_is_written_once_with_the_design_values(diagram: Diagram) ->
     assert "BT 2F-3H 220/127 V  -  Medición neta" in values
     assert "IE-01   HOJA 1 DE 1   REV. A" in values
     assert "05-OCT-2026" in values
-    assert any(
-        v.startswith("2 cadenas de 7 módulos en serie; DCD-1 integrado, DPS-CD1") for v in values
-    )
+    assert "2 cadenas de 7 módulos en serie" in values
     assert any("DPS-CA1 T2 en CC-1" in v for v in values)
     assert any(
         v.startswith("      Regla 120 % (705-12(d)(2)): 125 A x 1.20 = 150 A") for v in values
@@ -330,7 +329,11 @@ def test_the_sheet_renders_reads_back_and_is_deterministic(diagram: Diagram) -> 
     assert render_dxf(diagram).data == first.data
     doc = first.document
     assert doc.styles.get("OpenSans").dxf.font == "arial.ttf"
-    samples = [e for e in doc.modelspace() if e.dxftype() == "INSERT" and e.dxf.xscale < 1]
+    samples = [
+        e
+        for e in doc.modelspace()
+        if e.dxftype() == "INSERT" and e.dxf.xscale < 1 and not e.attribs
+    ]
     assert len(samples) == len(diagram.samples)
 
 
@@ -414,3 +417,117 @@ def test_the_committed_template_holds_the_schematic_without_touching_its_texts(
     for text in (t for t in diagram.texts if t.space == "paper" and t.text):
         for name, box in model:
             assert not text.box().intersects(box), f"sheet text {text.text!r} overlaps {name}"
+
+
+# --- DC protection box (owner decision 2026-10-08) ------------------------------------------
+
+
+def _with_string_breakers(spec: dict[str, Any]) -> None:
+    spec["dc_bos"]["disconnects"] += [
+        {"id": f"DCB-S{n}", "integrated_in": None, "poles": 2, "ue_v": 600, "ie_a": 25}
+        for n in (1, 2)
+    ]
+
+
+def test_each_string_goes_through_its_breaker_and_the_disconnect_to_the_inverter(
+    template: SheetTemplate,
+) -> None:
+    diagram = _build(template, _with_string_breakers)
+    assert check_diagram(diagram) == []
+    symbols = {i.comp_id: i.symbol for i in diagram.instances}
+    assert symbols["DCB-S1"] == symbols["DCB-S2"] == "PVSLD_CB_DC"
+    assert symbols["DCD-1/S1"] == symbols["DCD-1/S2"] == "PVSLD_DC_DISCONNECT"
+    assert symbols["DPS-CD1"] == "PVSLD_SPD"
+    path = [(c.start.comp_id, c.end.comp_id) for c in diagram.connections if c.circuit_id is None]
+    assert ("DCB-S1", "DCD-1/S1") in path
+    assert ("DCD-1/S1", "INV1") in path
+    first = next(c for c in diagram.connections if c.circuit_id == "C-S1")
+    assert (first.start.comp_id, first.end.comp_id) == ("S1", "DCB-S1")
+    spd = next(c for c in diagram.connections if c.end.comp_id == "DPS-CD1")
+    assert (spd.start.comp_id, spd.start.port) == ("DCB-S1", "OUT")  # between the conductors
+    assert any(c.start.comp_id == "DPS-CD1" and c.kind == "grounding" for c in diagram.connections)
+    captions = [t.text for t in diagram.texts if t.text.endswith("PROTECCIONES CD")]
+    assert captions == ["CAJA DE PROTECCIONES CD"]
+    box = next(p for p in diagram.polylines if p.layer == "E-ANNO-ENCL" and p.space == "model")
+    xs = [p.x for p in box.points]
+    ys = [p.y for p in box.points]
+    assert max(ys) - min(ys) == 35  # as tall as the load centre
+    assert 30 <= max(xs) - min(xs) < 35  # as wide too, plus the SPD's tag
+    inside = Box(min(xs), min(ys), max(xs), max(ys))
+    for item in diagram.instances:
+        if item.comp_id in ("DCB-S1", "DCB-S2", "DPS-CD1"):
+            assert item.scale < 1
+            for name, part in item.boxes():
+                assert inside.contains(part), f"{name} {part} leaves the box"
+        if item.comp_id.startswith("DCD-1/"):  # integrated in the inverter: outside the box
+            assert item.x > max(xs)
+
+
+def _with_box_switch(spec: dict[str, Any]) -> None:
+    """What the sizing engine writes: string breakers and the box disconnect, none integrated."""
+    spec["dc_bos"]["disconnects"] = [
+        *(
+            {"id": f"DCB-S{n}", "integrated_in": None, "poles": 2, "ue_v": 600, "ie_a": 25}
+            for n in (1, 2)
+        ),
+        {"id": "DCD-CD1", "integrated_in": None, "poles": 4, "ue_v": 600, "ie_a": 25},
+    ]
+
+
+def test_the_box_follows_the_reference_breakers_spd_on_both_strings_then_the_disconnect(
+    template: SheetTemplate,
+) -> None:
+    diagram = _build(template, _with_box_switch)
+    assert check_diagram(diagram) == []
+    by_id = {i.comp_id: i for i in diagram.instances}
+    path = [(c.start.comp_id, c.end.comp_id) for c in diagram.connections]
+    for n in (1, 2):
+        assert (f"DCB-S{n}", f"DCD-CD1/S{n}") in path
+        assert (f"DCD-CD1/S{n}", "INV1") in path
+    feeds = {
+        (c.start.comp_id, c.start.port) for c in diagram.connections if c.end.comp_id == "DPS-CD1"
+    }
+    assert feeds == {("DCB-S1", "OUT"), ("DCB-S2", "OUT")}  # both strings into the SPD
+    assert any(c.start.comp_id == "DPS-CD1" and c.kind == "grounding" for c in diagram.connections)
+    # One tag for the whole disconnect, its pole pairs tied by a dashed link.
+    assert by_id["DCD-CD1/S1"].values["TAG"] == "DCD-CD1"
+    assert by_id["DCD-CD1/S2"].values["TAG"] == ""
+    link = [p for p in diagram.polylines if p.layer == get_symbol("PVSLD_DC_DISCONNECT").layer]
+    assert len(link) > 5
+    assert {p.points[0].x for p in link} == {round(by_id["DCD-CD1/S1"].x + 8.75 * 0.6, 3)}
+    box = next(p for p in diagram.polylines if p.layer == "E-ANNO-ENCL" and p.space == "model")
+    xs = [p.x for p in box.points]
+    ys = [p.y for p in box.points]
+    assert max(ys) - min(ys) == 35
+    inside = Box(min(xs), min(ys), max(xs), max(ys))
+    for comp_id in ("DCB-S1", "DCB-S2", "DPS-CD1", "DCD-CD1/S1", "DCD-CD1/S2"):
+        for name, part in by_id[comp_id].boxes():
+            assert inside.contains(part), f"{name} {part} leaves the box"
+    assert max(xs) < by_id["INV1"].x
+    # Dots where each tap leaves its string and where the taps meet, none on the earth crossing.
+    dots = {(c.cx, c.cy) for c in diagram.circles if c.filled}
+    spd_line = by_id["DPS-CD1"].port_xy("L")
+    assert len(dots) == 3
+    assert (spd_line.x, spd_line.y) in dots
+    assert {y for _x, y in dots} - {spd_line.y} == {
+        by_id["DCB-S1"].port_xy("OUT").y,
+        by_id["DCB-S2"].port_xy("OUT").y,
+    }
+    table = next(t for t in diagram.tables if t.title == "CUADRO DE PROTECCIONES")
+    row = next(r for r in table.rows if r[0] == "DCD-CD1")
+    assert (row[2], row[-1]) == ("4", "Caja CD")
+
+
+def test_without_string_breakers_the_spd_hangs_before_the_disconnect(
+    template: SheetTemplate,
+) -> None:
+    diagram = _build(template)  # the sample: DCD-1 integrated in the inverter, no breakers
+    spd = next(c for c in diagram.connections if c.end.comp_id == "DPS-CD1")
+    assert (spd.start.comp_id, spd.start.port) == ("DCD-1/S1", "IN")
+    assert not any(t.text.endswith("PROTECCIONES CD") for t in diagram.texts)  # no box
+
+
+def test_the_calculation_summary_names_the_string_breakers(template: SheetTemplate) -> None:
+    texts = {t.text for t in _build(template, _with_string_breakers).texts}
+    assert any("ITM CD 25 A por cadena en la caja de protecciones CD" in t for t in texts)
+    assert not any("fusible de cadena no requerido" in t for t in texts)

@@ -28,7 +28,7 @@ from pvsld.symbols.cfe.definitions import (
 def test_the_interface_is_the_cfe_library() -> None:
     assert (APP_ID, BLOCK_PREFIX) == ("PVSLD", "PVSLD_")
     assert SYMBOLS is definitions.SYMBOLS
-    assert LIBRARY_VERSION == "0.6.0"
+    assert LIBRARY_VERSION == "0.7.0"
     assert get_symbol("PVSLD_CB") is definitions.BREAKER  # the CFE form (owner decision)
 
 

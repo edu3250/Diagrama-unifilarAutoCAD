@@ -64,21 +64,25 @@ OPEN_SANS_WIDTH = 1.0
 Sans is mapped to Arial, see ``FONT_MAP``)."""
 
 PLACEMENT = Placement(
-    inverter=(70.0, 195.0),
+    inverter=(121.0, 195.0),
     string_x=16.0,
     string_dy=20.0,
     string_bend_mm=7.5,
-    itm1_x=133.0,
-    pi_x=161.0,
-    panel_x=179.0,
-    itmp_x=231.0,
-    meter_x=257.0,
+    itm1_x=160.0,
+    pi_x=185.0,
+    panel_x=200.0,
+    itmp_x=235.0,
+    meter_x=259.0,
     grid_x=279.0,
-    ground=(150.0, 148.0),
-    gec_dc_text=(100.0, 150.0),
-    gec_ac_text=(205.0, 150.0),
+    ground=(160.0, 150.0),
+    gec_dc_text=(94.0, 146.0),
+    gec_ac_text=(220.0, 152.0),
     callouts=False,
     pi_description="",
+    dc_box_x=66.0,
+    dc_disconnect_x=99.0,
+    dc_scale=0.6,
+    dc_spd_scale=0.5,
     full_strings=True,
 )
 PROTECTIONS_CORNER = (309.0, 102.0)
@@ -214,11 +218,13 @@ def _memory(spec: PvSystemSpec, derived: Derived, i1: Ocpd) -> list[str]:
         f"{_g(mppt.vmax_v)} V  OK",
     ]
     isc_design = 1.25 * first.isc_a
-    fuse = (
-        "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
-        if strings_per_mppt == 1
-        else f"{strings_per_mppt} cadenas por MPPT"
-    )
+    string_breakers = [d for d in spec.dc_bos.disconnects if d.id.startswith("DCB-")]
+    if string_breakers:
+        fuse = f"ITM CD {_g(string_breakers[0].ie_a)} A por cadena en la caja de protecciones CD"
+    elif strings_per_mppt == 1:
+        fuse = "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
+    else:
+        fuse = f"{strings_per_mppt} cadenas por MPPT"
     isc_max = _g(mppt.isc_max_a)
     lines.append(
         f"      Isc x 1.25 = {_n(isc_design, 2)} A <= Icc máx {isc_max} A/MPPT  OK ; {fuse}"
@@ -294,11 +300,6 @@ def _devices(names: Sequence[str]) -> str:
 
 def _circuit_dc(spec: PvSystemSpec, derived: Derived) -> tuple[str, str, list[str]]:
     _n_modules, summary = _strings_summary(spec)
-    dc = spec.dc_bos
-    summary += _devices(
-        [f"{d.id} {'integrado' if d.integrated_in else f'{_g(d.ie_a)} A'}" for d in dc.disconnects]
-        + [f"{s.id} {s.spd_type}" for s in dc.spds]
-    )
     circuit = next((c for c in spec.circuits if c.kind == "pv_source"), None)
     title = (
         "CADENA FV -> INVERSOR (CD)" if len(spec.strings) == 1 else "CADENAS FV -> INVERSOR (CD)"
@@ -498,7 +499,7 @@ def build_sheet_diagram(
     marker_texts: list[TextItem] = []
     for conn in schematic.connections:
         number = {"pv_source": "1", "inverter_output": "2"}.get(conn.kind)
-        if number is None:
+        if number is None or conn.circuit_id is None:  # one marker per circuit, on its first run
             continue
         a, b = conn.points[0], conn.points[1]
         centre = Point(rnd((a.x + b.x) / 2), rnd(a.y + radius + 1.8))
@@ -614,10 +615,10 @@ def build_sheet_diagram(
             *symbology_texts,
         ),
         lines=template.lines,
-        polylines=template.polylines,
+        polylines=(*template.polylines, *schematic.polylines),
         tables=(_protections(spec),),
         viewport=viewport,
-        circles=(*template.circles, *circles),
+        circles=(*template.circles, *circles, *schematic.dots),
         samples=tuple(samples),
         text_styles=template.text_styles,
         sheet_in_model=True,  # everything editable in one place (owner request)

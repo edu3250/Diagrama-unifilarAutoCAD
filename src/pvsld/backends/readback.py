@@ -62,6 +62,7 @@ class InsertData:
     layer: str
     attributes: dict[str, str]
     xdata_comp_id: str | None
+    scale: float = 1.0
 
     @property
     def comp_id(self) -> str | None:
@@ -168,6 +169,7 @@ def read_inventory(doc: Drawing) -> Inventory:
                         layer=entity.dxf.layer,
                         attributes={a.dxf.tag: a.dxf.text for a in entity.attribs},
                         xdata_comp_id=tags[1][1] if tags[:1] == [(1000, INSTANCE_FORMAT)] else None,
+                        scale=entity.dxf.get("xscale", 1.0),
                     )
                 )
             elif kind == "LWPOLYLINE":
@@ -300,7 +302,7 @@ def verify(diagram: Diagram, source: bytes | Path | Drawing) -> ReadBackReport:
             return None
         for port in inventory.block_ports.get(insert.block, ()):
             if port.id == port_ref.port:
-                return (insert.x + port.x, insert.y + port.y)
+                return (insert.x + port.x * insert.scale, insert.y + port.y * insert.scale)
         return None
 
     ends_checked = 0

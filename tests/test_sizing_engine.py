@@ -236,6 +236,16 @@ def test_suntree_breaker_is_selected_when_a_string_breaker_is_requested() -> Non
     assert [b["id"] for b in breakers] == ["DCB-S1", "DCB-S2"]
     assert all(b["ie_a"] == 32 and b["poles"] == 2 for b in breakers)
     assert all(b["ue_v"] >= selected.metrics.voc_cold_string_v for b in breakers)
+    box = [d for d in result.spec["dc_bos"]["disconnects"] if d["id"] == "DCD-CD1"]  # type: ignore[index]
+    assert box == [
+        {
+            "id": "DCD-CD1",
+            "integrated_in": None,
+            "poles": 4,
+            "ue_v": breakers[0]["ue_v"],
+            "ie_a": 32,
+        }
+    ]
     assert validate_selected(result).ok
 
 
@@ -257,7 +267,7 @@ def test_schneider_20_a_cannot_protect_the_jinko_650_so_every_configuration_fail
 
 
 def test_no_string_breaker_is_selected_for_one_string_per_input() -> None:
-    selected = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000).selected
+    selected = size(JINKO_650, [GROWATT_5K], target_dc_power_w=9000, dc_ocpd="auto").selected
     assert selected is not None
     assert not selected.bos.dc_ocpd.required
     assert "NOM 690-9(a)" in selected.bos.dc_ocpd.reason_es

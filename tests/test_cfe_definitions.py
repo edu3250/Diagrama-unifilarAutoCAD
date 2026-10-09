@@ -124,7 +124,7 @@ def test_the_library_also_has_the_symbols_the_generator_needs() -> None:
     ):
         assert name in SYMBOLS
     assert get_symbol("PVSLD_GND").source == SOURCE_CFE_D
-    assert len(SYMBOLS) == 57
+    assert len(SYMBOLS) == 58
 
 
 def test_get_symbol_rejects_an_unknown_block() -> None:
@@ -466,3 +466,11 @@ def test_a_full_string_rejects_bad_arguments(n: int, extend: str) -> None:
 def test_get_symbol_rejects_malformed_string_names(name: str) -> None:
     with pytest.raises(KeyError):
         get_symbol(name)
+
+
+def test_the_inverter_and_the_load_centre_are_the_smaller_0_7_forms() -> None:
+    assert get_symbol("PVSLD_INV").bounds() == (0, -15, 30, 15)
+    assert get_symbol("PVSLD_PANEL").bounds() == (0, -17.5, 30, 17.5)
+    breaker = get_symbol("PVSLD_CB_DC")
+    assert {p.kind for p in breaker.ports} == {"DC"}
+    assert set(get_symbol("PVSLD_CB").tags) - {"BACKFED"} == set(breaker.tags)
