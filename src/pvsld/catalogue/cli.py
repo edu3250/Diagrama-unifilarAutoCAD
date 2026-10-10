@@ -37,8 +37,10 @@ from pvsld.catalogue.local import (
 from pvsld.catalogue.modules import PVModule
 from pvsld.catalogue.protection import AcBreaker, DcBreaker, DcFuse, DcSwitch
 from pvsld.catalogue.registry import RECORD_FOLDERS, Component, ComponentRegistry, load_records
+from pvsld.resources import data_path
 
-DEFAULT_RECORDS = Path("datasheets") / "records"
+DEFAULT_RECORDS = data_path("datasheets/records")
+"""The bundled catalogue: packaged with pvsld, or the repository's own records."""
 
 
 def _rating(component: Component) -> str:

@@ -47,6 +47,35 @@ jobs:
       - name: Test with coverage
         run: pytest --cov
 
+  package:
+    # The plugin's server is built by uvx from a git tag and runs without the repository
+    # (Stage 3.6.4): build the wheel, start the server the way the plugin does, and design an
+    # installation with the installed wheel from outside the checkout.
+    name: package (${{ matrix.os }}, wheel without the repository)
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Build the wheel
+        run: uv build --wheel --out-dir "${{ runner.temp }}/dist"
+
+      - name: Start the server as the plugin does
+        run: uvx --python 3.12 --from . pvsld-mcp --version
+
+      - name: Design with the installed wheel, outside the checkout
+        shell: bash
+        working-directory: ${{ runner.temp }}
+        run: >-
+          uv run --no-project --python 3.12 --with "$(ls dist/pvsld-*.whl)"
+          python -I "${{ github.workspace }}/scripts/smoke_installed.py"
+
   plugin:
     # The B2 plug-in compiles against Autodesk's reference assemblies from NuGet (AutoCAD.NET
     # 26.0.0, ExcludeAssets=runtime), so no AutoCAD is needed to build it. Only the AutoCAD-free

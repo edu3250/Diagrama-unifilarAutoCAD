@@ -18,6 +18,7 @@ from ezdxf.addons import Importer
 from ezdxf.document import Drawing
 from ezdxf.lldxf.const import DXFValueError
 
+from pvsld.resources import data_path
 from pvsld.symbols.cfe.build import LIBRARY_FILE, build_document
 from pvsld.symbols.cfe.definitions import combiner_name, get_symbol
 from pvsld.symbols.cfe.model import APP_ID, BLOCK_PREFIX, LIBRARY_VERSION
@@ -25,7 +26,7 @@ from pvsld.symbols.cfe.model import APP_ID, BLOCK_PREFIX, LIBRARY_VERSION
 LIBRARY_ENV = "PVSLD_SYMBOL_LIBRARY"
 """Environment variable naming another library DXF (for example a copy next to an installed
 plug-in); it must carry the library version of this package."""
-_REPO_LIBRARY = Path(__file__).resolve().parents[4] / LIBRARY_FILE
+_REPO_LIBRARY = data_path(LIBRARY_FILE.as_posix())
 
 
 def load_library(path: Path) -> Drawing:

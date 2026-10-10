@@ -25,18 +25,19 @@ from ezdxf.enums import TextEntityAlignment
 from pvsld.core import layers
 from pvsld.core.diagram import CircleItem, LineItem, Point, PolylineItem, TextItem, rnd
 from pvsld.core.sheet import SheetTemplate, SheetTemplateError
+from pvsld.resources import data_path
 from pvsld.sheets import a3_plantilla_v1
 
 ENV_SHEET_TEMPLATE = "PVSLD_SHEET_TEMPLATE"
-"""Path of the template DXF; default ``sheet_templates/<name>.dxf`` in the repository."""
-_REPO = Path(__file__).resolve().parents[3]
+"""Path of the template DXF; default ``sheet_templates/<name>.dxf``, packaged or in the
+repository (:func:`pvsld.resources.data_path`)."""
 ANCHOR_TOLERANCE_MM = 0.05
 DEFINITIONS: dict[str, ModuleType] = {a3_plantilla_v1.NAME: a3_plantilla_v1}
 
 
 def template_path(name: str) -> Path:
     configured = os.environ.get(ENV_SHEET_TEMPLATE)
-    return Path(configured) if configured else _REPO / "sheet_templates" / f"{name}.dxf"
+    return Path(configured) if configured else data_path(f"sheet_templates/{name}.dxf")
 
 
 def _inside(points: list[tuple[float, float]], regions: Any) -> bool:

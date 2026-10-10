@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field
 
 from pvsld.catalogue.cli import _rating
 from pvsld.catalogue.registry import Component, ComponentRegistry
+from pvsld.resources import data_path
 from pvsld.sizing import Candidate, SizingResult
 
 __all__ = [
@@ -34,7 +35,7 @@ __all__ = [
 ]
 
 CATALOGUE_DIR_ENV = "PVSLD_CATALOGUE_DIR"
-_REPO_RECORDS = Path(__file__).resolve().parents[3] / "datasheets" / "records"
+_REPO_RECORDS = data_path("datasheets/records")
 MAX_ALTERNATIVES = 5
 """Ranked alternatives listed besides the selection (their full specs are never sent)."""
 COMPONENT_TYPES = (
@@ -50,7 +51,7 @@ COMPONENT_TYPES = (
 
 
 def catalogue_dir_from_environment() -> Path:
-    """``$PVSLD_CATALOGUE_DIR``, else ``datasheets/records`` of the repository."""
+    """``$PVSLD_CATALOGUE_DIR``, else the bundled records (:func:`pvsld.resources.data_path`)."""
     configured = os.environ.get(CATALOGUE_DIR_ENV)
     return Path(configured) if configured else _REPO_RECORDS
 

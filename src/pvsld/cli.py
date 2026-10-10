@@ -483,7 +483,7 @@ def build_parser() -> argparse.ArgumentParser:
     report_cmd.add_argument(
         "--catalogue",
         type=Path,
-        default=Path("datasheets") / "records",
+        default=catalogue_cli.DEFAULT_RECORDS,
         metavar="DIR",
         help="component records for the project-sheet lists",
     )
