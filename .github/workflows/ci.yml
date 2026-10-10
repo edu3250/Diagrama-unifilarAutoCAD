@@ -76,6 +76,28 @@ jobs:
           uv run --no-project --python 3.12 --with "$(ls dist/pvsld-*.whl)"
           python -I "${{ github.workspace }}/scripts/smoke_installed.py"
 
+  claude-plugin:
+    # The PvUnifilar plugin and the pvsld marketplace (Stage 3.6.4b), checked by Claude Code's own
+    # validator; --strict also fails on warnings such as unknown fields or missing metadata.
+    name: Claude Code plugin (validate --strict)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Validate the plugin
+        run: claude plugin validate --strict plugins/pv-unifilar
+
+      - name: Validate the marketplace
+        run: claude plugin validate --strict .
+
   plugin:
     # The B2 plug-in compiles against Autodesk's reference assemblies from NuGet (AutoCAD.NET
     # 26.0.0, ExcludeAssets=runtime), so no AutoCAD is needed to build it. Only the AutoCAD-free

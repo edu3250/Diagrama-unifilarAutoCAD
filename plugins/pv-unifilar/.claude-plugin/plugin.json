@@ -1,0 +1,31 @@
+{
+  "name": "pv-unifilar",
+  "displayName": "PvUnifilar",
+  "version": "0.5.0rc1",
+  "description": "Diagramas unifilares de sistemas fotovoltaicos interconectados en México (CFE, NOM-001-SEDE-2012): plano DWG o DXF y PDF, memoria de cálculo en Excel y PDF, hoja de proyecto editable y resumen de materiales, a partir de una petición sencilla.",
+  "author": {
+    "name": "edu3250",
+    "url": "https://github.com/edu3250"
+  },
+  "homepage": "https://github.com/edu3250/Diagrama-unifilarAutoCAD",
+  "repository": "https://github.com/edu3250/Diagrama-unifilarAutoCAD",
+  "license": "MIT",
+  "keywords": [
+    "fotovoltaico",
+    "diagrama-unifilar",
+    "autocad",
+    "dxf",
+    "cfe",
+    "nom-001-sede",
+    "mexico",
+    "solar"
+  ],
+  "userConfig": {
+    "output_dir": {
+      "type": "directory",
+      "title": "Carpeta de proyectos",
+      "description": "Dónde se guarda cada proyecto (una carpeta por diseño). Vacío: la carpeta out del proyecto en el que trabaja Claude.",
+      "required": false
+    }
+  }
+}

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pvsld"
-version = "0.4.0"
+version = "0.5.0rc1"
 description = "Claude <-> MCP <-> AutoCAD generator of Mexican photovoltaic single-line diagrams."
 readme = "README.md"
 requires-python = ">=3.11"

@@ -52,6 +52,16 @@ The full research (252 notes with cited sources) lives in the author's local Obs
 | 4 | Diagram Generation & Symbol Library | To be defined (tentative scope in the plan) | — |
 | 5 | Validation & Packaging | To be defined (tentative scope in the plan) | v1.0.0 |
 
+## Claude Code plugin (PvUnifilar)
+
+The plugin [`pv-unifilar`](plugins/pv-unifilar/README.md) (shown as PvUnifilar) packages the MCP server with three Spanish skills: quick mode (`/pv-unifilar:diagrama`), professional mode with the Excel project sheet (`/pv-unifilar:pro`) and the local catalogue (`/pv-unifilar:catalogo`). It needs [uv](https://docs.astral.sh/uv/); AutoCAD is optional. Install it in Claude Code with:
+
+```
+/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD
+```
+
+The marketplace (`pvsld`) is `.claude-plugin/marketplace.json`; the server runs with `uvx` from the release tag pinned in `plugins/pv-unifilar/.mcp.json`.
+
 ## Getting Started
 
 ### Prerequisites
