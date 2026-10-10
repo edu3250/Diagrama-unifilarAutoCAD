@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- The data the code reads at run time travels inside the wheel (Stage 3.6.4a), so the plugin's server, built by `uvx` from a git tag, works without the repository.
+  - `pvsld.resources.data_path` serves the catalogue records, the symbol library, the A3 sheet template and the residential example from the installed package (`force-include` under `pvsld/_data`), and falls back to the repository checkout for development installs.
+  - The CLI's default catalogue is that bundled copy, not `./datasheets/records` of the current folder.
+  - CI job `package` (Linux and Windows) builds the wheel, starts `pvsld-mcp` with `uvx --from .` and designs an installation with the installed wheel outside the checkout (`scripts/smoke_installed.py`).
 - Local catalogue (Stage 3.6.3): equipment the bundled catalogue lacks, added from its datasheet.
   - `pvsld.catalogue.local`:
     - `local_catalogue_dir` locates the folder: `$PVSLD_LOCAL_CATALOGUE_DIR`, else `%APPDATA%\pvsld\catalogo`, or `~/.local/share/pvsld/catalogo` elsewhere. It has the layout of `datasheets/records` plus `hojas_tecnicas/` for the PDFs.

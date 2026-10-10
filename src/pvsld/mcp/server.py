@@ -87,6 +87,7 @@ from pvsld.mcp.sizing_tools import (
     sizing_output,
     sizing_text,
 )
+from pvsld.resources import data_path
 from pvsld.sizing import SizingInputError, request_from_mapping, size_pv_system
 from pvsld.sizing.models import REQUIRED_TEMPLATE_KEYS
 from pvsld.symbols import symbol_catalogue
@@ -106,7 +107,7 @@ RULEPACK_URI = f"pvsld://rulepack/{RULEPACK_ID}"
 SYMBOLS_URI = "pvsld://symbols"
 SIZING_TEMPLATE_URI = "pvsld://examples/sizing-template"
 RECORD_EXAMPLES_URI = "pvsld://catalogue/record-examples"
-_EXAMPLE_SPEC = Path(__file__).resolve().parents[3] / "examples" / "residential_7p7kwp.yaml"
+_EXAMPLE_SPEC = data_path("examples/residential_7p7kwp.yaml")
 
 # One installation spec is a few KiB; anything far larger is a mistake or an attempt to exhaust
 # the server, so it is refused before validation or rendering touches it.

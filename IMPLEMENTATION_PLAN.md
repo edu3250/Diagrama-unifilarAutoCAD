@@ -583,11 +583,25 @@ A plain request also triggers the skill.
   - a user folder merged with the bundled catalogue;
   - datasheet extraction, confirmed by the user;
   - offered automatically when a component is missing.
-- **3.6.4:** packaging:
-  - plugin manifest, MCP definition, skill and commands; marketplace manifest at the repository root;
-  - data inside the wheel; the server launched with `uvx` from a pinned tag;
-  - pre-approved permissions;
-  - checked against the official Claude Code plugin documentation.
+- **3.6.4:** packaging (plan approved by the owner on 2026-10-09, checked against the official
+  Claude Code plugin documentation):
+  - **3.6.4a**, data inside the wheel:
+    - `pvsld.resources.data_path` serves the records, symbol library, A3 template and example from the
+      installed package (`force-include` under `pvsld/_data`) or from the repository;
+    - CI job `package` builds the wheel, starts `pvsld-mcp` with `uvx --from .` and designs an
+      installation with the installed wheel outside the checkout (Linux and Windows).
+  - **3.6.4b**, the plugin:
+    - plugin `pv-unifilar` (display name "PvUnifilar") in `plugins/pv-unifilar/`. `plugin/` is the .NET AutoCAD bridge;
+    - skills `diagrama`, `pro` and `catalogo`, run as `/pv-unifilar:diagrama`, `/pv-unifilar:pro` and
+      `/pv-unifilar:catalogo` (Claude Code always prefixes the plugin name); a plain request also
+      triggers the quick mode; `allowed-tools` pre-approves the pvsld tools while a skill runs;
+    - `.mcp.json`: `uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@<tag> pvsld-mcp`;
+      optional user configuration of the output folder;
+    - marketplace `pvsld` in `.claude-plugin/marketplace.json` at the repository root, visible in
+      develop from 3.6.4;
+    - `claude plugin validate --strict` and manifest tests in CI;
+    - the owner authorized the pre-release tag `v0.5.0rc1` once 3.6.4 is merged, to test the
+      installed plugin from GitHub.
 - **3.6.5:**
   - Spanish user guide;
   - real-prompt tests on a clean install, with and without AutoCAD;
@@ -606,7 +620,7 @@ A plain request also triggers the skill.
 - CI checks the manifest JSON.
 - Owner's manual run of both modes on a clean install.
 
-**Status:** In Progress (3.6.0 to 3.6.2 merged; 3.6.3 in review)
+**Status:** In Progress (3.6.0 to 3.6.3 merged; 3.6.4a in review)
 
 ---
 

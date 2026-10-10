@@ -58,11 +58,23 @@ Changelog = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/blob/develop/CH
 [tool.hatch.build.targets.wheel]
 packages = ["src/pvsld"]
 
+# Data the code reads at run time travels inside the wheel under pvsld/_data, with the same
+# relative paths as in the repository (pvsld.resources.data_path), so the plugin's server, built by
+# uvx from a git tag, works without the repository (Stage 3.6.4).
+[tool.hatch.build.targets.wheel.force-include]
+"datasheets/records" = "pvsld/_data/datasheets/records"
+"symbols/pvsld-symbols.dxf" = "pvsld/_data/symbols/pvsld-symbols.dxf"
+"sheet_templates/a3_plantilla_v1.dxf" = "pvsld/_data/sheet_templates/a3_plantilla_v1.dxf"
+"examples/residential_7p7kwp.yaml" = "pvsld/_data/examples/residential_7p7kwp.yaml"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "/src",
     "/tests",
     "/examples",
+    "/datasheets/records",
+    "/symbols/pvsld-symbols.dxf",
+    "/sheet_templates/a3_plantilla_v1.dxf",
     "/CHANGELOG.md",
     "/LICENSE",
     "/README.md",
