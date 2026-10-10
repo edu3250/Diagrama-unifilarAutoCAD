@@ -286,8 +286,9 @@ def run_pro_design(
         sheet = folder / PROJECT_SHEET
         if not sheet.is_file():
             raise ToolError(
-                f"there is no {PROJECT_SHEET} in the project folder {name}. Ask the user to "
-                "save the filled sheet there, or call new_project_sheet for a blank one."
+                f"there is no {PROJECT_SHEET} in the project folder {name} ({folder}). Copy "
+                f"the user's filled sheet there as {PROJECT_SHEET} (create the folder if "
+                "needed) and call again, or call new_project_sheet for a blank one."
             )
         with box.staging() as stage:
             try:

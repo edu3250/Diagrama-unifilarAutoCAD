@@ -1,0 +1,17 @@
+{
+  "name": "pvsld",
+  "description": "Herramientas para diseñar y dibujar sistemas fotovoltaicos interconectados en México (CFE, NOM-001-SEDE-2012).",
+  "owner": {
+    "name": "edu3250",
+    "url": "https://github.com/edu3250"
+  },
+  "plugins": [
+    {
+      "name": "pv-unifilar",
+      "source": "./plugins/pv-unifilar",
+      "description": "Diagramas unifilares fotovoltaicos para trámites de interconexión con CFE: plano, PDF, memoria de cálculo, hoja de proyecto y resumen de materiales.",
+      "category": "engineering",
+      "tags": ["fotovoltaico", "diagrama-unifilar", "autocad", "cfe", "mexico"]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "pvsld": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0rc1",
+        "pvsld-mcp"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": "${user_config.output_dir}"
+      }
+    }
+  }
+}

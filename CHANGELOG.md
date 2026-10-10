@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Claude Code plugin **PvUnifilar** (`pv-unifilar`, Stage 3.6.4b) and its marketplace `pvsld`.
+  - `plugins/pv-unifilar/`:
+    - `.claude-plugin/plugin.json`;
+    - `.mcp.json`, which runs the server with `uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v<version> pvsld-mcp` and takes an optional user-configured output folder;
+    - a Spanish README.
+  - Three skills: `/pv-unifilar:diagrama` (quick mode; a plain request also triggers it), `/pv-unifilar:pro` (the project sheet) and `/pv-unifilar:catalogo` (a datasheet into the local catalogue). Each pre-approves the pvsld tools it calls (`allowed-tools`).
+  - `.claude-plugin/marketplace.json` at the repository root. Install with `/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD`.
+  - Version `0.5.0rc1` for the package and the plugin. The server answers a missing project sheet with the full folder path to copy it to.
+  - CI job `claude-plugin` runs `claude plugin validate --strict` on the plugin and the marketplace. `tests/test_claude_plugin.py` checks that versions, release tag, tool names and resources agree.
 - The data the code reads at run time travels inside the wheel (Stage 3.6.4a), so the plugin's server, built by `uvx` from a git tag, works without the repository.
   - `pvsld.resources.data_path` serves the catalogue records, the symbol library, the A3 sheet template and the residential example from the installed package (`force-include` under `pvsld/_data`), and falls back to the repository checkout for development installs.
   - The CLI's default catalogue is that bundled copy, not `./datasheets/records` of the current folder.
