@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from dataclasses import replace
 
 from pvsld.core import calc, layers
 from pvsld.core.calc import Derived
@@ -93,6 +94,9 @@ TABLE_TEXT = (1.4, 3.4, "OpenSans", "OpenSansCondensed-Bold")
 """Text height, row height, cell style and title style of the schedule (the template's boxes)."""
 TABLE_TITLE_HEIGHT = 2.2
 """Height of the box titles of the template."""
+GROUND_LABEL_DROP_MM = 18.5
+"""From the electrode's port down to the end of its label (tag and two lines), plus a 2 mm gap: the
+earthing bus is lifted until the label clears a tall protection schedule."""
 
 # Width available to the value of each field group (sheet millimetres).
 FIELD_WIDTHS: dict[str, float] = {
@@ -469,6 +473,27 @@ def _symbology(
     return samples, texts
 
 
+def _clear_of_schedule(placement: Placement, schedule: Table) -> Placement:
+    """Lift the earthing bus and its two GEC labels when the schedule reaches the electrode's label.
+
+    The schedule grows upwards from a fixed corner, one row per protection device; with two string
+    fuses it has eight rows and its top reached the last line of the label.
+    """
+    lift = schedule.y_top + GROUND_LABEL_DROP_MM - placement.ground[1]
+    if lift <= 0:
+        return placement
+
+    def up(point: tuple[float, float]) -> tuple[float, float]:
+        return (point[0], rnd(point[1] + lift))
+
+    return replace(
+        placement,
+        ground=up(placement.ground),
+        gec_dc_text=up(placement.gec_dc_text),
+        gec_ac_text=up(placement.gec_ac_text),
+    )
+
+
 def _protections(spec: PvSystemSpec) -> Table:
     """The protection schedule of v1 in the style of the template's boxes."""
     rows = _protection_table(spec).rows
@@ -516,7 +541,8 @@ def build_sheet_diagram(
     if spec.layout.template != TEMPLATE:
         raise LayoutError(f"unsupported layout template {spec.layout.template!r}")
     derived = derived or calc.derive(spec)
-    schematic = build_schematic(spec, derived, PLACEMENT)
+    schedule = _protections(spec)
+    schematic = build_schematic(spec, derived, _clear_of_schedule(PLACEMENT, schedule))
     i1 = schematic.i1
 
     # Circuit markers: 1 on each PV string conductor, 2 on the inverter output.
@@ -649,7 +675,7 @@ def build_sheet_diagram(
         ),
         lines=template.lines,
         polylines=(*template.polylines, *schematic.polylines),
-        tables=(_protections(spec),),
+        tables=(schedule,),
         viewport=viewport,
         circles=(*template.circles, *circles),
         samples=(*samples, *schematic.junctions),
