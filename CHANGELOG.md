@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- README rewritten around what a user gets, with images produced by the system itself (`docs/images/readme/`, fictitious names). It shows the A3 sheet and its parts, the calculation report in Excel, and the project sheet with a reviewed cell in red. It also covers how to install the plugin, how to run the MCP server from Claude Code, Claude Desktop or VS Code, the nine tools, the environment variables, the CLI and a diagram of the flow.
+- README rewritten in Spanish (owner decision 2026-10-10: the system works with Mexican standards, so its front page speaks to Mexican installers; code and technical docs stay in English) around what a user gets, with images produced by the system itself (`docs/images/readme/`, fictitious names). It shows the A3 sheet and its parts, the calculation report in Excel, and the project sheet with a reviewed cell in red. It also covers how to install the plugin, how to run the MCP server from Claude Code, Claude Desktop or VS Code, the nine tools, the environment variables, the CLI and a diagram of the flow.
 - The Spanish plugin guide gains the sheet image and the notes from the owner's install test: reopen Claude Code after installing uv; the 30 s server start-up wait.
 - `examples/quick_request.yaml`: the three-line request of the quick mode.
 - Claude Code plugin **PvUnifilar** (`pv-unifilar`, Stage 3.6.4b) and its marketplace `pvsld`.
