@@ -2,7 +2,11 @@
 
 Plugin de Claude Code que diseña y dibuja el **diagrama unifilar de un sistema fotovoltaico interconectado en México** (CFE, NOM-001-SEDE-2012) a partir de una petición sencilla.
 
-> "Hazme un diagrama con 8 paneles Jinko de 475 W"
+> "Hazme un diagrama con 12 paneles Jinko de 475 W"
+
+![Plano unifilar A3 de un sistema de 5.70 kWp: dos cadenas, caja de protecciones de CD, inversor, centro de carga, medidor y red, con cuadro de protecciones, memoria de cálculo y cuadro de título](../../docs/images/readme/plano-unifilar.png)
+
+*El plano que produce esa petición (los nombres son ficticios). Más imágenes de la memoria de cálculo y de la hoja de proyecto en la [página principal del repositorio](../../README.md).*
 
 En un solo paso entrega, en una carpeta por proyecto:
 
@@ -21,23 +25,25 @@ También explica en una frase por qué eligió el inversor (prefiere una relaci�
 Requisitos:
 
 - **Claude Code** (terminal, escritorio o extensión del editor).
-- **uv** (instala Python y las dependencias del plugin). En Windows: `winget install --id=astral-sh.uv -e`. En macOS o Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+- **uv** (instala Python y las dependencias del plugin). En Windows: `winget install --id=astral-sh.uv -e`. En macOS o Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`. **Después de instalarlo, cierra y vuelve a abrir Claude Code** para que lo encuentre.
 - **AutoCAD** (opcional, Windows): si está instalado, el plugin entrega DWG y el PDF ploteado por AutoCAD.
 
 En Claude Code:
 
 ```
-/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD
+/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD@develop
 ```
 
 o en dos pasos:
 
 ```
-/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
+/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD@develop
 /plugin install pv-unifilar@pvsld
 ```
 
-**La primera vez**, uv descarga las dependencias del servidor (unos 60 MB; de 15 a 60 segundos según la conexión). Si `/mcp` muestra el servidor `pvsld` como fallido, espera a que termine la descarga y reconéctalo desde `/mcp`. También puedes descargarlo antes, una sola vez, desde una terminal:
+> La versión `0.5.0rc1` es preliminar y su marketplace está en la rama `develop`. A partir de la `v0.5.0` ya no hace falta `@develop`.
+
+**La primera vez**, uv descarga las dependencias del servidor (unos 60 MB; de 15 a 60 segundos según la conexión). Claude Code espera 30 segundos a que un servidor arranque, así que la primera vez puede marcarlo como fallido: si `/mcp` muestra el servidor `pvsld` así, espera a que termine la descarga y reconéctalo desde `/mcp`. También puedes descargarlo antes, una sola vez, desde una terminal:
 
 ```
 uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0rc1 pvsld-mcp --version

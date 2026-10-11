@@ -1,0 +1,7 @@
+# Quick-mode request for `pvsld design`: only the equipment and the size.
+# The service, grounding and title block come from the quick defaults; personal data stays blank.
+#
+#   pvsld design examples/quick_request.yaml -o out/demo --no-autocad
+module: JINKO-JKM475N-60HL4
+module_count_min: 12
+module_count_max: 12
