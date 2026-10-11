@@ -1,7 +1,7 @@
 <h1 align="center">PvUnifilar</h1>
 
 <p align="center">
-  <b>De una frase al paquete completo de interconexión fotovoltaica para México.</b><br>
+  <b>De un simple prompt genera un diagrama unifilar fotovoltaico </b><br>
   Diagrama unifilar (DWG / DXF / PDF), memoria de cálculo, hoja de proyecto editable y resumen de materiales,<br>
   dimensionado y revisado contra la NOM-001-SEDE-2012 y dibujado con simbología CFE, por Claude a través de MCP.
 </p>
@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT">
 </p>
 
-> **"Hazme un diagrama unifilar con 12 paneles Jinko de 475 W"**
+> **"Genera un diagrama unifilar con 12 paneles Jinko de 475 W"**
 
 <p align="center">
   <img src="docs/images/readme/plano-unifilar.png" alt="Plano unifilar A3 de un sistema de 5.70 kWp: dos cadenas, caja de protecciones de CD, inversor, centro de carga, medidor y red, con el cuadro de protecciones, el resumen de cálculo y el cuadro de título" width="100%">
@@ -38,7 +38,7 @@ Una petición, una carpeta por proyecto:
 | 🧾 | **Resumen de materiales** | en el chat y como texto | igual |
 | 💬 | **Por qué ese inversor** | una frase sencilla | igual |
 
-AutoCAD es opcional. Nada se inventa: los equipos salen de un catálogo de fichas revisadas contra su hoja técnica, cada valor lo calcula código determinista, y un diseño que no cumple una regla se rechaza con su razón.
+AutoCAD es opcional. los equipos salen de un catálogo de fichas revisadas contra su hoja técnica, cada valor lo calcula código determinista, y un diseño que no cumple una regla se rechaza con su razón.
 
 ## El plano
 
@@ -83,7 +83,7 @@ Claude no dibuja ni una línea. Un núcleo determinista dimensiona el sistema, l
 <td colspan="2">
 <img src="docs/images/readme/cuadro-de-titulo.png" alt="Cuadro de título con la compañía instaladora, el proyecto, quien diseña, quien revisa, el propietario, el número de plano y la fecha" width="100%">
 
-**Tus datos, solo si los das.** Propietario, dirección, RPU, ingeniero responsable y empresa llegan al plano y a la memoria tal como los escribes; lo que no des queda como línea en blanco para llenar a mano. Nunca se inventa un dato personal.
+**Tus datos, solo si los das.** Propietario, dirección, RPU, ingeniero responsable y empresa llegan al plano y a la memoria tal como los escribes; lo que no rellenes queda como línea en blanco para llenar a mano.
 </td>
 </tr>
 </table>
@@ -328,8 +328,7 @@ Las decisiones de diseño están en [`docs/decisions/`](docs/decisions/), empeza
 
 ## Alcance y límites
 
-- Baja tensión residencial en México: un inversor de cadena, hasta dos cadenas, servicio CFE 1F-2H o 2F-3H, medición neta por omisión.
-- El catálogo incluido es pequeño a propósito (cada ficha se revisa contra su hoja técnica): módulos Jinko y ET Solar, inversores Growatt MIN y Huawei SUN2000, fusibles gPV Littelfuse y Eaton, interruptores de CD Schneider y Suntree, un seccionador FV Suntree, interruptores Square D QO y cable fotovoltaico Viakon. Lo demás se agrega a tu catálogo local desde su hoja técnica.
+- El catálogo incluido es pequeño  (cada ficha se revisa contra su hoja técnica): módulos Jinko y ET Solar, inversores Growatt MIN y Huawei SUN2000, fusibles gPV Littelfuse y Eaton, interruptores de CD Schneider y Suntree, un seccionador FV Suntree, interruptores Square D QO y cable fotovoltaico Viakon. Lo demás se agrega a tu catálogo local desde su hoja técnica.
 - El plugin funciona en Claude Code. No funciona en claude.ai en el navegador, porque el servidor corre en tu computadora.
 - El DWG y el PDF de AutoCAD necesitan un AutoCAD con licencia en Windows.
 
