@@ -21,7 +21,7 @@ from pvsld.backends.readback import verify
 from pvsld.cli import main
 from pvsld.core.diagram import Box, Diagram, check_diagram
 from pvsld.core.layout import LayoutError
-from pvsld.core.layout_sheet import COMPANY, build_sheet_diagram
+from pvsld.core.layout_sheet import COMPANY, GROUND_LABEL_DROP_MM, PLACEMENT, build_sheet_diagram
 from pvsld.core.sheet import SheetTemplate, SheetTemplateError
 from pvsld.core.validation import validate_pv_design
 from pvsld.service import layout_diagram
@@ -584,3 +584,24 @@ def test_the_calculation_summary_names_the_string_protection(
     texts = {t.text for t in _build(template, _box(kind)).texts}
     assert any(text in t for t in texts)
     assert not any("fusible de cadena no requerido" in t for t in texts)
+
+
+def test_the_electrode_label_clears_a_tall_protection_schedule(template: SheetTemplate) -> None:
+    """Two string fuses give the schedule eight rows; its top reached the electrode's label."""
+
+    def eight_rows(spec: dict[str, Any]) -> None:
+        spec["dc_bos"]["disconnects"] += [
+            {"id": "FUS-S1", "integrated_in": None, "poles": 2, "ue_v": 1000, "ie_a": 25},
+            {"id": "FUS-S2", "integrated_in": None, "poles": 2, "ue_v": 1000, "ie_a": 25},
+            {"id": "DCD-CD1", "integrated_in": None, "poles": 4, "ue_v": 1000, "ie_a": 25},
+        ]
+
+    def ground_y(diagram: Diagram) -> float:
+        return next(i for i in diagram.instances if i.comp_id == "PT-1").y
+
+    tall = _build(template, eight_rows)
+    (schedule,) = tall.tables
+    assert len(schedule.rows) == 8
+    assert ground_y(tall) - schedule.y_top >= GROUND_LABEL_DROP_MM
+    assert ground_y(tall) > PLACEMENT.ground[1]
+    assert ground_y(_build(template)) == PLACEMENT.ground[1]  # a short schedule moves nothing

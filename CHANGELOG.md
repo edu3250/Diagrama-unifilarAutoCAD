@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- README rewritten in Spanish (owner decision 2026-10-10: the system works with Mexican standards, so its front page speaks to Mexican installers; code and technical docs stay in English) around what a user gets, with images produced by the system itself (`docs/images/readme/`, fictitious names). It shows the A3 sheet and its parts, the calculation report in Excel, and the project sheet with a reviewed cell in red. It also covers how to install the plugin, how to run the MCP server from Claude Code, Claude Desktop or VS Code, the nine tools, the environment variables, the CLI and a diagram of the flow.
+- The Spanish plugin guide gains the sheet image and the notes from the owner's install test: reopen Claude Code after installing uv; the 30 s server start-up wait.
+- `examples/quick_request.yaml`: the three-line request of the quick mode.
 - Claude Code plugin **PvUnifilar** (`pv-unifilar`, Stage 3.6.4b) and its marketplace `pvsld`.
   - `plugins/pv-unifilar/`:
     - `.claude-plugin/plugin.json`;
@@ -80,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Symbol library 0.7.0: `PVSLD_CB_DC` (the CFE breaker with DC ports); the inverter is 30 x 30 mm and the load centre 30 x 35 mm (owner request: smaller); the DC disconnect shows its tag above and its description below
 
 ### Fixed
+- On the A3 sheet, a protection schedule of eight rows (two string fuses) reached the last line of the grounding electrode's label; the earthing bus now rises just enough to clear it
 - With the DC protection box, the protection schedule places the DC SPD in "Caja CD" (it gave the spec location, e.g. INV1.dc)
 - The box disconnect DCD-CD1 records the switch's 4 poles when a single string runs through all of them in series
 - Drawings on the owner's sheet template are editable in one place (owner request): the frame, template boxes, fixed texts, fields, symbology, schematic and protection schedule are all in model space at 1:1, and the file opens on the Model tab. The `A3` layout keeps only the 1:1 viewport, for plotting (`Diagram.sheet_in_model`). Every text, line and block can be edited directly; blocks keep their attributes
