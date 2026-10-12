@@ -7,6 +7,8 @@ This directory contains technical documentation for the Diagrama-unifilarAutoCAD
 ```
 docs/
 ├── README.md                    (this file)
+├── guia-de-usuario.md           (the user guide, in Spanish like every user-facing document)
+├── images/readme/               (images of the README and the user guide, drawn by the system)
 ├── decisions/                   (Architecture Decision Records)
 │   ├── ADR-0001-claude-autocad-integration.md
 │   └── ADR-0003-symbol-library-format.md

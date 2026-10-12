@@ -24,3 +24,11 @@ Argument: $ARGUMENTS
    - `missing_components`: a model the catalogue does not have. Ask for its datasheet (PDF) and follow the `catalogo` skill of this plugin to add it; then the sheet can be designed.
    - Never change the user's values yourself: explain what the cell needs.
 4. **When it works**, tell the user as in the quick mode: `explanation_es` as it is, `bom_text` in a code block, the folder and its files, that their sheet now shows the last calculation in its gray column, and that the drawing is a draft a responsible engineer must review and sign. Look at the preview image first.
+
+## If the pvsld tools are not available
+
+The plugin's MCP server (`pvsld`) is not connected: its first start downloads its dependencies and can take longer than Claude Code waits, or `uv` is not installed. Do not design, calculate or draw by other means. Tell the user, in Spanish:
+
+1. In a terminal, `uv --version` must answer. If it does not, install uv (the plugin guide says how) and close and reopen Claude Code.
+2. Run `/mcp`, choose `pvsld` and reconnect it. The first time, wait a minute for the download to finish and reconnect again.
+3. Ask again.

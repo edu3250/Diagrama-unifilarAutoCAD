@@ -603,9 +603,29 @@ A plain request also triggers the skill.
     - the owner authorized the pre-release tag `v0.5.0rc1` once 3.6.4 is merged, to test the
       installed plugin from GitHub.
 - **3.6.5:**
-  - Spanish user guide;
-  - real-prompt tests on a clean install, with and without AutoCAD;
-  - release v0.5.0 and marketplace publication.
+  - Spanish user guide (`docs/guia-de-usuario.md`);
+  - real-prompt tests on a clean install, with and without AutoCAD (results below);
+  - release v0.5.0 and marketplace publication (ask the owner first).
+
+**Real-prompt tests of 3.6.5 (2026-10-12, headless Claude Code 2.1.296, default permission mode):**
+- Clean configuration folder: `claude plugin marketplace add edu3250/Diagrama-unifilarAutoCAD` and
+  `claude plugin install pv-unifilar@pvsld` install from the default branch, as does the one-line
+  `--marketplace` form. Git is needed (the marketplace is cloned over HTTPS).
+- Start-up of `uvx --from git+…@v0.5.0rc1 pvsld-mcp` until it answers `initialize`: 31.6 s with an
+  empty uv cache (23.3 s from a local wheel, so about 8 s are the clone and the build), 6 to 18 s
+  with the cache. Claude Code waits 30 s, so the first start can fail; the guide and the skills say
+  how to continue. A wheel on the release or on PyPI would shorten it: offered to the owner.
+- Installed plugin (v0.5.0rc1): the quick mode by command and by a plain request (8 files without
+  AutoCAD), a module that is not in the catalogue (asks for its datasheet), a blank project sheet,
+  and a sheet with a fuse that does not fit (the cell and the reviewed copy). The skills'
+  `allowed-tools` work: no tool was denied when the user ran the command; a plain request asks
+  permission for the skill first.
+- Fixes found by these tests: see the CHANGELOG. Tested again with the corrected code loaded with
+  `--plugin-dir`: the quick mode with real AutoCAD in a long folder with accents (9 files, 35 s),
+  the professional mode with a wrong fuse and then with AUTO (personal data with any character
+  reaches the drawing), and a server that never starts (the skill sends the user to `/mcp`).
+- Not tested: adding a component from a datasheet with the installed plugin (no new datasheet at
+  hand; covered by the 3.6.3 tests), macOS, and a machine without Python.
 
 **Limitations (documented for users):**
 - Claude Code only.
@@ -620,7 +640,7 @@ A plain request also triggers the skill.
 - CI checks the manifest JSON.
 - Owner's manual run of both modes on a clean install.
 
-**Status:** In Progress (3.6.0 to 3.6.4a merged; 3.6.4b in review)
+**Status:** In Progress (3.6.0 to 3.6.4 merged; 3.6.5 guide, tests and fixes in review; the v0.5.0 release waits for the owner)
 
 ---
 

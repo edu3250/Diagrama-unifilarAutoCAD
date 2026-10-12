@@ -149,17 +149,17 @@ Lado CA:
   ```
 
   Cierra y vuelve a abrir Claude Code después de instalar uv, para que encuentre `uvx`.
+- [Git](https://git-scm.com/), con el que Claude Code baja el plugin de GitHub (en Windows, `winget install --id Git.Git -e`).
 - AutoCAD en Windows es opcional: con él también recibes el DWG y el PDF ploteado por AutoCAD.
 
 **2. Instalar**
 
 ```text
-/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD@develop
+/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
+/plugin install pv-unifilar@pvsld
 ```
 
-> La `v0.5.0rc1` es una versión preliminar y su marketplace está en la rama `develop`. A partir de la `v0.5.0` ya no hace falta `@develop`.
-
-**3. Primer arranque.** La primera vez, uv descarga unos 60 MB de dependencias, y eso puede tardar más que los 30 segundos que Claude Code espera a un servidor. Si `/mcp` muestra `pvsld` como fallido, reconéctalo ahí cuando termine la descarga, o descárgalo antes desde una terminal:
+**3. Primer arranque.** La primera vez, uv descarga unos 60 MB de dependencias (de 15 segundos a un minuto), y eso puede tardar más que los 30 segundos que Claude Code espera a un servidor. Si `/mcp` muestra `pvsld` como fallido, reconéctalo ahí cuando termine la descarga, o descárgalo antes desde una terminal:
 
 ```bash
 uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0rc1 pvsld-mcp --version
@@ -174,7 +174,9 @@ uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0rc1 pvs
 | `/pv-unifilar:pro <proyecto u hoja.xlsx>` | **Modo profesional.** Diseña con tu hoja llenada, o te la devuelve con las celdas por corregir en rojo. |
 | `/pv-unifilar:catalogo <hoja técnica.pdf>` | Agrega a **tu catálogo local** un equipo que no está: Claude lee la hoja técnica, te muestra los valores y los guarda solo cuando los confirmas. |
 
-Los archivos van a `out/<proyecto>/` en la carpeta donde trabajas con Claude (se puede cambiar en `/config`). La guía del plugin está en [`plugins/pv-unifilar/README.md`](plugins/pv-unifilar/README.md).
+Los archivos van a `out/<proyecto>/` en la carpeta donde trabajas con Claude (se puede cambiar con `/plugin configure pv-unifilar@pvsld`).
+
+📖 **[Guía de usuario](docs/guia-de-usuario.md):** instalación paso a paso, los dos modos, el catálogo, qué revisa el cálculo y problemas frecuentes.
 
 ## Usar el servidor MCP directamente
 
@@ -340,7 +342,6 @@ Las decisiones de diseño están en [`docs/decisions/`](docs/decisions/), empeza
 ```bash
 git clone https://github.com/edu3250/Diagrama-unifilarAutoCAD.git
 cd Diagrama-unifilarAutoCAD
-git checkout develop
 python -m venv .venv            # y actívalo
 pip install -e ".[dev]"
 
