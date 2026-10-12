@@ -59,7 +59,7 @@ La primera vez, uv descarga unos 60 MB de dependencias. Con una conexión normal
 - **Descargarlo antes** (recomendado). En una terminal, una sola vez:
 
   ```bash
-  uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0rc1 pvsld-mcp --version
+  uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0 pvsld-mcp --version
   ```
 
   Cuando responda con el número de versión, abre Claude Code.

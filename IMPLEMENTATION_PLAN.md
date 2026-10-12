@@ -605,7 +605,8 @@ A plain request also triggers the skill.
 - **3.6.5:**
   - Spanish user guide (`docs/guia-de-usuario.md`);
   - real-prompt tests on a clean install, with and without AutoCAD (results below);
-  - release v0.5.0 and marketplace publication (ask the owner first).
+  - release v0.5.0 (the owner asked for it on 2026-10-12): version 0.5.0 in the package, the plugin
+    and the documents, merged to `main`, tagged `v0.5.0`; the marketplace is the repository itself.
 
 **Real-prompt tests of 3.6.5 (2026-10-12, headless Claude Code 2.1.296, default permission mode):**
 - Clean configuration folder: `claude plugin marketplace add edu3250/Diagrama-unifilarAutoCAD` and
@@ -640,7 +641,7 @@ A plain request also triggers the skill.
 - CI checks the manifest JSON.
 - Owner's manual run of both modes on a clean install.
 
-**Status:** In Progress (3.6.0 to 3.6.4 merged; 3.6.5 guide, tests and fixes in review; the v0.5.0 release waits for the owner)
+**Status:** Complete (released as v0.5.0 on 2026-10-12)
 
 ---
 
