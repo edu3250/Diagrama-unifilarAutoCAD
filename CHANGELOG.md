@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- The repository is now `edu3250/PvUnifilar`, the plugin's name (owner, 2026-10-12; it was `edu3250/Diagrama-unifilarAutoCAD`). The plugin's server, the package metadata, the README, the plugin guide and the user guide use the new address. GitHub redirects the old one, so the published `v0.5.0` plugin and a marketplace added under the old name keep working; checked for `uvx --from git+…`, `claude plugin marketplace add` and `marketplace update`. The Python package (`pvsld`), the plugin (`pv-unifilar`) and the marketplace (`pvsld`) keep their names.
+
 ## [0.5.0] - 2026-10-12
 
 The Claude Code plugin **PvUnifilar** (Stage 3.6): from a plain request, or from a project sheet the user fills in, one tool call sizes, validates and draws the installation and writes the DWG or DXF, the PDF, the calculation report, the project sheet and the bill of materials. With a local catalogue for equipment added from its datasheet, the marketplace `pvsld`, and a Spanish README and user guide. Pre-release `v0.5.0rc1` on 2026-10-09.
@@ -204,6 +207,6 @@ Phase 1 (Documentation & Regulatory Research) complete.
 
 ---
 
-**Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD  
+**Repository:** https://github.com/edu3250/PvUnifilar  
 **Maintainer:** edu3250 (edu3250@gmail.com)  
 **Last updated:** 2026-10-12

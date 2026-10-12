@@ -26,7 +26,7 @@ MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
 PLUGIN = ROOT / "plugins" / "pv-unifilar"
 SKILLS = ("diagrama", "pro", "catalogo")
 TOOL_PREFIX = "mcp__plugin_pv-unifilar_pvsld__"
-REPOSITORY = "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD"
+REPOSITORY = "git+https://github.com/edu3250/PvUnifilar"
 
 
 def _json(path: Path) -> Any:
@@ -90,8 +90,25 @@ def test_the_user_documents_name_the_tag_of_this_version(document: Path) -> None
 def test_the_user_documents_install_from_the_default_branch(document: Path) -> None:
     """`develop` is the default branch (owner, 2026-10-10): a pinned branch would outlive it."""
     text = document.read_text(encoding="utf-8")
-    assert "edu3250/Diagrama-unifilarAutoCAD@" not in text.replace(REPOSITORY + "@", "")
+    assert "edu3250/PvUnifilar@" not in text.replace(REPOSITORY + "@", "")
     assert "pv-unifilar@pvsld" in text
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        *USER_DOCS,
+        PLUGIN / ".mcp.json",
+        PLUGIN / ".claude-plugin" / "plugin.json",
+        MARKETPLACE,
+        ROOT / "pyproject.toml",
+    ],
+    ids=lambda path: path.name,
+)
+def test_what_a_user_reads_or_runs_names_the_repository_as_it_is_now(path: Path) -> None:
+    """The repository was renamed PvUnifilar on 2026-10-12. GitHub redirects the old address only
+    while nobody reuses that name, so nothing current may depend on it."""
+    assert "Diagrama-unifilar" + "AutoCAD" not in path.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("name", SKILLS)

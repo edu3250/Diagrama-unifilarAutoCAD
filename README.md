@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/edu3250/Diagrama-unifilarAutoCAD/actions/workflows/ci.yml"><img src="https://github.com/edu3250/Diagrama-unifilarAutoCAD/actions/workflows/ci.yml/badge.svg?branch=develop" alt="CI"></a>
+  <a href="https://github.com/edu3250/PvUnifilar/actions/workflows/ci.yml"><img src="https://github.com/edu3250/PvUnifilar/actions/workflows/ci.yml/badge.svg?branch=develop" alt="CI"></a>
   <img src="https://img.shields.io/badge/versi%C3%B3n-v0.5.0-blue" alt="Versión v0.5.0">
   <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue" alt="Python 3.11 | 3.12">
   <img src="https://img.shields.io/badge/MCP-servidor%20stdio-8A2BE2" alt="Servidor MCP stdio">
@@ -155,14 +155,14 @@ Lado CA:
 **2. Instalar**
 
 ```text
-/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
+/plugin marketplace add edu3250/PvUnifilar
 /plugin install pv-unifilar@pvsld
 ```
 
 **3. Primer arranque.** La primera vez, uv descarga unos 60 MB de dependencias (de 15 segundos a un minuto), y eso puede tardar más que los 30 segundos que Claude Code espera a un servidor. Si `/mcp` muestra `pvsld` como fallido, reconéctalo ahí cuando termine la descarga, o descárgalo antes desde una terminal:
 
 ```bash
-uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0 pvsld-mcp --version
+uvx --from git+https://github.com/edu3250/PvUnifilar@v0.5.0 pvsld-mcp --version
 ```
 
 **4. Usarlo.** Pídelo con tus palabras, o usa los comandos:
@@ -186,7 +186,7 @@ El plugin es una capa delgada sobre un **servidor MCP stdio** estándar, `pvsld-
 <summary><b>Claude Code</b>, sin el plugin</summary>
 
 ```bash
-claude mcp add pvsld -- uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0 pvsld-mcp
+claude mcp add pvsld -- uvx --from git+https://github.com/edu3250/PvUnifilar@v0.5.0 pvsld-mcp
 ```
 
 o en el `.mcp.json` de un proyecto:
@@ -196,7 +196,7 @@ o en el `.mcp.json` de un proyecto:
   "mcpServers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0", "pvsld-mcp"],
+      "args": ["--from", "git+https://github.com/edu3250/PvUnifilar@v0.5.0", "pvsld-mcp"],
       "env": { "PVSLD_OUTPUT_DIR": "out" }
     }
   }
@@ -215,7 +215,7 @@ Agrega el mismo servidor a `claude_desktop_config.json` (Settings → Developer 
   "mcpServers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0", "pvsld-mcp"],
+      "args": ["--from", "git+https://github.com/edu3250/PvUnifilar@v0.5.0", "pvsld-mcp"],
       "env": { "PVSLD_OUTPUT_DIR": "C:\\Users\\tu_usuario\\Documents\\unifilares" }
     }
   }
@@ -234,7 +234,7 @@ En `.vscode/mcp.json` la clave principal es `servers`:
   "servers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0", "pvsld-mcp"]
+      "args": ["--from", "git+https://github.com/edu3250/PvUnifilar@v0.5.0", "pvsld-mcp"]
     }
   }
 }
@@ -340,8 +340,8 @@ Las decisiones de diseño están en [`docs/decisions/`](docs/decisions/), empeza
 ## Desarrollo
 
 ```bash
-git clone https://github.com/edu3250/Diagrama-unifilarAutoCAD.git
-cd Diagrama-unifilarAutoCAD
+git clone https://github.com/edu3250/PvUnifilar.git
+cd PvUnifilar
 python -m venv .venv            # y actívalo
 pip install -e ".[dev]"
 
