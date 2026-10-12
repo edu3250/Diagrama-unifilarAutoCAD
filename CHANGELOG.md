@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Spanish user guide, `docs/guia-de-usuario.md` (Stage 3.6.5): installation and first start, the quick mode and its defaults, the files of a project folder, the professional mode sheet by sheet, the catalogue and how to add equipment, with and without AutoCAD, what the calculation checks, frequent problems, updating and the scope. The README and the plugin guide link to it.
+- Each skill of the plugin says what to do when the `pvsld` server is not connected (first start slower than Claude Code's 30 s wait, or `uv` missing): check `uv --version`, reconnect from `/mcp`, ask again; and not to design by other means.
+- `tests/test_claude_plugin.py` also holds the README and the user guide to the release tag of the plugin's version and to installing from the default branch.
 - README rewritten in Spanish (owner decision 2026-10-10: the system works with Mexican standards, so its front page speaks to Mexican installers; code and technical docs stay in English) around what a user gets, with images produced by the system itself (`docs/images/readme/`, fictitious names). It shows the A3 sheet and its parts, the calculation report in Excel, and the project sheet with a reviewed cell in red. It also covers how to install the plugin, how to run the MCP server from Claude Code, Claude Desktop or VS Code, the nine tools, the environment variables, the CLI and a diagram of the flow.
 - The Spanish plugin guide gains the sheet image and the notes from the owner's install test: reopen Claude Code after installing uv; the 30 s server start-up wait.
 - `examples/quick_request.yaml`: the three-line request of the quick mode.
@@ -82,7 +85,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - DC protection box after the owner's reference box (2026-10-08): both strings, after their breakers, feed the DC SPD to earth, then the box disconnect `DCD-CD1` (two poles per string, one tag, a dashed mechanical link between the pole pairs) opens them ahead of the inverter, inside the box; junction dots mark where the SPD taps leave the strings, so the SPD's earth line visibly crosses the lower string. The box stays 35 mm tall and grows in width to hold the disconnect. `pvsld size` adds `DCD-CD1` whenever it selects string breakers (assumption noted: ratings of the string breaker; the catalogue has no switch-disconnectors yet). `CircleItem.filled` draws a junction dot as a DONUT.
 - Symbol library 0.7.0: `PVSLD_CB_DC` (the CFE breaker with DC ports); the inverter is 30 x 30 mm and the load centre 30 x 35 mm (owner request: smaller); the DC disconnect shows its tag above and its description below
 
+### Changed
+- The README and the plugin guide install the plugin from the default branch (`/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD`, then `/plugin install pv-unifilar@pvsld`), without `@develop`: `develop` is the repository's default branch since 2026-10-10. They also name Git as a requirement and `/plugin configure pv-unifilar@pvsld` for the output folder.
+- `list_components` and `ComponentRegistry.find` match the manufacturer by a part of its name ("Jinko" finds "Jinko Solar").
+- The bill of materials names every circuit of a shared conduit ("EMT 27 mm para C-S1 y C-S2").
+
 ### Fixed
+- (3.6.5 real-prompt tests) AutoCAD could not finish a design whose project folder had a long path (Windows error 206) or a character outside ASCII, and every design it did finish left a `.pvsld-staging-…` folder in the user's output folder, kept open by Autodesk's background services. Core Console now works on a copy of the DXF in a temporary folder; the DWG and the PDF are moved to the project folder, and work folders that could not be removed are swept by a later run.
+- (3.6.5 real-prompt tests) A fuse or DC breaker fixed in the project sheet that does not fit was reported as "Ningún fusible gPV del catálogo cumple", which sent the user after a device the catalogue has. The cell now says "El fusible elegido no cumple (…) Elija otro de la lista o deje AUTO."
+- (3.6.5 real-prompt tests) The project sheet's instructions and the missing-component message named the commands of the first plan (`/unifilar-pro`, `/unifilar-catalogo`) instead of `/pv-unifilar:pro` and `/pv-unifilar:catalogo`.
 - On the A3 sheet, a protection schedule of eight rows (two string fuses) reached the last line of the grounding electrode's label; the earthing bus now rises just enough to clear it
 - With the DC protection box, the protection schedule places the DC SPD in "Caja CD" (it gave the spec location, e.g. INV1.dc)
 - The box disconnect DCD-CD1 records the switch's 4 poles when a single string runs through all of them in series

@@ -7,6 +7,9 @@ the same with or without AutoCAD on the machine.
 
 from __future__ import annotations
 
+import os
+import tempfile
+import time
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -128,7 +131,49 @@ def test_autocad_finishes_the_drawing_when_it_is_installed(tmp_path: Path) -> No
     assert list(result.files) == list(DELIVERABLES)
     assert result.files["unifilar.pdf"].read_bytes().startswith(b"%PDF")
     assert len(runner.calls) == 1
-    assert not (tmp_path / "p" / ".autocad").exists()  # no Core Console work files are left
+    work = Path(runner.calls[0][runner.calls[0].index("/s") + 1]).parent
+    assert not work.exists()  # no Core Console work files are left
+    assert sorted(path.name for path in (tmp_path / "p").iterdir()) == sorted(DELIVERABLES)
+
+
+def test_autocad_works_on_a_copy_outside_the_project_folder(tmp_path: Path) -> None:
+    """Core Console scripts take only ASCII and its profile folders are deep: a project folder
+    with accents or a long path must not stop the DWG (real-prompt test of Stage 3.6.5)."""
+    folder = tmp_path / "Diseños de José Ñáñez" / "casa"
+    runner = FakeCoreConsole()
+    result = _design(folder, autocad=_fake_autocad(tmp_path), runner=runner)
+    assert result.ok
+    assert result.pdf_source == "autocad"
+    assert result.problems == ()
+    assert result.files["unifilar.dwg"] == folder / "unifilar.dwg"
+    assert result.files["unifilar.dwg"].read_bytes().startswith(b"AC1032")
+    script = Path(runner.calls[0][runner.calls[0].index("/s") + 1])
+    assert folder not in script.parents
+
+
+def test_work_folders_an_earlier_run_could_not_remove_are_swept(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Autodesk's services keep a lock file open in the work folder long after Core Console
+    ends, so its removal can fail; the next run removes what is old enough to be nobody's."""
+    temp = tmp_path / "temp"
+    stale = temp / "pvsld-autocad-old" / ".accoreconsole-user" / "Temp"
+    fresh = temp / "pvsld-autocad-running"
+    other = temp / "pvsld-symbols.bak"
+    for folder in (stale, fresh, other):
+        folder.mkdir(parents=True)
+    hour_ago = time.time() - 3600
+    os.utime(stale.parents[1], (hour_ago, hour_ago))
+    os.utime(other, (hour_ago, hour_ago))
+    monkeypatch.setattr(tempfile, "tempdir", str(temp))
+
+    result = _design(tmp_path / "p", autocad=_fake_autocad(tmp_path), runner=FakeCoreConsole())
+
+    assert result.pdf_source == "autocad"
+    assert sorted(path.name for path in temp.iterdir()) == [
+        "pvsld-autocad-running",
+        "pvsld-symbols.bak",
+    ]
 
 
 def test_a_failed_autocad_run_falls_back_to_the_pvsld_pdf(tmp_path: Path) -> None:

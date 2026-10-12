@@ -19,3 +19,11 @@ Datasheet: $ARGUMENTS
 5. **Show the values to the user** in a table per variant (and the family values above it), and say from which page each block comes. Ask them to compare with the datasheet and confirm. Fix anything they correct.
 6. **After they confirm**, call `add_component_to_catalogue` with the `record`, the PDF's file name as `datasheet`, and `user_confirmed: true`. If the tool lists problems (a missing or implausible value), fix them from the datasheet; ask the user only when the datasheet does not say.
 7. **Tell the user** the new `component_id`s, that the equipment is now in their local catalogue for every design and in the project-sheet lists, and continue with the design that needed it.
+
+## If the pvsld tools are not available
+
+The plugin's MCP server (`pvsld`) is not connected: its first start downloads its dependencies and can take longer than Claude Code waits, or `uv` is not installed. Do not design, calculate or draw by other means. Tell the user, in Spanish:
+
+1. In a terminal, `uv --version` must answer. If it does not, install uv (the plugin guide says how) and close and reopen Claude Code.
+2. Run `/mcp`, choose `pvsld` and reconnect it. The first time, wait a minute for the download to finish and reconnect again.
+3. Ask again.

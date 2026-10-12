@@ -28,3 +28,11 @@ Request: $ARGUMENTS
    Look at the preview image before you answer; mention anything that looks wrong.
 6. **When no configuration fits**, explain the main reasons in plain Spanish (the `sizing` text) and propose a change: more or fewer modules, another inverter, or another module.
 7. **When the folder already exists**, ask before calling again with `overwrite: true`, or suggest another `name`.
+
+## If the pvsld tools are not available
+
+The plugin's MCP server (`pvsld`) is not connected: its first start downloads its dependencies and can take longer than Claude Code waits, or `uv` is not installed. Do not design, calculate or draw by other means. Tell the user, in Spanish:
+
+1. In a terminal, `uv --version` must answer. If it does not, install uv (the plugin guide says how) and close and reopen Claude Code.
+2. Run `/mcp`, choose `pvsld` and reconnect it. The first time, wait a minute for the download to finish and reconnect again.
+3. Ask again.

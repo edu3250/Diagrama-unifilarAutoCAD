@@ -26,22 +26,21 @@ Requisitos:
 
 - **Claude Code** (terminal, escritorio o extensión del editor).
 - **uv** (instala Python y las dependencias del plugin). En Windows: `winget install --id=astral-sh.uv -e`. En macOS o Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`. **Después de instalarlo, cierra y vuelve a abrir Claude Code** para que lo encuentre.
+- **Git**, con el que Claude Code baja el plugin de GitHub. En Windows: `winget install --id Git.Git -e`.
 - **AutoCAD** (opcional, Windows): si está instalado, el plugin entrega DWG y el PDF ploteado por AutoCAD.
 
 En Claude Code:
 
 ```
-/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD@develop
-```
-
-o en dos pasos:
-
-```
-/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD@develop
+/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
 /plugin install pv-unifilar@pvsld
 ```
 
-> La versión `0.5.0rc1` es preliminar y su marketplace está en la rama `develop`. A partir de la `v0.5.0` ya no hace falta `@develop`.
+o desde una terminal, en un paso:
+
+```
+claude plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD
+```
 
 **La primera vez**, uv descarga las dependencias del servidor (unos 60 MB; de 15 a 60 segundos según la conexión). Claude Code espera 30 segundos a que un servidor arranque, así que la primera vez puede marcarlo como fallido: si `/mcp` muestra el servidor `pvsld` así, espera a que termine la descarga y reconéctalo desde `/mcp`. También puedes descargarlo antes, una sola vez, desde una terminal:
 
@@ -66,7 +65,9 @@ Después arranca en un par de segundos.
 
 **Catálogo local.** Los equipos que agregues se guardan en `%APPDATA%\pvsld\catalogo` (Windows) o `~/.local/share/pvsld/catalogo`, junto con su hoja técnica, y nunca salen de tu computadora.
 
-**Carpeta de proyectos.** Por omisión, `out/` en la carpeta donde trabajas con Claude. Puedes elegir otra en la configuración del plugin (`/config`).
+**Carpeta de proyectos.** Por omisión, `out/` en la carpeta donde trabajas con Claude. Puedes elegir otra con `/plugin configure pv-unifilar@pvsld`.
+
+La **[guía de usuario](../../docs/guia-de-usuario.md)** explica cada paso: la instalación, los dos modos, el catálogo, qué revisa el cálculo y los problemas frecuentes.
 
 ## Alcance y limitaciones
 

@@ -251,14 +251,17 @@ class ComponentRegistry:
     def find(
         self, *, component_type: str | None = None, manufacturer: str | None = None
     ) -> list[Component]:
-        """Components sorted by id, optionally filtered by type and manufacturer (any case)."""
+        """Components sorted by id, optionally filtered by type and manufacturer.
+
+        The manufacturer matches in any case and by a part of its name: users say "Jinko" for
+        "Jinko Solar" (real-prompt test of Stage 3.6.5).
+        """
+        wanted = None if manufacturer is None else manufacturer.casefold().strip()
         return [
             component
             for component in self
             if (component_type is None or component.component_type == component_type)
-            and (
-                manufacturer is None or component.manufacturer.casefold() == manufacturer.casefold()
-            )
+            and (wanted is None or wanted in component.manufacturer.casefold())
         ]
 
     def modules(self) -> list[PVModule]:

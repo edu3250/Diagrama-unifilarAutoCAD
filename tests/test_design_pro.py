@@ -202,8 +202,10 @@ def test_a_fixed_value_the_calculation_rejects_is_put_back_on_its_cell(
     assert result.stage == "sizing"
     (issue,) = result.issues
     assert (issue.sheet, issue.label) == ("Protecciones", "Fusible gPV")
-    assert issue.message_es.startswith("OCP-002: Ningún fusible gPV del catálogo cumple")
+    # The catalogue has a fuse that fits: the message must blame the chosen one, not the catalogue.
+    assert issue.message_es.startswith("OCP-002: El fusible elegido no cumple (>= ")
     assert "SPF015: 15 A" in issue.message_es
+    assert issue.message_es.endswith("Elija otro de la lista o deje AUTO.")
 
 
 def test_the_reviewed_sheet_marks_the_cells_in_red(sheet: Path, tmp_path: Path) -> None:

@@ -556,7 +556,8 @@ def create_server(
             Field(description="Only this type. Default: every type."),
         ] = None,
         manufacturer: Annotated[
-            str | None, Field(description="Only this manufacturer, any case (e.g. Huawei).")
+            str | None,
+            Field(description="Only this manufacturer; any case, a part of the name is enough."),
         ] = None,
         include_unreviewed: Annotated[bool, unreviewed_field] = False,
     ) -> Annotated[CallToolResult, ComponentListOutput]:
