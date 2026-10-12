@@ -1,4 +1,15 @@
-"""The MCP server of ADR-0001 (layer L1): two workflow tools and three resources over stdio.
+"""The MCP server of ADR-0001 (layer L1): workflow tools and resources over stdio.
+
+Nine tools: ``list_components`` and ``get_component`` read the component catalogue (the bundled
+records and the user's local ones), ``add_component_to_catalogue`` adds equipment to the local
+catalogue from its datasheet (Stage 3.6.3),
+``size_pv_system`` sizes a design from it (Stage 3.5), ``validate_pv_design`` checks a spec,
+``generate_single_line_diagram`` draws it and ``design_and_draw`` does all of it in one step and
+adds the AutoCAD (or pvsld) PDF, the calculation report, the project sheet and the bill of
+materials (Stage 3.6.1); ``new_project_sheet`` and ``design_from_project_sheet`` are the
+professional mode, driven by the project sheet the user fills in (Stage 3.6.2). Five resources:
+the spec schema, the rule pack, the symbol library, an example of the non-sizing sections a
+sizing request needs and example catalogue records (the format of a local record).
 
 Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
 tool surface is deliberately small and has no primitive drawing tool and no code execution, so the
@@ -27,17 +38,30 @@ import sys
 import threading
 import time
 from collections.abc import Sequence
-from typing import Annotated, Any
+from pathlib import Path
+from typing import Annotated, Any, Literal
 
+import yaml
 from mcp.server import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.types import CallToolResult, ImageContent, TextContent, ToolAnnotations
 from pydantic import Field
 
 from pvsld import __version__, service
+from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
+from pvsld.catalogue.local import load_catalogue, local_catalogue_dir
+from pvsld.catalogue.registry import ComponentRegistry
 from pvsld.core.model import RULEPACK_ID, SCHEMA_VERSION, export_json_schema
 from pvsld.core.rules import rulepack_catalogue
 from pvsld.core.validation import ValidationReport
+from pvsld.mcp.catalogue_tool import AddComponentOutput, record_examples, run_add_component
+from pvsld.mcp.design_tool import (
+    DesignOutput,
+    design_text,
+    run_design,
+    run_new_sheet,
+    run_pro_design,
+)
 from pvsld.mcp.models import (
     GenerateOutput,
     ValidationOutput,
@@ -53,6 +77,19 @@ from pvsld.mcp.sandbox import (
     SandboxError,
     sha256_of_file,
 )
+from pvsld.mcp.sizing_tools import (
+    ComponentListOutput,
+    ComponentOutput,
+    SizingOutput,
+    catalogue_dir_from_environment,
+    component_list_output,
+    component_output,
+    sizing_output,
+    sizing_text,
+)
+from pvsld.resources import data_path
+from pvsld.sizing import SizingInputError, request_from_mapping, size_pv_system
+from pvsld.sizing.models import REQUIRED_TEMPLATE_KEYS
 from pvsld.symbols import symbol_catalogue
 
 __all__ = [
@@ -68,6 +105,9 @@ SERVER_NAME = "pvsld"
 SCHEMA_URI = "pvsld://schema/pv-system-spec"
 RULEPACK_URI = f"pvsld://rulepack/{RULEPACK_ID}"
 SYMBOLS_URI = "pvsld://symbols"
+SIZING_TEMPLATE_URI = "pvsld://examples/sizing-template"
+RECORD_EXAMPLES_URI = "pvsld://catalogue/record-examples"
+_EXAMPLE_SPEC = data_path("examples/residential_7p7kwp.yaml")
 
 # One installation spec is a few KiB; anything far larger is a mistake or an attempt to exhaust
 # the server, so it is refused before validation or rendering touches it.
@@ -85,19 +125,25 @@ def _ensure_spec_size(spec: dict[str, Any]) -> None:
 
 
 INSTRUCTIONS = f"""\
-Generates Mexican photovoltaic single-line diagrams (CFE distributed generation, \
-NOM-001-SEDE-2012) as DXF R2018 from a parameter spec.
-Workflow:
-1. Collect the spec from the user and from datasheets. Never invent equipment data or \
-identifiers (Voc, Isc, ratings, RPU, cedula profesional): ask. The JSON Schema is the resource \
-{SCHEMA_URI}, the rules are in {RULEPACK_URI}, the drawing symbols in {SYMBOLS_URI}.
-2. Call validate_pv_design with the whole spec. Fix every error finding and validate again.
-3. Call generate_single_line_diagram with the same spec, only when validation has no errors. It \
-re-validates, writes the DXF into the server's output folder, verifies the file by reading it \
-back and returns a PNG preview: look at it.
-There are no tools to draw lines or run code; the server computes the geometry. Explain findings \
-to the user in Spanish. Drawings are drafts: a responsible engineer must review and sign them \
-before they are submitted.
+Designs Mexican PV systems and draws their single-line diagrams (CFE distributed generation, \
+NOM-001-SEDE-2012).
+Quick mode ("un diagrama con 5 paneles Jinko"): find the module with list_components, then call \
+design_and_draw once; it writes the DWG or DXF, the PDF, the calculation report, the project \
+sheet and the bill of materials into one project folder. Pass on its explanation and summary in \
+Spanish.
+Professional mode: new_project_sheet gives a blank project sheet; the user fills it in the \
+project folder; design_from_project_sheet designs from it or lists the cells to fix.
+Step by step:
+1. list_components / get_component give catalogue equipment. Never invent equipment data. \
+Equipment not in the catalogue: ask for its datasheet PDF, read it, show the values, and once the \
+user confirms them call add_component_to_catalogue (format: resource {RECORD_EXAMPLES_URI}).
+2. size_pv_system sizes from a module, inverters (or "auto"), a target and the non-sizing \
+sections of the spec (resource {SIZING_TEMPLATE_URI}); show the selection before drawing.
+3. validate_pv_design checks the spec (schema {SCHEMA_URI}, rules {RULEPACK_URI}); fix every \
+error and validate again.
+4. generate_single_line_diagram draws a valid spec and returns a PNG preview: look at it.
+The server computes all geometry. Explain findings in Spanish. Drawings are drafts that a \
+responsible engineer must review and sign.
 """
 
 
@@ -151,6 +197,86 @@ PREVIEW_DESCRIPTION = (
     "Attach a PNG preview of the sheet to the result (adds 1 to 3 s). The full-resolution PNG is "
     "also saved next to the DXF."
 )
+
+
+DESIGN_DESCRIPTION = f"""\
+Design a grid-tied PV installation in one step and write every deliverable into one project \
+folder: size it from the catalogue (the inverter with a DC/AC ratio nearest 1.10-1.25), validate \
+it, draw the A3 single-line diagram (DXF), finish it with the local AutoCAD (DWG and PDF) or, \
+without AutoCAD, render the PDF itself, then write the calculation report (memoria de calculo, \
+xlsx with live formulas and pdf), the editable project sheet (hoja de proyecto, xlsx) and the bill \
+of materials. 5 to 20 s.
+
+Give module and the size (module_count_min/max for an exact count, or target_dc_power_w). Without \
+template, the quick defaults apply: CFE BT 2F-3H 220/127 V, 10 kA, 100 A main breaker, default \
+temperatures, personal data blank (the user fills it by hand or in the project sheet). Give \
+template (the sections of resource {SIZING_TEMPLATE_URI}) only when the user gave service or site \
+data.
+
+Returns the folder, the files, explanation_es (why this inverter: tell the user), bom_text (the \
+installation summary to show), whether AutoCAD was used, and a PNG preview. No configuration that \
+meets the rules is a normal result with the rejections, not an error."""
+
+NEW_SHEET_DESCRIPTION = """\
+Write a blank project sheet (hoja de proyecto, xlsx) into the project folder <output>/<name>/: \
+one yellow cell per parameter, AUTO where the calculation may decide, catalogue dropdowns. The \
+user fills it in and saves it there; then call design_from_project_sheet. A quick design \
+(design_and_draw) already leaves a prefilled sheet in its folder."""
+
+PRO_DESCRIPTION = """\
+Professional mode: design from the project sheet the user filled, \
+<output>/<name>/hoja_de_proyecto.xlsx. Every value the user fixed is kept and checked (inverter, \
+strings, modules per string, fuse, breakers, conductor sizes, conduit); AUTO cells are decided \
+by the calculation; personal data the user filled in reaches the drawing and the report.
+
+If a cell cannot be used or a fixed value breaks a rule (a fuse below 1.56 x Isc, a conductor too \
+small), nothing is designed: the result lists each cell with its Spanish reason, and \
+hoja_de_proyecto_revisar.xlsx marks them in red. A model missing from the catalogue is listed in \
+missing_components. Otherwise the result is the same as design_and_draw, written into the same \
+folder (the sheet's "Ultimo calculo" column is refreshed). 5 to 20 s."""
+
+ADD_COMPONENT_DESCRIPTION = f"""\
+Add equipment the catalogue lacks (module, inverter, fuse, breaker, switch, cable) to the user's \
+local catalogue, from its datasheet. Steps: copy the user's PDF into the datasheets_folder given \
+by resource {RECORD_EXAMPLES_URI}; read the PDF; write the record in the format of the example of \
+its component_type (every value as printed, never guessed); show the values to the user and ask \
+them to confirm; then call this tool with user_confirmed=true.
+
+The tool validates the record like the bundled ones (missing or implausible values are listed so \
+you can fix them), adds the PDF's SHA-256 and the user as reviewer, and writes it into the local \
+catalogue. From then on every tool sees the new component ids (list_components marks them local) \
+and the project sheet offers them in its lists."""
+
+LIST_COMPONENTS_DESCRIPTION = """\
+List the components of the catalogue (datasheet records the owner has reviewed): PV modules, \
+string and hybrid inverters, DC breakers. Read-only, instant.
+
+Filter by component_type and/or manufacturer (any case). Each row has the component_id to use in \
+size_pv_system or get_component and its main rating. Only use listed components; when the user \
+names one that is missing, ask for its datasheet instead of inventing values."""
+
+GET_COMPONENT_DESCRIPTION = """\
+Return every datasheet value of one catalogue component (units in the field names) and its \
+provenance: datasheet file, SHA-256, pages, extraction method and reviewer. Read-only, instant. \
+An unknown id is a tool error that suggests the closest ids."""
+
+SIZE_DESCRIPTION = """\
+Size a grid-tied PV system from the catalogue: enumerate the string configurations of the module \
+on each inverter, reject every configuration that breaks a rule (VOLT-001/002/003, \
+STR-001/002/004/007), rank the rest by deliverable DC power against the target, and size the \
+string OCPD, the inverter-output breaker and the copper conductors with voltage drop. Read-only, \
+deterministic, about a second.
+
+Give module, inverters (ids or "auto" for every catalogue inverter), a target \
+(target_dc_power_w, or module_count_min/max) and template: the non-sizing sections of the spec \
+(project with site, utility, ac_bos with panels, main_breakers, meters and point_of_connection, \
+grounding, storage, title_block, layout). See the resource pvsld://examples/sizing-template. \
+The engine fills modules, inverters, strings, circuits, dc_bos and the PV breaker.
+
+Returns the selected candidate, its complete spec (pass it unchanged to validate_pv_design and \
+generate_single_line_diagram), up to five alternatives, the rejected configurations grouped by \
+rule with a Spanish reason, and the assumptions. No candidate is a normal result, not an error: \
+explain the reasons and propose changes."""
 
 
 def _json(data: Any) -> str:
@@ -288,14 +414,23 @@ def render_drawing(
 
 
 def create_server(
-    sandbox: OutputSandbox | None = None, *, max_preview_bytes: int | None = None
+    sandbox: OutputSandbox | None = None,
+    *,
+    max_preview_bytes: int | None = None,
+    catalogue_dir: Path | None = None,
+    local_catalogue: Path | None = None,
 ) -> MCPServer:
     """Build the server.
 
     ``sandbox`` defaults to ``$PVSLD_OUTPUT_DIR`` or ``./out``; ``max_preview_bytes`` (the size of
-    the PNG attached to a result) to ``$PVSLD_PREVIEW_MAX_BYTES`` or 62 000.
+    the PNG attached to a result) to ``$PVSLD_PREVIEW_MAX_BYTES`` or 62 000; ``catalogue_dir`` (the
+    component records) to ``$PVSLD_CATALOGUE_DIR`` or ``datasheets/records`` of the repository;
+    ``local_catalogue`` (the user's own records, Stage 3.6.3) to ``$PVSLD_LOCAL_CATALOGUE_DIR`` or
+    the per-user data folder.
     """
     box = sandbox if sandbox is not None else OutputSandbox.from_environment()
+    catalogue = catalogue_dir if catalogue_dir is not None else catalogue_dir_from_environment()
+    local = local_catalogue if local_catalogue is not None else local_catalogue_dir()
     preview_limit = (
         max_preview_bytes if max_preview_bytes is not None else preview_limit_from_environment()
     )
@@ -377,6 +512,428 @@ def create_server(
             structured_content=output.model_dump(mode="json", exclude_none=True),
             is_error=not output.ok,
         )
+
+    def load_registry(include_unreviewed: bool) -> ComponentRegistry:
+        """The bundled catalogue merged with the user's local one (read on every call)."""
+        try:
+            registry = load_catalogue(catalogue, local=local, include_unreviewed=include_unreviewed)
+        except CatalogueError as error:
+            raise ToolError(
+                "the component catalogue is invalid: " + "; ".join(error.problems[:5])
+            ) from error
+        for problem in registry.local_problems:
+            log.warning("local catalogue: %s", problem)
+        return registry
+
+    unreviewed_field = Field(
+        description="Also use records the owner has not reviewed yet (development only; never "
+        "for a design that gets issued)."
+    )
+
+    @server.tool(
+        title="List catalogue components",
+        description=LIST_COMPONENTS_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="List catalogue components",
+            read_only_hint=True,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def list_components(
+        component_type: Annotated[
+            Literal[
+                "pv_module",
+                "string_inverter",
+                "hybrid_inverter",
+                "dc_breaker",
+                "dc_fuse",
+                "ac_breaker",
+                "dc_switch",
+                "conductor",
+            ]
+            | None,
+            Field(description="Only this type. Default: every type."),
+        ] = None,
+        manufacturer: Annotated[
+            str | None,
+            Field(description="Only this manufacturer; any case, a part of the name is enough."),
+        ] = None,
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, ComponentListOutput]:
+        started = time.perf_counter()
+        output = component_list_output(
+            load_registry(include_unreviewed), component_type, manufacturer
+        )
+        _log_call("list_components", started, count=output.count)
+        lines = [
+            f"{c.component_id}  {c.component_type}  {c.manufacturer}  {c.rating}"
+            + ("  LOCAL" if c.local else "" if c.reviewed else "  UNREVIEWED")
+            for c in output.components
+        ]
+        lines.append(f"{output.count} component(s)")
+        return CallToolResult(
+            content=[_text("\n".join(lines))],
+            structured_content=output.model_dump(mode="json"),
+        )
+
+    @server.tool(
+        title="Get catalogue component",
+        description=GET_COMPONENT_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Get catalogue component",
+            read_only_hint=True,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def get_component(
+        component_id: Annotated[str, Field(description="Id from list_components.")],
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, ComponentOutput]:
+        started = time.perf_counter()
+        try:
+            output = component_output(load_registry(include_unreviewed), component_id)
+        except UnknownComponentError as error:
+            raise ToolError(str(error)) from error
+        _log_call("get_component", started, component_id=output.component_id)
+        return CallToolResult(
+            content=[_text(_json(output.model_dump(mode="json")))],
+            structured_content=output.model_dump(mode="json"),
+        )
+
+    @server.tool(
+        name="size_pv_system",
+        title="Size PV system",
+        description=SIZE_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Size PV system",
+            read_only_hint=True,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def size_pv_system_tool(
+        module: Annotated[str, Field(description="component_id of the PV module.")],
+        template: Annotated[
+            dict[str, Any],
+            Field(
+                description="Non-sizing sections of the spec: "
+                + ", ".join(REQUIRED_TEMPLATE_KEYS)
+                + f". Example: resource {SIZING_TEMPLATE_URI}."
+            ),
+        ],
+        inverters: Annotated[
+            list[str] | Literal["auto"],
+            Field(description='Inverter component_ids to evaluate, or "auto" for all.'),
+        ] = "auto",
+        target_dc_power_w: Annotated[
+            float | None, Field(description="DC power to approach, in W (STC).", gt=0)
+        ] = None,
+        module_count_min: Annotated[
+            int | None, Field(description="Total modules, lower bound.", gt=0)
+        ] = None,
+        module_count_max: Annotated[
+            int | None, Field(description="Total modules, upper bound.", gt=0)
+        ] = None,
+        routing: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Data no catalogue provides: dc_string_length_m, "
+                "ac_output_length_m, rooftop_clearance_mm, tilt_deg, azimuth_deg."
+            ),
+        ] = None,
+        dc_ocpd: Annotated[
+            Literal["auto", "always"],
+            Field(
+                description="always (default): one protection per string in the DC protection "
+                "box; auto: only where NOM 690-9(a) needs one."
+            ),
+        ] = "always",
+        dc_ocpd_device: Annotated[
+            Literal["fuse", "breaker"],
+            Field(
+                description="fuse (default): a gPV fuse-disconnector per string, or a DC "
+                "breaker when no catalogue fuse fits the module; breaker: a DC breaker."
+            ),
+        ] = "fuse",
+        layout_template: Annotated[
+            Literal["a3_plantilla_v1", "bt_string_residential_v1"],
+            Field(description="Sheet of the drawing (default the owner's A3 template)."),
+        ] = "a3_plantilla_v1",
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, SizingOutput]:
+        started = time.perf_counter()
+        _ensure_spec_size(template)
+        values: dict[str, Any] = {
+            "template": template,
+            "module": module,
+            "inverters": inverters,
+            "dc_ocpd": dc_ocpd,
+            "dc_ocpd_device": dc_ocpd_device,
+            "layout_template": layout_template,
+        }
+        optional = {
+            "target_dc_power_w": target_dc_power_w,
+            "module_count_min": module_count_min,
+            "module_count_max": module_count_max,
+            "routing": routing,
+        }
+        values.update({key: value for key, value in optional.items() if value is not None})
+        try:
+            request = request_from_mapping(values)
+            result = size_pv_system(request, load_registry(include_unreviewed))
+        except SizingInputError as error:
+            raise ToolError(f"invalid sizing request: {error}") from error
+        output = sizing_output(result)
+        _log_call("size_pv_system", started, ok=output.ok, candidates=len(result.candidates))
+        return CallToolResult(
+            content=[_text(sizing_text(output))],
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        name="design_and_draw",
+        title="Design and draw PV system",
+        description=DESIGN_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Design and draw PV system",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def design_and_draw_tool(
+        module: Annotated[str, Field(description="component_id of the PV module.")],
+        module_count_min: Annotated[
+            int | None,
+            Field(description="Total modules, lower bound (= max for an exact count).", gt=0),
+        ] = None,
+        module_count_max: Annotated[
+            int | None, Field(description="Total modules, upper bound.", gt=0)
+        ] = None,
+        target_dc_power_w: Annotated[
+            float | None, Field(description="DC power to approach, in W (STC).", gt=0)
+        ] = None,
+        inverters: Annotated[
+            list[str] | Literal["auto"],
+            Field(description='Inverter component_ids to choose from, or "auto" for all.'),
+        ] = "auto",
+        dc_ocpd_device: Annotated[
+            Literal["fuse", "breaker"],
+            Field(description="String protection: gPV fuse-disconnector (default) or DC breaker."),
+        ] = "fuse",
+        routing: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Run lengths when the user gave them: dc_string_length_m (default "
+                "25), ac_output_length_m (default 30)."
+            ),
+        ] = None,
+        template: Annotated[
+            dict[str, Any] | None,
+            Field(
+                description="Non-sizing sections of the spec, only when the user gave service or "
+                f"site data (see resource {SIZING_TEMPLATE_URI}). Default: the quick defaults."
+            ),
+        ] = None,
+        name: Annotated[
+            str | None,
+            Field(description=f"Project folder name; {NAME_RULE}. Default: sfv_<kWp>kWp."),
+        ] = None,
+        overwrite: Annotated[bool, Field(description=OVERWRITE_DESCRIPTION)] = False,
+        use_autocad: Annotated[
+            Literal["auto", "never"],
+            Field(
+                description="auto (default): use AutoCAD when installed; never: DXF + pvsld PDF."
+            ),
+        ] = "auto",
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        values: dict[str, Any] = {
+            "module": module,
+            "inverters": inverters,
+            "dc_ocpd_device": dc_ocpd_device,
+        }
+        optional = {
+            "module_count_min": module_count_min,
+            "module_count_max": module_count_max,
+            "target_dc_power_w": target_dc_power_w,
+            "routing": routing,
+            "template": template,
+        }
+        values.update({key: value for key, value in optional.items() if value is not None})
+        _ensure_spec_size(values)
+        registry = load_registry(include_unreviewed)
+        with generation_lock:
+            output, image = run_design(
+                box,
+                registry,
+                values,
+                name=name,
+                overwrite=overwrite,
+                use_autocad=use_autocad,
+                max_preview_bytes=preview_limit,
+            )
+        _log_call("design_and_draw", started, ok=output.ok, files=len(output.files))
+        content: list[TextContent | ImageContent] = [_text(design_text(output))]
+        if image is not None:
+            content.append(image)
+        return CallToolResult(
+            content=content,
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        name="add_component_to_catalogue",
+        title="Add component to local catalogue",
+        description=ADD_COMPONENT_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Add component to local catalogue",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def add_component_to_catalogue_tool(
+        record: Annotated[
+            dict[str, Any],
+            Field(
+                description="The record as read from the datasheet, in the format of the "
+                f"examples of resource {RECORD_EXAMPLES_URI}."
+            ),
+        ],
+        datasheet: Annotated[
+            str,
+            Field(description="File name of the PDF in the local catalogue's datasheets folder."),
+        ],
+        user_confirmed: Annotated[
+            bool,
+            Field(description="True only after the user confirmed the values you showed them."),
+        ],
+        overwrite: Annotated[
+            bool, Field(description="Replace a local record with the same ids (user asked).")
+        ] = False,
+    ) -> Annotated[CallToolResult, AddComponentOutput]:
+        started = time.perf_counter()
+        _ensure_spec_size(record)
+        output = run_add_component(
+            load_registry(include_unreviewed=False),
+            local,
+            record=record,
+            datasheet=datasheet,
+            user_confirmed=user_confirmed,
+            overwrite=overwrite,
+        )
+        _log_call("add_component_to_catalogue", started, components=len(output.component_ids))
+        lines = [output.summary, *(f"id: {i}" for i in output.component_ids), output.next_step]
+        return CallToolResult(
+            content=[_text("\n".join(lines))],
+            structured_content=output.model_dump(mode="json"),
+        )
+
+    @server.resource(
+        RECORD_EXAMPLES_URI,
+        name="catalogue-record-examples",
+        title="Catalogue record examples",
+        description=(
+            "One reviewed record per component type, as written in the catalogue, the local "
+            "catalogue folders and how to add equipment from a datasheet."
+        ),
+        mime_type="application/json",
+    )
+    def record_examples_resource() -> str:
+        return json.dumps(record_examples(catalogue, local), ensure_ascii=False)
+
+    project_name = Field(description=f"Project folder name; {NAME_RULE}.")
+
+    @server.tool(
+        name="new_project_sheet",
+        title="New project sheet",
+        description=NEW_SHEET_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="New project sheet",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=True,
+            open_world_hint=False,
+        ),
+    )
+    def new_project_sheet_tool(
+        name: Annotated[str, project_name],
+        overwrite: Annotated[bool, Field(description=OVERWRITE_DESCRIPTION)] = False,
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        output = run_new_sheet(
+            box, load_registry(include_unreviewed), name=name, overwrite=overwrite
+        )
+        _log_call("new_project_sheet", started, ok=output.ok)
+        return CallToolResult(
+            content=[_text(design_text(output))],
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.tool(
+        name="design_from_project_sheet",
+        title="Design from project sheet",
+        description=PRO_DESCRIPTION,
+        annotations=ToolAnnotations(
+            title="Design from project sheet",
+            read_only_hint=False,
+            destructive_hint=False,
+            idempotent_hint=False,
+            open_world_hint=False,
+        ),
+    )
+    def design_from_project_sheet_tool(
+        name: Annotated[str, project_name],
+        use_autocad: Annotated[
+            Literal["auto", "never"],
+            Field(
+                description="auto (default): use AutoCAD when installed; never: DXF + pvsld PDF."
+            ),
+        ] = "auto",
+        include_unreviewed: Annotated[bool, unreviewed_field] = False,
+    ) -> Annotated[CallToolResult, DesignOutput]:
+        started = time.perf_counter()
+        registry = load_registry(include_unreviewed)
+        with generation_lock:
+            output, image = run_pro_design(
+                box,
+                registry,
+                name=name,
+                use_autocad=use_autocad,
+                max_preview_bytes=preview_limit,
+            )
+        _log_call("design_from_project_sheet", started, ok=output.ok, issues=len(output.issues))
+        content: list[TextContent | ImageContent] = [_text(design_text(output))]
+        if image is not None:
+            content.append(image)
+        return CallToolResult(
+            content=content,
+            structured_content=output.model_dump(mode="json", exclude_none=True),
+        )
+
+    @server.resource(
+        SIZING_TEMPLATE_URI,
+        name="sizing-template-example",
+        title="Example of the non-sizing sections",
+        description=(
+            "The sections size_pv_system needs besides the equipment (project and site, utility, "
+            "ac_bos, grounding, storage, title_block, layout), taken from the 7.70 kWp sample. "
+            "Replace every value with the user's data; never send these sample values."
+        ),
+        mime_type="application/json",
+    )
+    def sizing_template_resource() -> str:
+        sample = yaml.safe_load(_EXAMPLE_SPEC.read_text(encoding="utf-8"))
+        sections = {key: sample[key] for key in REQUIRED_TEMPLATE_KEYS}
+        sections["layout"] = {**sections["layout"], "template": "a3_plantilla_v1"}
+        return json.dumps(sections, ensure_ascii=False, default=str)
 
     @server.resource(
         SCHEMA_URI,

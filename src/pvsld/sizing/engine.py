@@ -20,7 +20,15 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from pvsld.catalogue import ComponentRegistry, DcBreaker, UnknownComponentError
+from pvsld.catalogue import (
+    AcBreaker,
+    Cable,
+    ComponentRegistry,
+    DcBreaker,
+    DcFuse,
+    DcSwitch,
+    UnknownComponentError,
+)
 from pvsld.catalogue import Inverter as CatalogueInverter
 from pvsld.catalogue import PVModule as CatalogueModule
 from pvsld.core import calc
@@ -33,30 +41,47 @@ from pvsld.sizing.models import (
     SUPPORTED_SYSTEMS,
     BosSpec,
     Candidate,
+    DcOcpdChoice,
+    DeviceChoice,
     Issue,
     Rejection,
     SizingInputError,
     SizingRequest,
     SizingResult,
     StringConfig,
+    StringMetrics,
 )
 from pvsld.sizing.strings import EvalContext, Evaluation, enumerate_configs, evaluate_config
 
 OBJECTIVE = (
     "Closest deliverable DC power to the target (array STC power minus the estimated current "
-    "clipping); ties: fewer warnings, lower cold string voltage relative to the inverter limit, "
-    "fewer strings, inverter id. With no target the largest deliverable power wins."
+    "clipping; with no target the largest wins); then a DC/AC ratio inside 1.10-1.25 or the "
+    "closest to it (owner decision 2026-10-09), less clipping, fewer warnings, the smaller "
+    "inverter, lower cold string voltage relative to the inverter limit, fewer strings, "
+    "inverter id."
 )
+DC_AC_PREFERRED = (1.10, 1.25)
+"""DC/AC ratio the ranking prefers (owner decision 2026-10-09): enough DC to use the inverter,
+little clipping."""
 AC_BREAKER_VOLTAGE_V = 240.0
 """Rated voltage class of the inverter-output breaker (120/240 V class devices)."""
 DC_SWITCH_ASSUMPTION = (
     "DCD-1 (desconectador integrado): tensión e intensidad tomadas de los límites de entrada del "
     "inversor; el catálogo no registra la capacidad del interruptor integrado."
 )
+STRING_BREAKER_PREFIX = "DCB-"
+"""Id prefix of a string breaker of the DC protection box (the layout draws ``PVSLD_CB_DC``)."""
+STRING_FUSE_PREFIX = "FUS-"
+"""Id prefix of a string fuse-disconnector (gPV) of the box (``PVSLD_FUSE_DISC_DC``)."""
+BOX_SWITCH_ID = "DCD-CD1"
+"""The disconnect of the DC protection box, after the string breakers and the DC SPD."""
+BOX_SWITCH_ASSUMPTION = (
+    f"{BOX_SWITCH_ID} (seccionador de la caja de protecciones CD): el seccionador FV del catálogo "
+    "con dos polos por cadena; sin uno adecuado, tensión y corriente de la protección de cadena."
+)
 ITM_ASSUMPTION = (
-    "kAIC del interruptor de salida: se toma la corriente de falla disponible del servicio como "
-    "mínimo requerido; elija un interruptor comercial con al menos ese valor (catálogo de CA: "
-    "Etapa 3.4b)."
+    "ITM-1 e ITM-P: interruptores de CA del catálogo con su capacidad interruptiva; sin uno "
+    "adecuado, el kAIC se iguala a la corriente de falla disponible del servicio."
 )
 OPTIMIZER_ASSUMPTION = (
     "Optimizadores en todos los módulos: solo se usa el límite de potencia FV con optimizadores; "
@@ -109,9 +134,15 @@ def _target_w(request: SizingRequest, module: CatalogueModule) -> float | None:
     return None
 
 
+def dc_ac_gap(ratio: float) -> float:
+    """How far ``ratio`` is from the preferred DC/AC band (0 inside it)."""
+    low, high = DC_AC_PREFERRED
+    return max(low - ratio, ratio - high, 0.0)
+
+
 def _rank_key(
     evaluation: Evaluation, inverter: CatalogueInverter, target_w: float | None
-) -> tuple[float, int, float, int, str]:
+) -> tuple[float, float, float, int, float, float, int, str]:
     metrics = evaluation.metrics
     distance = (
         abs(metrics.deliverable_dc_w - target_w)
@@ -120,11 +151,48 @@ def _rank_key(
     )
     return (
         round(distance, 3),
+        round(dc_ac_gap(metrics.dc_ac_ratio), 4),
+        round(metrics.clipping_pct, 3),
         len(evaluation.warnings),
+        inverter.rated_ac_power_w,
         round(metrics.voc_cold_string_v / inverter.max_input_voltage_v, 6),
         evaluation.config.n_strings,
         inverter.component_id,
     )
+
+
+def explain_choice(candidate_metrics: StringMetrics, inverter: CatalogueInverter) -> str:
+    """One or two plain Spanish sentences on why this inverter: its DC/AC ratio against the
+    preferred band and, when it is outside, why no other inverter in the catalogue did better."""
+    ratio = candidate_metrics.dc_ac_ratio
+    kwp = candidate_metrics.p_dc_w / 1000
+    kw = inverter.rated_ac_power_w / 1000
+    low, high = DC_AC_PREFERRED
+    name = f"{inverter.manufacturer} {inverter.component_id.split('-', 1)[-1]}"
+    head = (
+        f"Se eligió el inversor {name} ({kw:g} kW): con {kwp:.2f} kWp de módulos la relación "
+        f"CD/CA es {ratio:.2f}"
+    )
+    if dc_ac_gap(ratio) == 0:
+        return f"{head}, dentro del rango recomendado de {low:.2f} a {high:.2f}."
+    if ratio < low:
+        why = (
+            f"Ningún inversor del catálogo queda en el rango recomendado de {low:.2f} a "
+            f"{high:.2f} con esta cantidad de módulos: este es el más cercano y uno más grande "
+            "quedaría aún más sobrado"
+        )
+    else:
+        why = (
+            f"Ningún inversor del catálogo queda en el rango recomendado de {low:.2f} a "
+            f"{high:.2f} con esta cantidad de módulos: este es el más cercano y uno más chico "
+            "recortaría más potencia"
+        )
+    clip = (
+        f" Se estima un recorte de {candidate_metrics.clipping_pct:.1f} % en horas pico."
+        if candidate_metrics.clipping_pct > 0
+        else ""
+    )
+    return f"{head}. {why}.{clip}"
 
 
 # --- BOS and specification ------------------------------------------------------------------
@@ -139,6 +207,11 @@ def _size_bos(
     standards: Standards,
     tables: NomTables,
     breakers: Sequence[DcBreaker],
+    fuses: Sequence[DcFuse] = (),
+    cables: Sequence[Cable] = (),
+    ac_breakers: Sequence[AcBreaker] = (),
+    dc_switches: Sequence[DcSwitch] = (),
+    main_breakers: Sequence[AcBreaker] = (),
 ) -> tuple[BosSpec | None, list[Issue]]:
     metrics, config = evaluation.metrics, evaluation.config
     site, routing = request.site, request.routing
@@ -151,16 +224,27 @@ def _size_bos(
     if request.dc_ocpd == "always" and not needed:
         needed = True
         reason = "Una protección por rama por decisión de diseño (dc_ocpd: always)."
-    dc_ocpd = bos.select_string_breaker(
-        module=module,
-        isc_a=metrics.isc_design_a,
-        strings_per_input=metrics.strings_per_mppt,
-        voc_cold_string_v=metrics.voc_cold_string_v,
-        breakers=breakers,
-        required=needed,
-        reason_es=reason,
-    )
-    if dc_ocpd.required and dc_ocpd.breaker_id is None:
+    window = {
+        "module": module,
+        "isc_a": metrics.isc_design_a,
+        "strings_per_input": metrics.strings_per_mppt,
+        "voc_cold_string_v": metrics.voc_cold_string_v,
+        "required": needed,
+    }
+    dc_ocpd = None
+    if request.dc_ocpd_device == "fuse":
+        dc_ocpd = bos.select_string_fuse(**window, fuses=fuses, reason_es=reason)
+        if dc_ocpd.required and dc_ocpd.device_id is None:
+            if not request.dc_fuse_fallback:  # the user fixed the fuse: report, do not swap
+                return None, [
+                    Issue("OCP-002", Severity.ERROR, dc_ocpd.reason_es, subject=config.label)
+                ]
+            # No catalogue fuse fits this module: the box keeps a breaker, and says why.
+            reason = f"{dc_ocpd.reason_es} Se usa un ITM de CD."
+            dc_ocpd = None
+    if dc_ocpd is None:
+        dc_ocpd = bos.select_string_breaker(**window, breakers=breakers, reason_es=reason)
+    if dc_ocpd.required and dc_ocpd.device_id is None:
         return None, [Issue("OCP-002", Severity.ERROR, dc_ocpd.reason_es, subject=config.label)]
 
     ac_ocpd = bos.ac_ocpd_rating_a(inverter.max_ac_output_current_a, tables)
@@ -185,6 +269,7 @@ def _size_bos(
         drop_limit_pct=standards.vd_limits_pct.dc,
         drop_rule="VD-001",
         tables=tables,
+        given_size=request.dc_conductor_size,
     )
     ac_choice, ac_issues = bos.size_conductor(
         circuit_id="C-INV",
@@ -201,19 +286,119 @@ def _size_bos(
         drop_limit_pct=standards.vd_limits_pct.ac,
         drop_rule="VD-002",
         tables=tables,
+        given_size=request.ac_conductor_size,
     )
     issues += dc_issues + ac_issues
     if dc_choice is None or ac_choice is None:
         return None, issues
+    cable = bos.pv_cable(dc_choice.size, cables)
+    dc_raceway, dc_raceway_issues = bos.size_raceway(
+        circuit_id="C-S",
+        conductors=2 * config.n_strings,
+        conductor_area_mm2=calc.conductor_area_mm2(cable.outer_diameter_mm) if cable else None,
+        egc_size=dc_choice.size,
+        given_trade_size_mm=routing.dc_raceway_trade_size_mm,
+        insulation=_pv_insulation(cable),
+        tables=tables,
+        cable=cable,
+    )
+    thhw = calc.insulated_area_mm2(ac_choice.size, bos.AC_INSULATION, None, tables)
+    ac_raceway, ac_raceway_issues = bos.size_raceway(
+        circuit_id="C-INV",
+        conductors=phases + 1,  # the phases and the neutral
+        conductor_area_mm2=thhw,
+        egc_size=ac_choice.size,
+        given_trade_size_mm=routing.ac_raceway_trade_size_mm,
+        insulation=bos.AC_INSULATION,
+        tables=tables,
+    )
+    raceway_issues = dc_raceway_issues + ac_raceway_issues
+    issues += raceway_issues
+    if any(i.severity == Severity.ERROR for i in raceway_issues):
+        return None, issues
+    devices, device_issues = _catalogue_devices(
+        request,
+        dc_ocpd,
+        ac_ocpd,
+        phases,
+        string_i_max,
+        metrics,
+        config,
+        ac_breakers,
+        dc_switches,
+        main_breakers,
+    )
+    issues += device_issues
     return (
         BosSpec(
             dc_ocpd=dc_ocpd,
             ac_ocpd_a=ac_ocpd,
             conductors=(dc_choice, ac_choice),
             todo=bos.TODO_STAGE_3_4B,
+            raceways=(dc_raceway, ac_raceway),
+            devices=devices,
         ),
         issues,
     )
+
+
+def _catalogue_devices(
+    request: SizingRequest,
+    dc_ocpd: DcOcpdChoice,
+    ac_ocpd_a: float,
+    phases: int,
+    string_i_max_a: float,
+    metrics: StringMetrics,
+    config: StringConfig,
+    ac_breakers: Sequence[AcBreaker],
+    dc_switches: Sequence[DcSwitch],
+    main_breakers: Sequence[AcBreaker],
+) -> tuple[tuple[DeviceChoice, ...], list[Issue]]:
+    """ITM-1, ITM-P and the box disconnect from the catalogue (Stage 3.4b, owner 2026-10-09)."""
+    ac_bos = request.template["ac_bos"]
+    fault_ka = request.utility.available_fault_current_ka
+    devices: list[DeviceChoice] = []
+    issues: list[Issue] = []
+    itm, found = bos.select_ac_breaker(
+        position=ac_bos["point_of_connection"]["breaker"],
+        rating_a=ac_ocpd_a,
+        poles=phases,
+        voltage_v=AC_BREAKER_VOLTAGE_V,
+        fault_ka=fault_ka,
+        breakers=ac_breakers,
+    )
+    issues += found
+    devices += [itm] if itm else []
+    for main in ac_bos.get("main_breakers", []):
+        choice, found = bos.select_ac_breaker(
+            position=main["id"],
+            rating_a=main["rating_a"],
+            poles=main["poles"],
+            voltage_v=AC_BREAKER_VOLTAGE_V,
+            fault_ka=fault_ka,
+            breakers=main_breakers,
+            exact=True,  # the service's main keeps its rating; the catalogue gives the device
+        )
+        issues += found
+        devices += [choice] if choice else []
+    if dc_ocpd.device_id is not None:
+        switch, found = bos.select_box_switch(
+            position=BOX_SWITCH_ID,
+            n_strings=config.n_strings,
+            voc_cold_string_v=metrics.voc_cold_string_v,
+            string_i_max_a=string_i_max_a,
+            switches=dc_switches,
+        )
+        issues += found
+        devices += [switch] if switch else []
+    return tuple(devices), issues
+
+
+def _pv_insulation(cable: Cable | None) -> str:
+    """The insulation text of the string conductors: the catalogue cable, or generic PV."""
+    if cable is None:
+        return "PV"
+    return f"PV {cable.rated_voltage_v / 1000:g} kV"
 
 
 def _ac_current_carrying(phases: int) -> int:
@@ -264,6 +449,7 @@ def _build_spec(
         ocpd_max_a=bos_spec.ac_ocpd_a,
     )
     dc_conductor, ac_conductor = bos_spec.conductors
+    dc_raceway, ac_raceway = bos_spec.raceways
     mppt_names = adapters.mppt_ids(inverter)
 
     spec = copy.deepcopy(request.template)
@@ -306,17 +492,37 @@ def _build_spec(
             }
         )
     dc_ocpd = bos_spec.dc_ocpd
-    if dc_ocpd.breaker_id is not None and dc_ocpd.rating_a is not None:
+    if dc_ocpd.device_id is not None and dc_ocpd.rating_a is not None:
+        prefix = STRING_FUSE_PREFIX if dc_ocpd.device == "fuse" else STRING_BREAKER_PREFIX
         disconnects += [
             {
-                "id": f"DCB-S{index + 1}",
+                "id": f"{prefix}S{index + 1}",
                 "integrated_in": None,
                 "poles": dc_ocpd.poles,
                 "ue_v": dc_ocpd.ue_v,
                 "ie_a": dc_ocpd.rating_a,
+                "model": dc_ocpd.device_id,
             }
             for index in range(config.n_strings)
         ]
+        # The box opens every string ahead of the inverter (owner's reference box, 2026-10-08).
+        disconnects.append(
+            {
+                "id": BOX_SWITCH_ID,
+                "integrated_in": None,
+                "poles": dc_ocpd.poles * config.n_strings,
+                **(
+                    {
+                        "poles": switch.poles or dc_ocpd.poles * config.n_strings,
+                        "ue_v": switch.voltage_v,
+                        "ie_a": switch.rating_a,
+                        "model": switch.device_id,
+                    }
+                    if (switch := bos_spec.device(BOX_SWITCH_ID)) is not None
+                    else {"ue_v": dc_ocpd.ue_v, "ie_a": dc_ocpd.rating_a}
+                ),
+            }
+        )
     dc_bos = spec.get("dc_bos") or {}
     spec["dc_bos"] = {"combiners": [], "spds": dc_bos.get("spds", []), "disconnects": disconnects}
 
@@ -334,6 +540,12 @@ def _build_spec(
         "backfed": True,
         "at": ac_bos["point_of_connection"]["panel"],
     }
+    chosen = bos_spec.device(itm_id)
+    if chosen is not None:
+        itm.update(rating_a=chosen.rating_a, kaic_ka=chosen.interrupting_ka, model=chosen.device_id)
+    for main in ac_bos.get("main_breakers", []):
+        if (chosen := bos_spec.device(main["id"])) is not None:
+            main.update(kaic_ka=chosen.interrupting_ka, model=chosen.device_id)
     ac_bos["ocpds"] = [o for o in ac_bos.get("ocpds", []) if o["id"] != itm_id] + [itm]
 
     dc_ambient = (
@@ -353,13 +565,18 @@ def _build_spec(
                 "qty": 2,
                 "size": dc_conductor.size,
                 "material": "Cu",
-                "insulation": "PV / THW-2",
+                "insulation": dc_raceway.insulation,
+                **(
+                    {"outer_diameter_mm": dc_raceway.outer_diameter_mm}
+                    if dc_raceway.outer_diameter_mm is not None
+                    else {}
+                ),
             },
-            "egc": {"size": dc_conductor.size, "type": "desnudo"},
+            "egc": {"size": dc_conductor.size, "type": bos.EGC_TYPE},
             "raceway": (
                 {
-                    "type": "PVC",
-                    "trade_size_mm": routing.dc_raceway_trade_size_mm,
+                    "type": dc_raceway.type,
+                    "trade_size_mm": dc_raceway.trade_size_mm,
                     "rooftop_clearance_mm": routing.rooftop_clearance_mm,
                     "ccc_count": 2 * config.n_strings,
                 }
@@ -380,13 +597,13 @@ def _build_spec(
                 "qty": phases,
                 "size": ac_conductor.size,
                 "material": "Cu",
-                "insulation": "THW-2",
+                "insulation": ac_raceway.insulation,
             },
             "neutral": {"size": ac_conductor.size},
-            "egc": {"size": ac_conductor.size, "type": "desnudo"},
+            "egc": {"size": ac_conductor.size, "type": bos.EGC_TYPE},
             "raceway": {
-                "type": "PVC",
-                "trade_size_mm": routing.ac_raceway_trade_size_mm,
+                "type": ac_raceway.type,
+                "trade_size_mm": ac_raceway.trade_size_mm,
                 "ccc_count": _ac_current_carrying(phases),
             },
             "length_m": routing.ac_output_length_m,
@@ -434,6 +651,33 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
         if request.dc_breakers == "auto"
         else [_lookup(registry, name, DcBreaker, "dc_breaker") for name in request.dc_breakers]
     )
+    ac_breakers: list[AcBreaker] = (
+        registry.ac_breakers()
+        if request.ac_breakers == "auto"
+        else [_lookup(registry, name, AcBreaker, "ac_breaker") for name in request.ac_breakers]
+    )
+    main_breakers: list[AcBreaker] = (
+        [_lookup(registry, request.main_breaker, AcBreaker, "ac_breaker")]
+        if request.main_breaker is not None
+        else registry.ac_breakers()
+    )
+    dc_switches: list[DcSwitch] = (
+        registry.dc_switches()
+        if request.dc_switches == "auto"
+        else [_lookup(registry, name, DcSwitch, "dc_switch") for name in request.dc_switches]
+    )
+    cables: list[Cable] = [
+        c
+        for c in registry.cables()
+        if request.dc_cable == "auto" or c.family_id == request.dc_cable
+    ]
+    if request.dc_cable != "auto" and not cables:
+        raise SizingInputError(f"no cable family {request.dc_cable!r} in the catalogue")
+    fuses: list[DcFuse] = (
+        registry.dc_fuses()
+        if request.dc_fuses == "auto"
+        else [_lookup(registry, name, DcFuse, "dc_fuse") for name in request.dc_fuses]
+    )
 
     site = request.site
     standards = _standards(request.template)
@@ -464,6 +708,8 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             policy=request.dc_ac_policy,
             module_count_min=request.module_count_min,
             module_count_max=request.module_count_max,
+            n_strings=request.n_strings,
+            n_series=request.n_series,
         )
         for n_strings, n_series in enumerate_configs(ctx):
             evaluation = evaluate_config(ctx, n_strings, n_series)
@@ -487,6 +733,11 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
             standards=standards,
             tables=tables,
             breakers=breakers,
+            fuses=fuses,
+            cables=cables,
+            ac_breakers=ac_breakers,
+            dc_switches=dc_switches,
+            main_breakers=main_breakers,
         )
         if bos_spec is None:
             rejected.append(
@@ -529,10 +780,16 @@ def size_pv_system(request: SizingRequest, registry: ComponentRegistry) -> Sizin
                 bos=bos_spec,
                 findings=report.findings,
                 spec=spec,
+                explanation_es=explain_choice(evaluation.metrics, inverter),
             )
         )
 
-    assumptions = [*adapters.ASSUMPTIONS, ITM_ASSUMPTION, DC_SWITCH_ASSUMPTION]
+    assumptions = [
+        *adapters.ASSUMPTIONS,
+        ITM_ASSUMPTION,
+        DC_SWITCH_ASSUMPTION,
+        BOX_SWITCH_ASSUMPTION,
+    ]
     if request.optimizers_on_all_modules:
         assumptions.append(OPTIMIZER_ASSUMPTION)
     return SizingResult(

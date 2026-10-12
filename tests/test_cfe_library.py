@@ -69,7 +69,7 @@ def test_the_library_passes_audit_with_no_errors_and_no_fixes(document) -> None:
 def test_the_document_holds_exactly_the_defined_blocks(document) -> None:  # type: ignore[no-untyped-def]
     names = {b.name for b in document.blocks if b.name.startswith("PVSLD_")}
     assert names == set(SYMBOLS)
-    assert len(names) == 57
+    assert len(names) == 62
 
 
 @pytest.mark.parametrize("spec", LIBRARY, ids=lambda s: s.name)
@@ -493,3 +493,8 @@ def test_write_library_creates_parent_folders(tmp_path: Path, library_bytes: byt
     target = tmp_path / "a" / "b" / "lib.dxf"
     assert write_library(target) == library_bytes
     assert target.read_bytes() == library_bytes
+
+
+def test_the_library_opens_on_the_legend(document) -> None:  # type: ignore[no-untyped-def]
+    assert document.header["$TILEMODE"] == 0
+    assert document.layouts.active_layout().name == LEGEND_LAYOUT

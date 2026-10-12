@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pvsld"
-version = "0.4.0"
+version = "0.5.0"
 description = "Claude <-> MCP <-> AutoCAD generator of Mexican photovoltaic single-line diagrams."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -30,6 +30,8 @@ dependencies = [
     "pillow>=10,<13",  # imported directly to shrink the MCP preview PNG (pvsld.mcp.preview)
     "pydantic>=2.7,<3",
     "PyYAML>=6",
+    "openpyxl>=3.1,<4",  # calculation report and project sheet (Stage 3.6.1)
+    "reportlab>=4,<6",  # calculation report PDF (Stage 3.6.1)
 ]
 
 [project.optional-dependencies]
@@ -56,11 +58,23 @@ Changelog = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/blob/develop/CH
 [tool.hatch.build.targets.wheel]
 packages = ["src/pvsld"]
 
+# Data the code reads at run time travels inside the wheel under pvsld/_data, with the same
+# relative paths as in the repository (pvsld.resources.data_path), so the plugin's server, built by
+# uvx from a git tag, works without the repository (Stage 3.6.4).
+[tool.hatch.build.targets.wheel.force-include]
+"datasheets/records" = "pvsld/_data/datasheets/records"
+"symbols/pvsld-symbols.dxf" = "pvsld/_data/symbols/pvsld-symbols.dxf"
+"sheet_templates/a3_plantilla_v1.dxf" = "pvsld/_data/sheet_templates/a3_plantilla_v1.dxf"
+"examples/residential_7p7kwp.yaml" = "pvsld/_data/examples/residential_7p7kwp.yaml"
+
 [tool.hatch.build.targets.sdist]
 include = [
     "/src",
     "/tests",
     "/examples",
+    "/datasheets/records",
+    "/symbols/pvsld-symbols.dxf",
+    "/sheet_templates/a3_plantilla_v1.dxf",
     "/CHANGELOG.md",
     "/LICENSE",
     "/README.md",
@@ -88,6 +102,12 @@ select = [
 ]
 # Spanish drawing text uses the multiplication sign and Greek symbols (1.25 × Isc, γ Pmax).
 allowed-confusables = ["×", "γ"]
+
+[tool.ruff.lint.per-file-ignores]
+# The deliverables print Spanish engineering text for the user: typographic dashes and minus
+# signs are intended (RUF001), and the sentences of the instruction sheet are kept whole (E501).
+"src/pvsld/report/*.py" = ["RUF001", "E501"]
+"src/pvsld/design/*.py" = ["RUF001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["pvsld"]

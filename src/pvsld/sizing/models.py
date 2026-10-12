@@ -20,7 +20,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 from pvsld.core.calc import DELTA_T_CELL_C
-from pvsld.core.model import Site, Utility
+from pvsld.core.model import ConductorSize, Site, Utility
 from pvsld.core.policy import DEFAULT_DC_AC_POLICY, DcAcPolicy
 from pvsld.core.rules import Finding
 from pvsld.core.severity import Severity
@@ -55,8 +55,12 @@ class Routing(BaseModel):
     rooftop_clearance_mm: float = Field(
         default=25, ge=0, description="Sunlit DC raceway above the roof (Table 310-15(b)(3)(c))"
     )
-    dc_raceway_trade_size_mm: float = Field(default=21, gt=0)
-    ac_raceway_trade_size_mm: float = Field(default=21, gt=0)
+    dc_raceway_trade_size_mm: float | None = Field(
+        default=None, gt=0, description="EMT designation (mm); default: the smallest that fits"
+    )
+    ac_raceway_trade_size_mm: float | None = Field(
+        default=None, gt=0, description="EMT designation (mm); default: the smallest that fits"
+    )
     tilt_deg: float = Field(default=20, ge=0, le=90)
     azimuth_deg: float = Field(default=180, ge=0, le=360)
 
@@ -75,10 +79,54 @@ class SizingRequest(BaseModel):
     module_count_min: int | None = Field(default=None, gt=0, description="Total modules, lower")
     module_count_max: int | None = Field(default=None, gt=0, description="Total modules, upper")
     optimizers_on_all_modules: bool = False
+    n_strings: int | None = Field(
+        default=None, gt=0, description="Fix the number of strings (professional mode)"
+    )
+    n_series: int | None = Field(
+        default=None, gt=0, description="Fix the modules per string (professional mode)"
+    )
+    dc_conductor_size: ConductorSize | None = Field(
+        default=None, description="Fix the string conductor size; checked, not chosen"
+    )
+    ac_conductor_size: ConductorSize | None = Field(
+        default=None, description="Fix the inverter-output conductor size; checked, not chosen"
+    )
+    main_breaker: str | None = Field(
+        default=None,
+        description="Catalogue AC breaker id of the service main (ITM-P); default: the catalogue "
+        "device of its rating",
+    )
     dc_ocpd: Literal["auto", "always"] = Field(
+        default="always",
+        description="'always' (default, owner decision 2026-10-08): one protection per string in "
+        "the DC protection box; 'auto': only where NOM 690-9(a) needs one",
+    )
+    dc_ocpd_device: Literal["fuse", "breaker"] = Field(
+        default="fuse",
+        description="String protection of the box: 'fuse' (default, owner decision 2026-10-08), a "
+        "gPV fuse in a fuse-disconnector, falling back to a breaker when no catalogue fuse "
+        "qualifies; 'breaker': a DC breaker",
+    )
+    dc_cable: str | Literal["auto"] = Field(
         default="auto",
-        description="'auto': a string breaker only where NOM 690-9(a) needs one; 'always': one "
-        "per string by design choice",
+        description="Catalogue family id of the PV cable of the strings (its diameter fills the "
+        "raceway), or 'auto' for the first PV cable family",
+    )
+    ac_breakers: list[str] | Literal["auto"] = Field(
+        default="auto",
+        description="Catalogue AC breaker ids for ITM-1 and ITM-P, or 'auto' for all",
+    )
+    dc_switches: list[str] | Literal["auto"] = Field(
+        default="auto",
+        description="Catalogue PV switch-disconnector ids for the box disconnect, or 'auto'",
+    )
+    dc_fuses: list[str] | Literal["auto"] = Field(
+        default="auto", description="Catalogue gPV fuse ids to choose from, or 'auto' for all"
+    )
+    dc_fuse_fallback: bool = Field(
+        default=True,
+        description="When no listed gPV fuse fits, protect the strings with a DC breaker "
+        "(default); false: reject the configuration instead (the user fixed the fuse)",
     )
     dc_breakers: list[str] | Literal["auto"] = Field(
         default="auto", description="Catalogue DC breaker ids to choose from, or 'auto' for all"
@@ -228,11 +276,16 @@ class Rejection:
 
 @dataclass(frozen=True)
 class DcOcpdChoice:
-    """String overcurrent protection: needed or not, and the catalogue breaker chosen."""
+    """String overcurrent protection: needed or not, and the catalogue device chosen.
+
+    ``device`` says what ``device_id`` is: a DC breaker, or a gPV fuse in a fuse-disconnector (the
+    default of the DC protection box, owner decision 2026-10-08).
+    """
 
     required: bool
     reason_es: str
-    breaker_id: str | None = None
+    device_id: str | None = None
+    device: Literal["breaker", "fuse"] = "breaker"
     rating_a: float | None = None
     ue_v: float | None = None
     poles: int = 2
@@ -269,19 +322,63 @@ class ConductorChoice:
 
 
 @dataclass(frozen=True)
+class DeviceChoice:
+    """A catalogue device chosen for one position (ITM-1, ITM-P, DCD-CD1)."""
+
+    position: str
+    device_id: str
+    rating_a: float
+    voltage_v: float
+    interrupting_ka: float | None = None
+    note_es: str = ""
+    poles: int | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class RacewayChoice:
+    """The EMT raceway of one circuit type: what it holds and the designation chosen."""
+
+    circuit_id: str
+    type: str
+    trade_size_mm: float | None
+    trade_size_in: str | None
+    conductors: int
+    area_mm2: float | None
+    fill_pct: float | None
+    fill_limit_pct: float
+    insulation: str
+    cable_id: str | None = None
+    outer_diameter_mm: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {k: (round(v, 2) if isinstance(v, float) else v) for k, v in asdict(self).items()}
+
+
+@dataclass(frozen=True)
 class BosSpec:
-    """Balance of system of one candidate (v1: string OCPD, AC OCPD, conductors)."""
+    """Balance of system of one candidate: string OCPD, AC OCPD, conductors and raceways."""
 
     dc_ocpd: DcOcpdChoice
     ac_ocpd_a: float
     conductors: tuple[ConductorChoice, ...]
     todo: tuple[str, ...] = ()
+    raceways: tuple[RacewayChoice, ...] = ()
+    devices: tuple[DeviceChoice, ...] = ()
+    """Catalogue devices for ITM-1, ITM-P and the box disconnect (absent when none fits)."""
+
+    def device(self, position: str) -> DeviceChoice | None:
+        return next((d for d in self.devices if d.position == position), None)
 
     def to_dict(self, *, with_alternatives: bool = False) -> dict[str, Any]:
         return {
             "dc_ocpd": self.dc_ocpd.to_dict(with_alternatives=with_alternatives),
             "ac_ocpd_a": self.ac_ocpd_a,
             "conductors": [c.to_dict() for c in self.conductors],
+            "raceways": [r.to_dict() for r in self.raceways],
+            "devices": [d.to_dict() for d in self.devices],
             "todo": list(self.todo),
         }
 
@@ -297,6 +394,8 @@ class Candidate:
     bos: BosSpec
     findings: tuple[Finding, ...]
     spec: dict[str, Any] = field(repr=False)
+    explanation_es: str = ""
+    """Why this inverter, in one or two plain Spanish sentences (shown to the user)."""
 
     @property
     def warnings(self) -> tuple[Issue, ...]:
@@ -306,6 +405,7 @@ class Candidate:
         data: dict[str, Any] = {
             "rank": self.rank,
             "inverter": self.config.inverter_id,
+            "explanation_es": self.explanation_es,
             "config": self.config.to_dict(),
             "metrics": self.metrics.to_dict(),
             "issues": [i.to_dict() for i in self.issues],

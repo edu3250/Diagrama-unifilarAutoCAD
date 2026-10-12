@@ -30,8 +30,8 @@ ASSUMPTIONS: Final = (
     "Voltaje de plena potencia del MPPT: el catálogo no lo registra; se usa la ventana MPPT "
     "completa (STR-001 no emite la advertencia de potencia plena).",
     "ocpd_max_a del inversor: el catálogo no registra la protección máxima de salida; se iguala "
-    "al interruptor seleccionado (la comprobación OCP-005 contra el dato del fabricante queda "
-    "pendiente: Etapa 3.4b).",
+    "al interruptor seleccionado (sin comprobación contra el dato del fabricante, decisión del "
+    "propietario).",
     "Las certificaciones del inversor no se registran en el catálogo (ADR-0004).",
 )
 

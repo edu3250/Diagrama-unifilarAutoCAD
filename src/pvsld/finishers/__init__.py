@@ -12,11 +12,21 @@ Planned: the APS Automation API (opt-in, the user's own credentials) and the ODA
 """
 
 from pvsld.finishers.core_console import (
+    AutocadInfo,
     FinisherError,
     FinishOptions,
     FinishResult,
+    detect_autocad,
     find_accoreconsole,
     finish,
 )
 
-__all__ = ["FinishOptions", "FinishResult", "FinisherError", "find_accoreconsole", "finish"]
+__all__ = [
+    "AutocadInfo",
+    "FinishOptions",
+    "FinishResult",
+    "FinisherError",
+    "detect_autocad",
+    "find_accoreconsole",
+    "finish",
+]

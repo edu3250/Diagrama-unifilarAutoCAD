@@ -6,15 +6,17 @@ module places the schematic in the free area, numbers the circuits with the temp
 capacity, service, calculation summary, notes, circuit boxes, module and inverter data, the
 symbology of the blocks drawn and the drawing number and date.
 
-Personal data is never written (owner decision): location, address, installer, owner names,
-contacts and professional licence numbers are left as blank lines to fill by hand, and the title
-block reads "COMPAÑÍA INSTALADORA".
+Personal data (location, address, owner, RPU, responsible engineer, company) is written only when
+the spec gives it (Stage 3.6.2, professional mode); what is missing stays a blank line to fill by
+hand, and the title block reads "COMPAÑÍA INSTALADORA" without a company. A given value is cut
+with "…" to the length of the blank line it replaces, so the user's data never breaks the sheet.
 """
 
 from __future__ import annotations
 
 import math
 from collections.abc import Sequence
+from dataclasses import replace
 
 from pvsld.core import calc, layers
 from pvsld.core.calc import Derived
@@ -53,6 +55,7 @@ from pvsld.core.model import (
     PvSystemSpec,
 )
 from pvsld.core.sheet import SheetTemplate
+from pvsld.core.tables import get_tables
 from pvsld.symbols import LIBRARY_VERSION, get_symbol
 
 TEMPLATE = "a3_plantilla_v1"
@@ -64,21 +67,25 @@ OPEN_SANS_WIDTH = 1.0
 Sans is mapped to Arial, see ``FONT_MAP``)."""
 
 PLACEMENT = Placement(
-    inverter=(70.0, 195.0),
+    inverter=(121.0, 195.0),
     string_x=16.0,
     string_dy=20.0,
     string_bend_mm=7.5,
-    itm1_x=133.0,
-    pi_x=161.0,
-    panel_x=179.0,
-    itmp_x=231.0,
-    meter_x=257.0,
+    itm1_x=160.0,
+    pi_x=185.0,
+    panel_x=200.0,
+    itmp_x=235.0,
+    meter_x=259.0,
     grid_x=279.0,
-    ground=(150.0, 148.0),
-    gec_dc_text=(100.0, 150.0),
-    gec_ac_text=(205.0, 150.0),
+    ground=(160.0, 150.0),
+    gec_dc_text=(94.0, 146.0),
+    gec_ac_text=(220.0, 152.0),
     callouts=False,
     pi_description="",
+    dc_box_x=74.0,
+    dc_disconnect_x=99.0,
+    dc_scale=0.6,
+    dc_spd_scale=0.5,
     full_strings=True,
 )
 PROTECTIONS_CORNER = (309.0, 102.0)
@@ -87,6 +94,9 @@ TABLE_TEXT = (1.4, 3.4, "OpenSans", "OpenSansCondensed-Bold")
 """Text height, row height, cell style and title style of the schedule (the template's boxes)."""
 TABLE_TITLE_HEIGHT = 2.2
 """Height of the box titles of the template."""
+GROUND_LABEL_DROP_MM = 18.5
+"""From the electrode's port down to the end of its label (tag and two lines), plus a 2 mm gap: the
+earthing bus is lifted until the label clears a tall protection schedule."""
 
 # Width available to the value of each field group (sheet millimetres).
 FIELD_WIDTHS: dict[str, float] = {
@@ -158,6 +168,18 @@ class _Fields:
             )
         self.items.append(item)
 
+    def fit(self, name: str, value: str | None, blank: str, prefix: str = "") -> None:
+        """``prefix + value`` cut to the width of ``prefix + blank``, or the blank line itself."""
+        if not value:
+            self.set(name, prefix + blank)
+            return
+        height = self.template.field(name, blank).height
+        limit = text_width_mm(prefix + blank, height)
+        text = prefix + value
+        while len(text) > len(prefix) + 1 and text_width_mm(text, height) > limit:
+            text = text[:-2] + "…"
+        self.set(name, text)
+
     def lines(self, prefix: str, texts: Sequence[str]) -> None:
         anchors = sorted(
             (name for name in self.template.fields if name.startswith(f"{prefix}.")),
@@ -184,6 +206,13 @@ def _strings_summary(spec: PvSystemSpec) -> tuple[int, str]:
     else:
         text = f"{count} cadenas de {', '.join(map(str, series))} módulos en serie"
     return n_modules, text
+
+
+def _degrees(value: float | str | None) -> str | None:
+    """A number in decimal degrees; text the user wrote stays as written."""
+    if value is None or isinstance(value, str):
+        return value
+    return f"{value:.5f}°"
 
 
 def _service(spec: PvSystemSpec) -> str:
@@ -214,11 +243,18 @@ def _memory(spec: PvSystemSpec, derived: Derived, i1: Ocpd) -> list[str]:
         f"{_g(mppt.vmax_v)} V  OK",
     ]
     isc_design = 1.25 * first.isc_a
-    fuse = (
-        "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
-        if strings_per_mppt == 1
-        else f"{strings_per_mppt} cadenas por MPPT"
-    )
+    protections = {"DCB-": "ITM CD", "FUS-": "Fusible gPV"}
+    string_devices = [d for d in spec.dc_bos.disconnects if d.id[:4] in protections]
+    if string_devices:
+        device = string_devices[0]
+        fuse = (
+            f"{protections[device.id[:4]]} {_g(device.ie_a)} A por cadena en la caja de "
+            "protecciones CD"
+        )
+    elif strings_per_mppt == 1:
+        fuse = "fusible de cadena no requerido (una cadena por MPPT, 690-9(a))"
+    else:
+        fuse = f"{strings_per_mppt} cadenas por MPPT"
     isc_max = _g(mppt.isc_max_a)
     lines.append(
         f"      Isc x 1.25 = {_n(isc_design, 2)} A <= Icc máx {isc_max} A/MPPT  OK ; {fuse}"
@@ -294,11 +330,6 @@ def _devices(names: Sequence[str]) -> str:
 
 def _circuit_dc(spec: PvSystemSpec, derived: Derived) -> tuple[str, str, list[str]]:
     _n_modules, summary = _strings_summary(spec)
-    dc = spec.dc_bos
-    summary += _devices(
-        [f"{d.id} {'integrado' if d.integrated_in else f'{_g(d.ie_a)} A'}" for d in dc.disconnects]
-        + [f"{s.id} {s.spd_type}" for s in dc.spds]
-    )
     circuit = next((c for c in spec.circuits if c.kind == "pv_source"), None)
     title = (
         "CADENA FV -> INVERSOR (CD)" if len(spec.strings) == 1 else "CADENAS FV -> INVERSOR (CD)"
@@ -350,7 +381,8 @@ def _conductor_lines(spec: PvSystemSpec, circuit: Circuit) -> list[str]:
     return [
         _conductor_text(circuit),
         f"1 x {circuit.egc.size} {circuit.egc.type} (puesta a tierra)",
-        f"{_raceway_text(_raceway(spec, circuit))}   L = {_g(circuit.length_m)} m",
+        f"{_raceway_text(_raceway(spec, circuit), get_tables(spec.standards.nom_edition))}   "
+        f"L = {_g(circuit.length_m)} m",
     ]
 
 
@@ -441,6 +473,27 @@ def _symbology(
     return samples, texts
 
 
+def _clear_of_schedule(placement: Placement, schedule: Table) -> Placement:
+    """Lift the earthing bus and its two GEC labels when the schedule reaches the electrode's label.
+
+    The schedule grows upwards from a fixed corner, one row per protection device; with two string
+    fuses it has eight rows and its top reached the last line of the label.
+    """
+    lift = schedule.y_top + GROUND_LABEL_DROP_MM - placement.ground[1]
+    if lift <= 0:
+        return placement
+
+    def up(point: tuple[float, float]) -> tuple[float, float]:
+        return (point[0], rnd(point[1] + lift))
+
+    return replace(
+        placement,
+        ground=up(placement.ground),
+        gec_dc_text=up(placement.gec_dc_text),
+        gec_ac_text=up(placement.gec_ac_text),
+    )
+
+
 def _protections(spec: PvSystemSpec) -> Table:
     """The protection schedule of v1 in the style of the template's boxes."""
     rows = _protection_table(spec).rows
@@ -488,7 +541,8 @@ def build_sheet_diagram(
     if spec.layout.template != TEMPLATE:
         raise LayoutError(f"unsupported layout template {spec.layout.template!r}")
     derived = derived or calc.derive(spec)
-    schematic = build_schematic(spec, derived, PLACEMENT)
+    schedule = _protections(spec)
+    schematic = build_schematic(spec, derived, _clear_of_schedule(PLACEMENT, schedule))
     i1 = schematic.i1
 
     # Circuit markers: 1 on each PV string conductor, 2 on the inverter output.
@@ -498,7 +552,7 @@ def build_sheet_diagram(
     marker_texts: list[TextItem] = []
     for conn in schematic.connections:
         number = {"pv_source": "1", "inverter_output": "2"}.get(conn.kind)
-        if number is None:
+        if number is None or conn.circuit_id is None:  # one marker per circuit, on its first run
             continue
         a, b = conn.points[0], conn.points[1]
         centre = Point(rnd((a.x + b.x) / 2), rnd(a.y + radius + 1.8))
@@ -522,23 +576,25 @@ def build_sheet_diagram(
         f"DIAGRAMA UNIFILAR  -  GENERACIÓN DISTRIBUIDA EN {level} TENSIÓN "
         f"({REGIMES[utility.regime].upper()})  -  SIMBOLOGÍA CFE G0100-04 / NMX-J-136-ANCE",
     )
-    # Personal data: blank lines (owner decision).
-    for name in ("location.lat", "location.lon", "location.altitude"):
-        fields.set(name, BLANK[:22])
+    # Personal data: what the spec gives, else blank lines to fill by hand.
+    site, client, responsible = spec.project.site, spec.project.client, tb.responsible
+    address = site.address
+    fields.fit("location.lat", _degrees(site.lat), BLANK[:22])
+    fields.fit("location.lon", _degrees(site.lon), BLANK[:22])
+    fields.set("location.altitude", BLANK[:22])
     fields.set("location.datum", "WGS84")
-    fields.lines(
-        "address",
-        [
-            "CALLE: " + BLANK,
-            "COLONIA: " + BLANK[:25],
-            BLANK + "______",
-            f"C.P.: ______   TARIFA: {utility.tariff}",
-        ],
-    )
-    for name in ("installer.name", "installer.email", "installer.contact", "installer.cedula"):
-        fields.set(name, BLANK)
-    fields.set("owner.name", BLANK)
-    fields.set("owner.rpu", BLANK)
+    street = " ".join(part for part in (address.street, address.number) if part)
+    town = ", ".join(part for part in (address.municipio, address.estado) if part)
+    fields.fit("address.1", street, BLANK, "CALLE: ")
+    fields.fit("address.2", address.colonia, BLANK[:25], "COLONIA: ")
+    fields.fit("address.3", town, BLANK + "______")
+    fields.set("address.4", f"C.P.: {address.cp or '______'}   TARIFA: {utility.tariff}")
+    fields.fit("installer.name", responsible.name, BLANK)
+    fields.set("installer.email", BLANK)
+    fields.set("installer.contact", BLANK)
+    fields.fit("installer.cedula", responsible.cedula_profesional, BLANK)
+    fields.fit("owner.name", client.name, BLANK)
+    fields.fit("owner.rpu", utility.rpu, BLANK)
     fields.set("owner.service", _service(spec))
     fields.set("capacity.pdc", f"{_thousands(derived.kwp_total * 1000)} Wp")
     fields.set("capacity.pac", f"{_thousands(inverter.pac_w)} W")
@@ -558,7 +614,8 @@ def build_sheet_diagram(
     fields.lines("inverter", _inverter_lines(spec))
     fields.set("symbology.title", "SIMBOLOGÍA (CFE G0100-04 / NMX-J-136-ANCE)")
 
-    fields.set("company.name", COMPANY)
+    company = responsible.company.upper() if responsible.company else None
+    fields.fit("company.name", company, COMPANY + "_" * 20 if company else COMPANY)
     fields.set("company.city", "")
     fields.set(
         "project",
@@ -566,10 +623,13 @@ def build_sheet_diagram(
         f"{module.manufacturer.split()[0].upper()} {_g(module.pmax_w)} Wp + "
         f"{inverter.manufacturer.upper()} {inverter.model}",
     )
-    for name in ("design.name", "review.name", "owner.title_name"):
-        fields.set(name, BLANK)
-    for name in ("design.cedula", "review.cedula", "owner.contact"):
-        fields.set(name, BLANK_SHORT)
+    contact = " / ".join(part for part in (client.phone, client.email) if part)
+    fields.fit("design.name", responsible.name, BLANK)
+    fields.fit("design.cedula", responsible.cedula_profesional, BLANK_SHORT)
+    fields.fit("review.name", tb.checked_by, BLANK)
+    fields.set("review.cedula", BLANK_SHORT)
+    fields.fit("owner.title_name", client.name, BLANK)
+    fields.fit("owner.contact", contact, BLANK_SHORT)
     fields.set("drawing", f"{tb.drawing_no}   HOJA {tb.sheet.upper()}   REV. {tb.revision}")
     fields.set("date", _date(tb.date))
 
@@ -614,10 +674,11 @@ def build_sheet_diagram(
             *symbology_texts,
         ),
         lines=template.lines,
-        polylines=template.polylines,
-        tables=(_protections(spec),),
+        polylines=(*template.polylines, *schematic.polylines),
+        tables=(schedule,),
         viewport=viewport,
         circles=(*template.circles, *circles),
-        samples=tuple(samples),
+        samples=(*samples, *schematic.junctions),
         text_styles=template.text_styles,
+        sheet_in_model=True,  # everything editable in one place (owner request)
     )

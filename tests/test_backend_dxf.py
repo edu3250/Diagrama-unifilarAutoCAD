@@ -557,7 +557,7 @@ def test_a_combiner_is_defined_for_its_string_count_next_to_library_blocks() -> 
         "PVSLD_PV_STRING_7M_DN",
     }
     xdata = doc.blocks.get("PVSLD_COMBINER_3S").block_record.get_xdata("PVSLD")
-    assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.6.0", 5]  # IN1-IN3, OUT, PE
+    assert [t.value for t in xdata][:3] == ["pvsld.block/1", "0.8.0", 5]  # IN1-IN3, OUT, PE
     with pytest.raises(KeyError, match="PVSLD_NOPE"):
         define_symbol_blocks(doc, ["PVSLD_NOPE"])
 
@@ -574,3 +574,9 @@ def test_build_and_write_take_less_than_one_second(tmp_path: Path) -> None:
         write_dxf(build_diagram(report.spec, report.derived), tmp_path / f"sld{run}.dxf")
         timings.append(time.perf_counter() - started)
     assert min(timings) <= 1.0, f"build + write took {min(timings):.2f} s"
+
+
+def test_the_drawing_opens_on_the_sheet_not_on_the_model_tab(diagram: Diagram) -> None:
+    doc = render_dxf(diagram).document
+    assert doc.header["$TILEMODE"] == 0  # 1 would open the Model tab, without the sheet
+    assert doc.layouts.active_layout().name == LAYOUT_NAME

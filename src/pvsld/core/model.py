@@ -46,25 +46,42 @@ class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, populate_by_name=True)
 
 
+# Personal data (owner, address, coordinates, service identifiers, responsible engineer) is
+# optional (Stage 3.6.2): what the user gives is drawn and reported, what is missing stays a blank
+# line to fill by hand. Nothing is ever invented. Its format is the user's business (owner decision
+# 2026-10-09): any text is accepted as written, with no pattern or range check.
+OptionalText = Annotated[str | None, Field(min_length=1)]
+Coordinate = float | Annotated[str, Field(min_length=1)] | None
+
+
 class Client(_Strict):
-    name: str = Field(min_length=1)
-    phone: str = Field(min_length=1)
-    email: str = Field(min_length=3, pattern=r"^[^@\s]+@[^@\s]+$")
+    name: OptionalText = None
+    phone: OptionalText = None
+    email: OptionalText = None
 
 
 class Address(_Strict):
-    street: str = Field(min_length=1)
-    number: str = Field(min_length=1)
-    colonia: str = Field(min_length=1)
-    municipio: str = Field(min_length=1)
-    estado: str = Field(min_length=1)
-    cp: str = Field(pattern=r"^\d{5}$")
+    street: OptionalText = None
+    number: OptionalText = None
+    colonia: OptionalText = None
+    municipio: OptionalText = None
+    estado: OptionalText = None
+    cp: OptionalText = None
+
+
+def address_text(address: Address) -> str:
+    """The address on one line from the parts given ("" when none is)."""
+    street = " ".join(part for part in (address.street, address.number) if part)
+    parts = [street, address.colonia, address.municipio, address.estado]
+    if address.cp:
+        parts.append(f"C.P. {address.cp}")
+    return ", ".join(part for part in parts if part)
 
 
 class Site(_Strict):
-    address: Address
-    lat: float = Field(ge=14, le=33, description="Mexico bounds, degrees")
-    lon: float = Field(ge=-118, le=-86, description="Mexico bounds, degrees")
+    address: Address = Address()
+    lat: Coordinate = Field(default=None, description="Degrees, or the text the user wrote")
+    lon: Coordinate = Field(default=None, description="Degrees, or the text the user wrote")
     occupancy: Literal[
         "vivienda_unifamiliar",
         "vivienda_bifamiliar",
@@ -82,7 +99,7 @@ class Site(_Strict):
 class Project(_Strict):
     id: str = Field(min_length=1)
     name: str = Field(min_length=1)
-    client: Client
+    client: Client = Client()
     site: Site
 
 
@@ -107,9 +124,9 @@ class ServiceMain(_Strict):
 
 class Utility(_Strict):
     supplier: str = Field(min_length=1)
-    rpu: str = Field(pattern=r"^\d{12}$", description="CFE RPU, 12 digits")
-    service_number: str = Field(min_length=1)
-    meter_number: str = Field(min_length=1)
+    rpu: OptionalText = Field(default=None, description="CFE RPU, as the user wrote it")
+    service_number: OptionalText = None
+    meter_number: OptionalText = None
     tariff: str = Field(min_length=1)
     voltage_level: Literal["BT", "MT"]
     system: Literal["1F-2H", "2F-3H", "3F-4H", "MT-3F-3H", "MT-3F-4H"]
@@ -212,6 +229,9 @@ class DcDisconnect(_Strict):
     poles: PositiveInt
     ue_v: PositiveFloat
     ie_a: PositiveFloat
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
 
 
 class Spd(_Strict):
@@ -239,6 +259,9 @@ class Ocpd(_Strict):
     kaic_ka: PositiveFloat
     backfed: bool = False
     at: str | None = None
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
     manual: bool | None = Field(default=None, description="Manually operated (DIS-003)")
     lockable: bool | None = Field(default=None, description="Can be locked open (DIS-003)")
 
@@ -267,6 +290,12 @@ class MainBreaker(_Strict):
     poles: PositiveInt
     rating_a: PositiveFloat
     bidirectional: bool = False
+    kaic_ka: PositiveFloat | None = Field(
+        default=None, description="Interrupting rating, when the breaker is known"
+    )
+    model: str | None = Field(
+        default=None, description="Catalogue reference of the device (component_id)"
+    )
 
 
 class PointOfConnection(_Strict):
@@ -282,7 +311,7 @@ class Meter(_Strict):
     role: Literal["MF", "MCE"]
     bidirectional: bool
     owner: str = Field(min_length=1)
-    meter_no: str = Field(min_length=1)
+    meter_no: OptionalText = None
 
 
 class AcBos(_Strict):
@@ -300,6 +329,11 @@ class Conductors(_Strict):
     size: ConductorSize
     material: Literal["Cu"] = Field(description="Aluminium tables are not part of schema 0.1.0")
     insulation: str = Field(min_length=1)
+    outer_diameter_mm: PositiveFloat | None = Field(
+        default=None,
+        description="Overall diameter with insulation, from the cable datasheet; without it the "
+        "conduit fill (CON-006) uses NOM Chapter 10, Table 5 for TW/THW/THHW insulation",
+    )
 
 
 class Neutral(_Strict):
@@ -359,9 +393,9 @@ class Monitoring(_Strict):
 
 
 class Responsible(_Strict):
-    name: str = Field(min_length=1)
-    cedula_profesional: str = Field(pattern=r"^\d{7,8}$", description="Cedula, 7 or 8 digits")
-    company: str = Field(min_length=1)
+    name: OptionalText = None
+    cedula_profesional: OptionalText = None
+    company: OptionalText = None
 
 
 class Revision(_Strict):
@@ -377,10 +411,10 @@ class TitleBlock(_Strict):
     sheet: str = Field(min_length=1)
     revision: str = Field(min_length=1)
     date: date
-    responsible: Responsible
+    responsible: Responsible = Responsible()
     uvie: str | None = None
     drawn_by: str = Field(min_length=1)
-    checked_by: str = Field(min_length=1)
+    checked_by: OptionalText = None
     approved_by: str | None = None
     revisions: list[Revision] = Field(min_length=1)
 

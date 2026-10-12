@@ -22,13 +22,31 @@ from typing import Annotated, Any
 import yaml
 from pydantic import Field, TypeAdapter, ValidationError
 
+from pvsld.catalogue.conductors import Cable, CableFamily
 from pvsld.catalogue.errors import CatalogueError, UnknownComponentError
 from pvsld.catalogue.inverters import Inverter, InverterFamily
 from pvsld.catalogue.modules import PVModule, PVModuleFamily
-from pvsld.catalogue.protection import DcBreaker, ProtectionFamily
+from pvsld.catalogue.protection import (
+    AcBreaker,
+    AcBreakerFamily,
+    DcBreaker,
+    DcFuse,
+    DcFuseFamily,
+    DcSwitch,
+    DcSwitchFamily,
+    ProtectionFamily,
+)
 
-Family = PVModuleFamily | InverterFamily | ProtectionFamily
-Component = PVModule | Inverter | DcBreaker
+Family = (
+    PVModuleFamily
+    | InverterFamily
+    | ProtectionFamily
+    | DcFuseFamily
+    | CableFamily
+    | AcBreakerFamily
+    | DcSwitchFamily
+)
+Component = PVModule | Inverter | DcBreaker | DcFuse | Cable | AcBreaker | DcSwitch
 
 # ``datasheets/records/<folder>/<family-id lowercase>.yaml``
 RECORD_FOLDERS: dict[str, str] = {
@@ -36,6 +54,10 @@ RECORD_FOLDERS: dict[str, str] = {
     "string_inverter": "inverters",
     "hybrid_inverter": "inverters",
     "dc_breaker": "protection",
+    "dc_fuse": "protection",
+    "ac_breaker": "protection",
+    "dc_switch": "protection",
+    "conductor": "conductors",
 }
 
 _FAMILY_ADAPTER: TypeAdapter[Family] = TypeAdapter(
@@ -72,22 +94,31 @@ def read_record(path: Path | str) -> Family:
         data: Any = yaml.load(text, Loader=_YAML_LOADER)
     except yaml.YAMLError as error:
         raise CatalogueError([f"{path}: invalid YAML: {error}"]) from error
+    return validate_family(data, path)
+
+
+def validate_family(data: Any, where: Path | str = "record") -> Family:
+    """Validate a record given as a mapping (a parsed file, or one built by Claude).
+
+    Raises:
+        CatalogueError: every problem, each prefixed with ``where`` and the field.
+    """
     if not isinstance(data, dict):
         raise CatalogueError(
-            [f"{path}: a record must be a YAML mapping, not {type(data).__name__}"]
+            [f"{where}: a record must be a YAML mapping, not {type(data).__name__}"]
         )
     component_type = data.get("component_type")
     if component_type not in RECORD_FOLDERS:
         raise CatalogueError(
             [
-                f"{path}: component_type: {component_type!r} is not supported; "
+                f"{where}: component_type: {component_type!r} is not supported; "
                 f"use one of {', '.join(RECORD_FOLDERS)}"
             ]
         )
     try:
         return _FAMILY_ADAPTER.validate_python(data)
     except ValidationError as error:
-        raise CatalogueError(_format_error(path, error)) from error
+        raise CatalogueError(_format_error(Path(str(where)), error)) from error
 
 
 def _layout_problems(path: Path, family: Family) -> list[str]:
@@ -146,7 +177,12 @@ class ComponentRegistry:
     """In-memory index of standalone components, keyed by ``component_id``."""
 
     def __init__(
-        self, components: Iterable[Component], *, skipped_unreviewed: Iterable[str] = ()
+        self,
+        components: Iterable[Component],
+        *,
+        skipped_unreviewed: Iterable[str] = (),
+        local_ids: Iterable[str] = (),
+        local_problems: Iterable[str] = (),
     ) -> None:
         components = list(components)
         repeated = sorted(
@@ -156,6 +192,10 @@ class ComponentRegistry:
             raise CatalogueError([f"duplicate component_id {name!r}" for name in repeated])
         self._components: dict[str, Component] = {c.component_id: c for c in components}
         self.skipped_unreviewed: tuple[str, ...] = tuple(skipped_unreviewed)
+        self.local_ids: frozenset[str] = frozenset(local_ids)
+        """Components from the user's local catalogue (:mod:`pvsld.catalogue.local`)."""
+        self.local_problems: tuple[str, ...] = tuple(local_problems)
+        """Local records left out: invalid, or repeating a component of the bundled catalogue."""
 
     @classmethod
     def load(cls, path: Path | str, *, include_unreviewed: bool = False) -> ComponentRegistry:
@@ -167,11 +207,24 @@ class ComponentRegistry:
         """
         return cls.from_records(load_records(path), include_unreviewed=include_unreviewed)
 
+    def is_local(self, component_id: str) -> bool:
+        """True for a component the user added to the local catalogue."""
+        return component_id in self.local_ids
+
     @classmethod
     def from_records(
-        cls, records: Iterable[LoadedRecord], *, include_unreviewed: bool = False
+        cls,
+        records: Iterable[LoadedRecord],
+        *,
+        include_unreviewed: bool = False,
+        local_records: Iterable[LoadedRecord] = (),
+        local_problems: Iterable[str] = (),
     ) -> ComponentRegistry:
-        """Build a registry from already validated records."""
+        """Build a registry from already validated records.
+
+        ``local_records`` come from the user's local catalogue: the user confirmed them when they
+        were added, so they are always loaded, and their ids are kept in ``local_ids``.
+        """
         components: list[Component] = []
         skipped: list[str] = []
         for record in records:
@@ -179,7 +232,13 @@ class ComponentRegistry:
                 components += record.family.expand()
             else:
                 skipped.append(record.family.family_id)
-        return cls(components, skipped_unreviewed=skipped)
+        local = [c for record in local_records for c in record.family.expand()]
+        return cls(
+            [*components, *local],
+            skipped_unreviewed=skipped,
+            local_ids=[c.component_id for c in local],
+            local_problems=local_problems,
+        )
 
     def get(self, component_id: str) -> Component:
         """Return the component with this id; ``UnknownComponentError`` (a ``KeyError``) if none."""
@@ -192,14 +251,17 @@ class ComponentRegistry:
     def find(
         self, *, component_type: str | None = None, manufacturer: str | None = None
     ) -> list[Component]:
-        """Components sorted by id, optionally filtered by type and manufacturer (any case)."""
+        """Components sorted by id, optionally filtered by type and manufacturer.
+
+        The manufacturer matches in any case and by a part of its name: users say "Jinko" for
+        "Jinko Solar" (real-prompt test of Stage 3.6.5).
+        """
+        wanted = None if manufacturer is None else manufacturer.casefold().strip()
         return [
             component
             for component in self
             if (component_type is None or component.component_type == component_type)
-            and (
-                manufacturer is None or component.manufacturer.casefold() == manufacturer.casefold()
-            )
+            and (wanted is None or wanted in component.manufacturer.casefold())
         ]
 
     def modules(self) -> list[PVModule]:
@@ -213,6 +275,22 @@ class ComponentRegistry:
     def dc_breakers(self) -> list[DcBreaker]:
         """Every DC breaker, sorted by id."""
         return [c for c in self if isinstance(c, DcBreaker)]
+
+    def dc_fuses(self) -> list[DcFuse]:
+        """Every PV fuse link, sorted by id."""
+        return [c for c in self if isinstance(c, DcFuse)]
+
+    def ac_breakers(self) -> list[AcBreaker]:
+        """Every AC breaker, sorted by id."""
+        return [c for c in self if isinstance(c, AcBreaker)]
+
+    def dc_switches(self) -> list[DcSwitch]:
+        """Every PV switch-disconnector, sorted by id."""
+        return [c for c in self if isinstance(c, DcSwitch)]
+
+    def cables(self) -> list[Cable]:
+        """Every cable size, sorted by id."""
+        return [c for c in self if isinstance(c, Cable)]
 
     def __contains__(self, component_id: object) -> bool:
         return component_id in self._components

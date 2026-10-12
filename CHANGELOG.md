@@ -7,6 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-12
+
+The Claude Code plugin **PvUnifilar** (Stage 3.6): from a plain request, or from a project sheet the user fills in, one tool call sizes, validates and draws the installation and writes the DWG or DXF, the PDF, the calculation report, the project sheet and the bill of materials. With a local catalogue for equipment added from its datasheet, the marketplace `pvsld`, and a Spanish README and user guide. Pre-release `v0.5.0rc1` on 2026-10-09.
+
+### Added
+- Spanish user guide, `docs/guia-de-usuario.md` (Stage 3.6.5): installation and first start, the quick mode and its defaults, the files of a project folder, the professional mode sheet by sheet, the catalogue and how to add equipment, with and without AutoCAD, what the calculation checks, frequent problems, updating and the scope. The README and the plugin guide link to it.
+- Each skill of the plugin says what to do when the `pvsld` server is not connected (first start slower than Claude Code's 30 s wait, or `uv` missing): check `uv --version`, reconnect from `/mcp`, ask again; and not to design by other means.
+- `tests/test_claude_plugin.py` also holds the README and the user guide to the release tag of the plugin's version and to installing from the default branch.
+- README rewritten in Spanish (owner decision 2026-10-10: the system works with Mexican standards, so its front page speaks to Mexican installers; code and technical docs stay in English) around what a user gets, with images produced by the system itself (`docs/images/readme/`, fictitious names). It shows the A3 sheet and its parts, the calculation report in Excel, and the project sheet with a reviewed cell in red. It also covers how to install the plugin, how to run the MCP server from Claude Code, Claude Desktop or VS Code, the nine tools, the environment variables, the CLI and a diagram of the flow.
+- The Spanish plugin guide gains the sheet image and the notes from the owner's install test: reopen Claude Code after installing uv; the 30 s server start-up wait.
+- `examples/quick_request.yaml`: the three-line request of the quick mode.
+- Claude Code plugin **PvUnifilar** (`pv-unifilar`, Stage 3.6.4b) and its marketplace `pvsld`.
+  - `plugins/pv-unifilar/`:
+    - `.claude-plugin/plugin.json`;
+    - `.mcp.json`, which runs the server with `uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v<version> pvsld-mcp` and takes an optional user-configured output folder;
+    - a Spanish README.
+  - Three skills: `/pv-unifilar:diagrama` (quick mode; a plain request also triggers it), `/pv-unifilar:pro` (the project sheet) and `/pv-unifilar:catalogo` (a datasheet into the local catalogue). Each pre-approves the pvsld tools it calls (`allowed-tools`).
+  - `.claude-plugin/marketplace.json` at the repository root. Install with `/plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD`.
+  - The package and the plugin share one version (first `0.5.0rc1`). The server answers a missing project sheet with the full folder path to copy it to.
+  - CI job `claude-plugin` runs `claude plugin validate --strict` on the plugin and the marketplace. `tests/test_claude_plugin.py` checks that versions, release tag, tool names and resources agree.
+- The data the code reads at run time travels inside the wheel (Stage 3.6.4a), so the plugin's server, built by `uvx` from a git tag, works without the repository.
+  - `pvsld.resources.data_path` serves the catalogue records, the symbol library, the A3 sheet template and the residential example from the installed package (`force-include` under `pvsld/_data`), and falls back to the repository checkout for development installs.
+  - The CLI's default catalogue is that bundled copy, not `./datasheets/records` of the current folder.
+  - CI job `package` (Linux and Windows) builds the wheel, starts `pvsld-mcp` with `uvx --from .` and designs an installation with the installed wheel outside the checkout (`scripts/smoke_installed.py`).
+- Local catalogue (Stage 3.6.3): equipment the bundled catalogue lacks, added from its datasheet.
+  - `pvsld.catalogue.local`:
+    - `local_catalogue_dir` locates the folder: `$PVSLD_LOCAL_CATALOGUE_DIR`, else `%APPDATA%\pvsld\catalogo`, or `~/.local/share/pvsld/catalogo` elsewhere. It has the layout of `datasheets/records` plus `hojas_tecnicas/` for the PDFs.
+    - `load_catalogue` merges the local records with the bundled ones. A broken local record, or one that repeats a bundled id, is left out and reported (`ComponentRegistry.local_problems`), never fatal. `ComponentRegistry.is_local` tells the local components apart.
+    - `add_local_record` validates a record like any bundled one and stamps its provenance: the PDF's name and SHA-256, the user as reviewer and today's dates. It refuses an id already in the catalogue; a local record can be replaced with overwrite.
+  - MCP:
+    - tool `add_component_to_catalogue` (record, datasheet file name in the local `hojas_tecnicas`, `user_confirmed`);
+    - resource `pvsld://catalogue/record-examples`: one reviewed record per type, the local folders, how to add;
+    - `list_components` marks local components and filters every type (AC breakers, PV switches, cables too);
+    - the instructions tell Claude to offer the datasheet route whenever equipment is missing.
+  - Every CLI command that sizes or designs (`size`, `design`, `pro`, `report`) and `catalogue list/show` see the local records. `pvsld catalogue add RECORD.yaml --datasheet PDF` adds one.
+  - `registry.validate_family` validates a record given as a mapping.
+- Professional mode (Stage 3.6.2b): design from the project sheet the user fills in.
+  - `pvsld.design.pro`:
+    - `read_project_sheet` reads the parameter rows by label, so moved or inserted rows still work;
+    - `sheet_request` checks every cell and maps it to a sizing request that keeps the fixed values (inverter, strings, modules per string, fuse without breaker fallback, DC breaker, switch, ITM-1, ITM-P, cable, conductor sizes, EMT, lengths, voltage-drop limits, SPDs, bus, grounding), the service and the personal data;
+    - `design_from_sheet` runs the one-step design.
+  - Personal data is free text: the CP, RPU, cédula, e-mail and coordinates are taken as written, in the sheet and in the spec (owner decision 2026-10-09: its format is the user's business; the spec drops their patterns and the Mexico bounds of lat/lon, and a coordinate may be text).
+  - A cell that cannot be used (a voltage CFE does not supply, 3 × 3 strings for 8 modules, a 3F-4H service) or a fixed value the calculation rejects (a fuse below 1.56 × Isc, a conductor too small) becomes an issue on its cell. When the equipment is complete, both kinds are reported in one round.
+  - `write_reviewed_sheet` returns the user's own workbook with those cells in red, the reason as a comment and a summary on Instrucciones. A model missing from the catalogue is reported as a missing component (for Stage 3.6.3).
+  - The project sheet among the deliverables is the user's workbook with its "Último cálculo" column refreshed (`design_and_draw(project_sheet=...)`).
+  - MCP tools:
+    - `new_project_sheet` writes a blank sheet into `<output>/<name>/`;
+    - `design_from_project_sheet` designs from `<output>/<name>/hoja_de_proyecto.xlsx`, or writes `hoja_de_proyecto_revisar.xlsx` and lists the cells.
+    - The server instructions describe both modes.
+  - CLI: `pvsld pro new DIR`, `pvsld pro design SHEET -o DIR [--no-autocad]`.
+- Values the user fixes are kept and checked, never replaced (Stage 3.6.2a, for the professional mode). New sizing request fields:
+  - `n_strings` and `n_series` pin the string layout; a string count above the inverter's inputs is rejected (REQ-002);
+  - `dc_conductor_size` and `ac_conductor_size` are checked for ampacity and protection (CON-002 names the smallest safe size) and for voltage drop (warning);
+  - `main_breaker` takes the catalogue device of ITM-P, separate from `ac_breakers`, which restrict ITM-1 only;
+  - `dc_fuse_fallback: false` rejects a configuration whose listed fuses do not fit instead of switching to a DC breaker.
+- Personal data reaches the drawing and the calculation report when the spec gives it (Stage 3.6.2a, owner plan 2026-10-09: "si los llena, aparecen en el plano y la memoria; si no, quedan en blanco"):
+  - the owner, address, coordinates, RPU, service and meter numbers, the responsible engineer and the reviewer are optional in the spec, and missing ones stay blank lines;
+  - on the A3 sheet a given value is cut with "…" to the length of the blank line it replaces;
+  - the responsible's company replaces "COMPAÑÍA INSTALADORA";
+  - the quick template no longer carries "SIN DATOS" markers.
+- One-step design for the plugin's quick mode (Stage 3.6.1b): `pvsld.design.design_and_draw`, the MCP tool `design_and_draw` and `pvsld design REQUEST -o DIR [--no-autocad]`. From a module and a size it sizes, validates and draws the installation, finishes it with the local AutoCAD (DWG and PDF) or renders the PDF itself, and writes the calculation report (xlsx, pdf), the project sheet, the bill of materials and the spec into one folder per project (`<output>/<name>/`, default `sfv_<kWp>kWp`). Without a template the quick defaults apply (`quick_template.yaml`: CFE BT 2F-3H 220/127 V, 10 kA, 100 A main breaker, a DC SPD in the box, default temperatures, personal fields blank on the sheet). A failed AutoCAD run falls back to the pvsld PDF and says so
+- `render_pdf` / `write_pdf`: the A3 sheet as a one-page vector PDF, black on white like the AutoCAD plot with `monochrome.ctb`, byte-identical for the same drawing (for users without AutoCAD)
+- `detect_autocad` / `AutocadInfo`: whether Core Console is installed and which AutoCAD release holds it
+- `OutputSandbox.project_dir`: a validated project folder inside the output root
+- `pvsld.report` (Stage 3.6.1a, the owner approved the prototypes on 2026-10-09):
+  - the calculation report (memoria de cálculo) as an Excel workbook (Datos with sourced blue inputs, Memoria with live formulas and CUMPLE/NO CUMPLE checks with NOM references, Materiales, Validación) and as a letter-size PDF;
+  - the professional-mode project sheet (hoja de proyecto) with AUTO defaults, catalogue dropdowns on a hidden sheet, the last calculation's choices and notes;
+  - the bill of materials as rows and as the plain-text summary for the user.
+  `pvsld report SPEC -o DIR [--explanation TEXT]` writes all four. String protections now record their catalogue reference (`model`). New runtime dependencies: openpyxl and reportlab
+- Sizing ranks the inverters by a DC/AC ratio inside 1.10-1.25, or the closest to it, then less clipping, fewer warnings and the smaller inverter (owner decision 2026-10-09; before, a fixed module count fell to a cold-voltage tie-break that picked an oversized inverter). Each candidate carries `explanation_es`, a short Spanish reason for the choice that the report and the MCP summary show to the user
+- Catalogue switchgear (Stage 3.4b, owner choices 2026-10-09): `ac_breaker` (`AcBreaker`, Square D QO plug-on 2-pole 120/240 Vac, 10-200 A, 10 kA) and `dc_switch` (`DcSwitch`, Suntree SISO-40 PV switch-disconnector, 4 poles, DC-PV2, rated current by wiring and voltage), both pending the owner's review. `pvsld size` takes ITM-1 (the next QO rating up with enough interrupting rating, NOM 110-9), ITM-P (the service main keeps its rating; the catalogue gives the device and its kAIC) and the box disconnect DCD-CD1 (two poles per string, four in series for one string, at the step above Voc(T_min), at least the string's maximum current) from the catalogue; the spec records them in `model`, `MainBreaker.kaic_ka` shows in the protection schedule, and with no fitting device the previous assumptions stay, with a warning. Request fields `ac_breakers` and `dc_switches`. OCP-005 (the inverter's maximum output OCPD) and EGC sizing per Table 250-122 are dropped (owner decision)
+- EMT conduit fill (Stage 3.4b, owner choices 2026-10-09: EMT; PV cable on the DC side, THHW-LS on the AC side). `pvsld size` chooses the smallest EMT of NOM Chapter 10 Table 4 within the Table 1 fill for the string raceway (both conductors of every string) and the inverter output (phases and neutral), each with one bare grounding conductor (Table 8, 250-122(c)); PV cable areas come from the catalogue datasheet diameter (Table 1 note 5), THHW-LS from Table 5 (THHW row; the table's area column has misprints, so areas are computed from its diameters). A given `routing.dc_raceway_trade_size_mm` / `ac_raceway_trade_size_mm` is checked instead. The spec carries `conductors.outer_diameter_mm`; the sheet shows "EMT 27 mm (1\")"
+- Rule CON-006: an EMT raceway filled beyond NOM Chapter 10 Table 1 is an error that names the EMT that fits; a conductor without a known diameter is a warning
+- Cable records in the catalogue (`component_type: conductor`, `Cable`, `registry.cables()`): Viakon PV Wire XLPE 2000 V, 14 AWG to 4/0 AWG (pending the owner's review); request field `dc_cable`
+- gPV fuses in the catalogue (`component_type: dc_fuse`, `DcFuse`, `registry.dc_fuses()`): Littelfuse SPF 10x38 mm 1000 V dc 1-30 A (20 kA to 20 A, 50 kA at 25-30 A) and Eaton Bussmann PV 10x38 mm 1000 Vdc 1-20 A (50 kA); both records await the owner's review. Extraction method `pdf_text_layer`
+- The DC protection box protects each string with a gPV fuse-disconnector by default (owner decision 2026-10-08): `pvsld size` / `size_pv_system` take `dc_ocpd_device: fuse | breaker` (default fuse) and `dc_fuses`; the fuse window is >= 1.56 x Isc and <= the module's maximum series fuse, rated voltage >= Voc(T_min), interrupting rating above the fault current; with no fitting fuse the box keeps a DC breaker and the reason says so. String fuse-disconnectors are `FUS-S<n>` ("Fusible gPV (cadena)" in the schedule); `DcOcpdChoice.breaker_id` is now `device_id` with `device`
+- The sheet draws the box with the library 0.8.0 blocks, both variants kept (fuse-disconnector or breaker): field connector `PVSLD_PV_CONNECTOR` at the end of each string (the string circuit and its marker are the run from it to the box), box terminals `PVSLD_TERMINAL` on the DC layer, `PVSLD_SPD_DC_BOX` below the strings fed by both (junction dots `PVSLD_JUNCTION` where the taps leave the strings; the upper tap crosses the lower string), one ganged `PVSLD_DC_DISCONNECT_<n>S`; the box grows to hold them
+- Symbol library 0.8.0, for the DC protection box of the owner's reference (2026-10-08): `PVSLD_DC_DISCONNECT_2S`, one ganged DC switch-disconnector for every string of the box (a pole pair per string 20 mm apart, the handle on the top pole, a dotted mechanical link; parametric `PVSLD_DC_DISCONNECT_<n>S` for 1 to 12 strings, drawn at the box size); `PVSLD_FUSE_DISC_DC`, the DC fuse-disconnector (gPV fuse holder); `PVSLD_SPD_DC_BOX`, the DC SPD module with two line inputs and the earth lead; `PVSLD_PV_CONNECTOR`, the plug-and-socket (MC4 type) field connector. `PVSLD_TERMINAL` is coloured BYBLOCK, so it takes the colour of the layer it is inserted on (`Circle.color_by_block`)
+- DC protection box on the sheet template (owner decision 2026-10-08): each string runs through its DC breaker (`PVSLD_CB_DC`) and the DC disconnect to the inverter; the DC SPD hangs after the lower breaker (before the disconnect when there is no breaker) and goes to earth; a dashed enclosure "CAJA DE PROTECCIONES CD" of the load centre's size (30 x 35 mm) holds the breakers and the SPD, drawn at 60 % and 50 % with their texts (`SymbolInstance.scale`, read back with the INSERT scale). `pvsld size` (and the MCP tool) now selects a DC breaker per string by default (`dc_ocpd: always`); the protection schedule names them "ITM de CD (cadena)" in "Caja CD"
+- DC protection box after the owner's reference box (2026-10-08): both strings, after their breakers, feed the DC SPD to earth, then the box disconnect `DCD-CD1` (two poles per string, one tag, a dashed mechanical link between the pole pairs) opens them ahead of the inverter, inside the box; junction dots mark where the SPD taps leave the strings, so the SPD's earth line visibly crosses the lower string. The box stays 35 mm tall and grows in width to hold the disconnect. `pvsld size` adds `DCD-CD1` whenever it selects string breakers (assumption noted: ratings of the string breaker; the catalogue has no switch-disconnectors yet). `CircleItem.filled` draws a junction dot as a DONUT.
+- Symbol library 0.7.0: `PVSLD_CB_DC` (the CFE breaker with DC ports); the inverter is 30 x 30 mm and the load centre 30 x 35 mm (owner request: smaller); the DC disconnect shows its tag above and its description below
+
+### Changed
+- The README and the plugin guide install the plugin from the default branch (`/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD`, then `/plugin install pv-unifilar@pvsld`), without `@develop`: `develop` is the repository's default branch since 2026-10-10. They also name Git as a requirement and `/plugin configure pv-unifilar@pvsld` for the output folder.
+- `list_components` and `ComponentRegistry.find` match the manufacturer by a part of its name ("Jinko" finds "Jinko Solar").
+- The bill of materials names every circuit of a shared conduit ("EMT 27 mm para C-S1 y C-S2").
+
+### Fixed
+- (3.6.5 real-prompt tests) AutoCAD could not finish a design whose project folder had a long path (Windows error 206) or a character outside ASCII, and every design it did finish left a `.pvsld-staging-…` folder in the user's output folder, kept open by Autodesk's background services. Core Console now works on a copy of the DXF in a temporary folder; the DWG and the PDF are moved to the project folder, and work folders that could not be removed are swept by a later run.
+- (3.6.5 real-prompt tests) A fuse or DC breaker fixed in the project sheet that does not fit was reported as "Ningún fusible gPV del catálogo cumple", which sent the user after a device the catalogue has. The cell now says "El fusible elegido no cumple (…) Elija otro de la lista o deje AUTO."
+- (3.6.5 real-prompt tests) The project sheet's instructions and the missing-component message named the commands of the first plan (`/unifilar-pro`, `/unifilar-catalogo`) instead of `/pv-unifilar:pro` and `/pv-unifilar:catalogo`.
+- On the A3 sheet, a protection schedule of eight rows (two string fuses) reached the last line of the grounding electrode's label; the earthing bus now rises just enough to clear it
+- With the DC protection box, the protection schedule places the DC SPD in "Caja CD" (it gave the spec location, e.g. INV1.dc)
+- The box disconnect DCD-CD1 records the switch's 4 poles when a single string runs through all of them in series
+- Drawings on the owner's sheet template are editable in one place (owner request): the frame, template boxes, fixed texts, fields, symbology, schematic and protection schedule are all in model space at 1:1, and the file opens on the Model tab. The `A3` layout keeps only the 1:1 viewport, for plotting (`Diagram.sheet_in_model`). Every text, line and block can be edited directly; blocks keep their attributes
+- Drawings and the symbol library open on their sheet (`A3`, `Legend`) in AutoCAD: `$TILEMODE` is 0. With ezdxf's default 1 they opened on the Model tab, where the sheet template, frame and title block (paper space) are not visible. The golden DXF, the library DXF and its DWG were regenerated
+
+### Added
+- Phase 3, Stage 3.5: MCP tools `list_components` and `get_component` (reviewed catalogue, with datasheet provenance) and `size_pv_system` (the sizing engine: the selected design as a complete spec, ranked alternatives and rejections grouped by rule; about 3k tokens per result); resource `pvsld://examples/sizing-template`; `$PVSLD_CATALOGUE_DIR` (default `datasheets/records`). The server instructions now start from the catalogue
+
 ## [0.4.0-symbols] - 2026-10-08
 
 Symbol library, the generator drawing with it, and the owner's sheet template. Also ships the first part of Phase 3 (component catalogue and the sizing engine v1).
@@ -106,4 +206,4 @@ Phase 1 (Documentation & Regulatory Research) complete.
 
 **Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD  
 **Maintainer:** edu3250 (edu3250@gmail.com)  
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-12

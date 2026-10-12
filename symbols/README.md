@@ -14,6 +14,12 @@ conductors and annotation).
   strings. `PVSLD_COMBINER` in the library is its two-string legend form; the generator calls
   `pvsld.symbols.cfe.loader.ensure_combiner(doc, n)`, which defines `PVSLD_COMBINER_<n>S` (1 to 24
   strings, ports `IN1`..`INn`, `OUT`, `PE`) from `definitions.combiner_box(n)`.
+* The DC protection box (owner's reference, library 0.8.0): `PVSLD_FUSE_DISC_DC` (gPV fuse holder)
+  or `PVSLD_CB_DC` per string, `PVSLD_SPD_DC_BOX` fed by both strings, and one ganged
+  `PVSLD_DC_DISCONNECT_<n>S` (the library holds the two-string form `PVSLD_DC_DISCONNECT_2S`; the
+  generator defines 1 to 12 strings with `loader.ensure_symbol`, ports `IN<i>`/`OUT<i>`, 20 mm
+  apart). `PVSLD_PV_CONNECTOR` marks the field connector where a string enters the box, and
+  `PVSLD_TERMINAL` (BYBLOCK colour) the box terminals.
 * Shapes, by source priority **CFE G0100-04 > NMX-J-136-ANCE-2019 > IEC 60617**: the 13 symbols of
   CFE Appendix C and the usage of Appendix D (earth, ticks, polarity, junction, combiner, ground-fault
   detector, monitoring subsystem); the NMX figures (fuse, fuse-switch, safety switch, battery,

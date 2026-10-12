@@ -207,25 +207,32 @@ def _build_document(diagram: Diagram) -> Drawing:
     # AutoCAD requires that viewport on layer 0 (AUDIT: 'Paperspace vport layer Not "0"'); it is
     # the one entity allowed there. The detail viewport added below stays on the non-plot layer.
     paper.reset_main_viewport().dxf.layer = layers.OVERALL_VIEWPORT
-    spaces: dict[str, BaseLayout] = {"model": model, "paper": paper}
+    spaces: dict[str, BaseLayout] = {
+        "model": model,
+        "paper": model if diagram.sheet_in_model else paper,
+    }
 
     for item in diagram.instances:
         symbol = get_symbol(item.symbol)
         target = spaces[item.space]
-        ref = target.add_blockref(item.symbol, (item.x, item.y), dxfattribs={"layer": item.layer})
+        k = item.scale
+        insert_attribs: dict[str, Any] = {"layer": item.layer}
+        if k != 1:
+            insert_attribs.update(xscale=k, yscale=k, zscale=k)
+        ref = target.add_blockref(item.symbol, (item.x, item.y), dxfattribs=insert_attribs)
         values = item.values
         for attdef in symbol.attdefs:
             attribs: dict[str, Any] = {
                 "layer": attdef.layer,
                 "style": TEXT_STYLE,
-                "height": attdef.height,
+                "height": rnd(attdef.height * k),
             }
             if not attdef.visible:
                 attribs["flags"] = const.ATTRIB_INVISIBLE
             ref.add_attrib(
                 attdef.tag,
                 values[attdef.tag],
-                insert=(rnd(item.x + attdef.x), rnd(item.y + attdef.y)),
+                insert=(rnd(item.x + attdef.x * k), rnd(item.y + attdef.y * k)),
                 dxfattribs=attribs,
             )
         ref.set_xdata(APP_ID, [(1000, INSTANCE_FORMAT), (1000, item.comp_id)])
@@ -295,8 +302,12 @@ def _build_document(diagram: Diagram) -> Drawing:
         dxfattribs={"layer": vp.layer},
     )
 
-    # The file opens on the A3 sheet, framed on the border.
-    doc.layouts.set_active_layout(LAYOUT_NAME)
+    # The file opens where the editable content is. With the sheet in model space that is the
+    # Model tab (TILEMODE 1); otherwise the A3 layout (TILEMODE 0), since the frame and the title
+    # block are in paper space and the Model tab would show the schematic alone.
+    doc.layouts.set_active_layout(LAYOUT_NAME)  # the layout plotted, and the one AutoCAD shows
+    doc.header["$TILEMODE"] = 1 if diagram.sheet_in_model else 0  # 1: the Model tab instead
+    # Model space views the sheet, framed on the border.
     doc.set_modelspace_vport(height=vp.view_height, center=(vp.view_center.x, vp.view_center.y))
     doc.header["$LIMMIN"] = (0.0, 0.0)
     doc.header["$LIMMAX"] = (diagram.sheet.width, diagram.sheet.height)

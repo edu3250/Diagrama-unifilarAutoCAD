@@ -521,25 +521,127 @@ Update status after each merge. Completed phases are condensed into `CHANGELOG.m
 - Integration test: `test_mcp_server_lists_tools`: the server starts, lists tools in < 5 s, and schemas match the code
 - Optional: manual Claude Code session ("size a 15 kWp commercial system") within 240 s, no output-cap errors
 
-**Status:** Not Started
+**Status:** In Progress (implemented in PR; a real Claude Code session by the owner pending)
+
+**As built:**
+
+- `size_pv_system` takes the module, the inverters (ids or `auto`), a target (`target_dc_power_w` or `module_count_min/max`), the non-sizing `template` (example in the resource `pvsld://examples/sizing-template`), `routing`, `dc_ocpd` and `layout_template`.
+- It returns the selected candidate, its complete spec, up to 5 brief alternatives, rejections grouped by rule with one Spanish example, and the assumptions.
+- A result is about 3k tokens with `inverters: auto` (budget 8k, tested). The rule-pack resource is tested at 15k or less.
+- No diagram preview in the sizing result: `generate_single_line_diagram` returns one.
+- `list_components` and `get_component` read `$PVSLD_CATALOGUE_DIR` (default `datasheets/records`), reviewed records only unless `include_unreviewed`.
+- `ingest_datasheet` (optional) is left for Stage 3.6.
 
 ---
 
-### Stage 3.6: Minimum Installable Claude Code Plugin
+### Stage 3.6: Claude Code Plugin (plan approved by the owner 2026-10-09)
 
-**Goal:** The owner's short-term goal is a Claude Code plugin. Package the `pvsld` MCP server with the plugin layout Claude Code uses (`.claude-plugin/plugin.json`, a plugin-level MCP server definition, skills or slash commands), so that installing the plugin gives Claude the validate, size and generate tools plus guided workflows: design a PV single-line diagram end to end, and ingest a datasheet into the catalogue.
+**Goal:** Anyone, with or without AutoCAD, installs the `pvsld` plugin from the public marketplace and gets a complete design from a plain request ("genérame un diagrama con 5 paneles Jinko, escoge lo mejor") or from a professional Excel project sheet.
 
-**Success Criteria:**
-- Plugin layout follows the structure of plugins actually installed on the workstation (checked against an installed plugin, not memory)
-- The plugin starts the MCP server without the `PVSLD_MCP_COMMAND` workaround (e.g., a launcher that finds or creates the Python environment, or a documented `pip install` step the plugin verifies)
-- Skills or commands: `design` (elicit inputs → `size_pv_system` → `validate_pv_design` → `generate_single_line_diagram` → review the preview) and `ingest-datasheet` (markitdown → extraction → validation → owner review)
-- Installed from a local marketplace/path by the owner in a fresh Claude Code session; the end-to-end design flow works on the owner's datasheet-based catalogue
+**Deliverables for every design:**
+- Editable diagram: DWG and DXF with AutoCAD; DXF without it.
+- Diagram PDF: AutoCAD's PDF, or the plugin's own vector A3 PDF.
+- Calculation report (memoria de cálculo): Excel with live formulas, and PDF.
+- Prefilled project sheet (Excel).
+- Chat summary: the installation's bill of materials, plus a short explanation of the inverter choice.
+
+**Commands:**
+
+| Command | Use |
+|---|---|
+| `/unifilar <request>` | Quick mode |
+| `/unifilar-pro nuevo` | Blank project sheet |
+| `/unifilar-pro <sheet.xlsx>` | Read and validate the sheet (failing cells come back in red), then generate |
+| `/unifilar-catalogo agregar <datasheet.pdf>` | Add a component to the local catalogue |
+
+A plain request also triggers the skill.
+
+**Owner decisions (2026-10-09):**
+- Ranking prefers a DC/AC ratio of 1.10–1.25 (else the closest), then less clipping, then the smaller inverter. The user gets a short Spanish explanation of the choice.
+- DC/AC limits: warning above 1.35, error above 1.50, information below 1.0.
+- Keep the 1.25 factor in STR-004; STR-002 stays a rejection.
+- Site temperatures use the defaults.
+- Personal data stays blank unless the user fills it in, in professional mode.
+- A missing component is added to the user's local catalogue from its datasheet, after the user confirms the values.
+- Publish on the public marketplace; ask the owner first.
+
+**Sub-stages (one PR each):**
+- **3.6.0:**
+  - ranking by DC/AC band, with the explanation (`Candidate.explanation_es`);
+  - the box switch uses all its poles (4 for one string);
+  - remove the old worktrees.
+- **3.6.1:** `design_and_draw`, a one-step MCP tool:
+  - sizing → validation → drawing → DWG/PDF, or DXF plus the own PDF;
+  - report in xlsx and pdf, project sheet, BOM text;
+  - also: the server-side BOM, the own diagram PDF and AutoCAD detection;
+  - openpyxl and reportlab become dependencies.
+- **3.6.2:** professional mode:
+  - project-sheet generator, reader and validator;
+  - engine overrides for every user-fixed value;
+  - personal data pass-through.
+- **3.6.3:** local catalogue:
+  - a user folder merged with the bundled catalogue;
+  - datasheet extraction, confirmed by the user;
+  - offered automatically when a component is missing.
+- **3.6.4:** packaging (plan approved by the owner on 2026-10-09, checked against the official
+  Claude Code plugin documentation):
+  - **3.6.4a**, data inside the wheel:
+    - `pvsld.resources.data_path` serves the records, symbol library, A3 template and example from the
+      installed package (`force-include` under `pvsld/_data`) or from the repository;
+    - CI job `package` builds the wheel, starts `pvsld-mcp` with `uvx --from .` and designs an
+      installation with the installed wheel outside the checkout (Linux and Windows).
+  - **3.6.4b**, the plugin:
+    - plugin `pv-unifilar` (display name "PvUnifilar") in `plugins/pv-unifilar/`. `plugin/` is the .NET AutoCAD bridge;
+    - skills `diagrama`, `pro` and `catalogo`, run as `/pv-unifilar:diagrama`, `/pv-unifilar:pro` and
+      `/pv-unifilar:catalogo` (Claude Code always prefixes the plugin name); a plain request also
+      triggers the quick mode; `allowed-tools` pre-approves the pvsld tools while a skill runs;
+    - `.mcp.json`: `uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@<tag> pvsld-mcp`;
+      optional user configuration of the output folder;
+    - marketplace `pvsld` in `.claude-plugin/marketplace.json` at the repository root, visible in
+      develop from 3.6.4;
+    - `claude plugin validate --strict` and manifest tests in CI;
+    - the owner authorized the pre-release tag `v0.5.0rc1` once 3.6.4 is merged, to test the
+      installed plugin from GitHub.
+- **3.6.5:**
+  - Spanish user guide (`docs/guia-de-usuario.md`);
+  - real-prompt tests on a clean install, with and without AutoCAD (results below);
+  - release v0.5.0 (the owner asked for it on 2026-10-12): version 0.5.0 in the package, the plugin
+    and the documents, merged to `main`, tagged `v0.5.0`; the marketplace is the repository itself.
+
+**Real-prompt tests of 3.6.5 (2026-10-12, headless Claude Code 2.1.296, default permission mode):**
+- Clean configuration folder: `claude plugin marketplace add edu3250/Diagrama-unifilarAutoCAD` and
+  `claude plugin install pv-unifilar@pvsld` install from the default branch, as does the one-line
+  `--marketplace` form. Git is needed (the marketplace is cloned over HTTPS).
+- Start-up of `uvx --from git+…@v0.5.0rc1 pvsld-mcp` until it answers `initialize`: 31.6 s with an
+  empty uv cache (23.3 s from a local wheel, so about 8 s are the clone and the build), 6 to 18 s
+  with the cache. Claude Code waits 30 s, so the first start can fail; the guide and the skills say
+  how to continue. A wheel on the release or on PyPI would shorten it: offered to the owner.
+- Installed plugin (v0.5.0rc1): the quick mode by command and by a plain request (8 files without
+  AutoCAD), a module that is not in the catalogue (asks for its datasheet), a blank project sheet,
+  and a sheet with a fuse that does not fit (the cell and the reviewed copy). The skills'
+  `allowed-tools` work: no tool was denied when the user ran the command; a plain request asks
+  permission for the skill first.
+- Fixes found by these tests: see the CHANGELOG. Tested again with the corrected code loaded with
+  `--plugin-dir`: the quick mode with real AutoCAD in a long folder with accents (9 files, 35 s),
+  the professional mode with a wrong fuse and then with AUTO (personal data with any character
+  reaches the drawing), and a server that never starts (the skill sends the user to `/mcp`).
+- Not tested: adding a component from a datasheet with the installed plugin (no new datasheet at
+  hand; covered by the 3.6.3 tests), macOS, and a machine without Python.
+
+**Limitations (documented for users):**
+- Claude Code only.
+- Needs `uv`.
+- AutoCAD output needs Windows and a licence.
+- Scope: 1 inverter, up to 2 strings, residential LV, CFE, NOM-001-SEDE-2012.
+- New equipment needs its datasheet.
+- Drawings are drafts for the responsible engineer.
 
 **Tests:**
-- CI: plugin manifest and MCP definition are valid JSON with the required fields; referenced files exist
-- Manual (owner): install the plugin, run the design workflow for one real installation, and record the result in the vault
+- Unit and integration tests per sub-stage.
+- CI checks the manifest JSON.
+- Owner's manual run of both modes on a clean install.
 
-**Status:** Not Started
+**Status:** Complete (released as v0.5.0 on 2026-10-12)
 
 ---
 

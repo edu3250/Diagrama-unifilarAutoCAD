@@ -9,8 +9,10 @@ driver D11) is therefore a new data object, not a code change.
 > vault notes cite (Table 310-15(b)(16), (b)(2)(a), (b)(3)(a), (b)(3)(c)) and are checked by the
 > tests against the vault's worked examples. The conductor resistances (Chapter 10, Tables 8 and
 > 9) and the NOM Table 690-7 factors must be re-read against the published NOM text before a
-> design is issued. This module belongs to a spike; drawings are drafts for the responsible
-> engineer, never certified documents.
+> design is issued. The conduit-fill data (Chapter 10, Tables 1, 4, 5 and 8) was read from the
+> rendered pages of the published NOM on 2026-10-09; Table 5 is kept as diameters because its
+> area column has misprints (10 AWG THHW reads 55.68 mm2 for a 4.470 mm diameter). This module
+> belongs to a spike; drawings are drafts for the responsible engineer, never certified documents.
 """
 
 from __future__ import annotations
@@ -44,6 +46,15 @@ class NomTables:
     resistance_ac_pvc_ohm_km: Mapping[str, float]
     # Conductor cross-section (mm2), shown next to the AWG size on the sheet (MX-A04).
     awg_mm2: Mapping[str, float]
+    # Chapter 10, Table 1: largest fill, % of the conduit area, for 1, 2 and more than 2 conductors.
+    conduit_fill_pct: tuple[float, float, float]
+    # Chapter 10, Table 4, article 358 (EMT): (metric designation mm, trade size, internal
+    # diameter mm, total area mm2).
+    emt: tuple[tuple[int, str, float, float], ...]
+    # Chapter 10, Table 5, types TW, THHW, THW, THW-2: approximate overall diameter (mm).
+    thhw_diameter_mm: Mapping[str, float]
+    # Chapter 10, Table 8, stranded copper: overall area (mm2) of the bare conductor.
+    bare_stranded_area_mm2: Mapping[str, float]
 
 
 NOM_001_SEDE_2012 = NomTables(
@@ -182,6 +193,49 @@ NOM_001_SEDE_2012 = NomTables(
         "2/0 AWG": 67.4,
         "3/0 AWG": 85.0,
         "4/0 AWG": 107.2,
+    },
+    conduit_fill_pct=(53.0, 31.0, 40.0),
+    emt=(
+        (16, "½", 15.8, 196),
+        (21, "¾", 20.9, 343),
+        (27, "1", 26.6, 556),
+        (35, "1¼", 35.1, 968),
+        (41, "1½", 40.9, 1314),
+        (53, "2", 52.5, 2165),
+        (63, "2½", 69.4, 3783),
+        (78, "3", 85.2, 5701),
+        (91, "3½", 97.4, 7451),
+        (103, "4", 110.1, 9521),
+    ),
+    thhw_diameter_mm={
+        "14 AWG": 3.378,
+        "12 AWG": 3.861,
+        "10 AWG": 4.470,
+        "8 AWG": 5.994,
+        "6 AWG": 7.722,
+        "4 AWG": 8.941,
+        "3 AWG": 9.652,
+        "2 AWG": 10.46,
+        "1 AWG": 12.50,
+        "1/0 AWG": 13.51,
+        "2/0 AWG": 14.68,
+        "3/0 AWG": 16.00,
+        "4/0 AWG": 17.48,
+    },
+    bare_stranded_area_mm2={
+        "14 AWG": 2.68,
+        "12 AWG": 4.25,
+        "10 AWG": 6.76,
+        "8 AWG": 10.76,
+        "6 AWG": 17.09,
+        "4 AWG": 27.19,
+        "3 AWG": 34.28,
+        "2 AWG": 43.23,
+        "1 AWG": 55.8,
+        "1/0 AWG": 70.41,
+        "2/0 AWG": 88.74,
+        "3/0 AWG": 111.9,
+        "4/0 AWG": 141.1,
     },
 )
 

@@ -1,0 +1,44 @@
+# Test copy of datasheets/records/protection/suntree-siso-40.yaml, marked reviewed so the sizing tests can use it.
+# Facts from the manufacturer datasheet (the PDF is not redistributed). Family + one variant per current version.
+component_type: dc_switch
+family_id: SUNTREE-SISO-40
+manufacturer: Suntree
+range_name: SISO-40 PV switch-disconnector (DC isolator)
+poles: 4
+utilization_category: DC-PV2 / DC-21B
+insulation_voltage_v: 1500
+standards: [IEC/EN 60947-3, AS 60947.3]
+certifications: [TUV Rheinland, CB, CE, SAA, RoHS]
+ip_rating: IP66NW enclosure, IP20 switch body
+short_time_withstand: Icw 1 kA 1 s; Icm 1.7 kA; Icn 3 kA
+mechanical_life_ops: 20000
+electrical_life_ops: 2000
+storage_temp_c: [-40, 85]
+variants:
+  - component_id: SUNTREE-SISO-40-32
+    enclosed_thermal_current_a: 32
+    ratings:                       # Ie DC-PV2 by wiring: 2 poles per circuit (S1, two strings) or 4 in series (S2/S4)
+      - {poles_per_circuit: 2, voltage_v: 600,  ie_a: 40}
+      - {poles_per_circuit: 2, voltage_v: 800,  ie_a: 25}
+      - {poles_per_circuit: 2, voltage_v: 1000, ie_a: 16}
+      - {poles_per_circuit: 2, voltage_v: 1200, ie_a: 10}
+      - {poles_per_circuit: 4, voltage_v: 600,  ie_a: 40}
+      - {poles_per_circuit: 4, voltage_v: 800,  ie_a: 40}
+      - {poles_per_circuit: 4, voltage_v: 1000, ie_a: 32}
+      - {poles_per_circuit: 4, voltage_v: 1200, ie_a: 32}
+source:
+  filename: a_pvi60006--.pdf
+  sha256: e7fa71b6e5cb680a0a4d5c43ad1c74640b96d3a585541f7c6f80c96cee99f3a3
+  title: Suntree SISO-40 PV switch-disconnector, instruction and data sheet (Suntree Electric Co., Ltd., Yueqing)
+  pages: [1]
+  extraction_method: rendered_page
+  extraction_date: 2026-10-09
+  reviewed_by: "test fixture"
+  review_date: 2026-10-09
+  notes: >-
+    The manufacturer's leaflet as published by the distributor Schrack (image.schrackcdn.com); Suntree's own site has no
+    download. The owner saved it on 2026-10-09. One page holding the eight leaflet pages; values read from the rendered
+    page (the text layer scrambles the tables). The "Identification and rating data" table and Table 1 give the same
+    Ie per wiring; the 2-pole rows are the per-circuit rating when two strings share the switch (S1). Ithe 32 A in a
+    dedicated IP66NW enclosure at 40 °C; 29 A outdoors at 60 °C with solar effects (derating curve on the leaflet).
+    The range is offered in 10, 16, 25, 32, 40 and 50 A versions; only the 32 A version's rating table is printed.

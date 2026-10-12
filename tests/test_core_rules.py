@@ -17,13 +17,14 @@ SUBSET = (
     "STR-004",
     "STR-007",
     "CON-003",
+    "CON-006",
     "PCC-002",
     "MET-001",
     "DIS-003",
     "DIS-004",
 )
-# STR-007 has no Mexican checklist item in the vault ("MX" column is "—").
-NO_CHECKLIST_ITEM = {"STR-007"}
+# STR-007 and CON-006 have no Mexican checklist item in the vault ("MX" column is "—").
+NO_CHECKLIST_ITEM = {"STR-007", "CON-006"}
 
 
 def _ids(report: ValidationReport, severity: Severity | None = None) -> list[str]:

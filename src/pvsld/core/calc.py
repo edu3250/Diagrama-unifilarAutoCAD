@@ -189,6 +189,94 @@ def bundling_factor(current_carrying: int, tables: NomTables | None = None) -> f
     return 0.35
 
 
+def conductor_area_mm2(diameter_mm: float) -> float:
+    """Cross-section (mm2) of a round conductor of overall ``diameter_mm``, insulation included."""
+    return math.pi / 4 * diameter_mm**2
+
+
+def fill_limit_pct(conductors: int, tables: NomTables | None = None) -> float:
+    """Largest share of the conduit area the conductors may take (Chapter 10, Table 1)."""
+    one, two, more = (tables or get_tables("NOM-001-SEDE-2012")).conduit_fill_pct
+    return one if conductors == 1 else two if conductors == 2 else more
+
+
+def smallest_emt(
+    areas_mm2: list[float], tables: NomTables | None = None
+) -> tuple[int, str, float] | None:
+    """The smallest EMT (Table 4) the conductors fit in: (designation mm, trade size, fill %).
+
+    ``None`` when not even the largest EMT of the table holds them.
+    """
+    tables = tables or get_tables("NOM-001-SEDE-2012")
+    limit = fill_limit_pct(len(areas_mm2), tables)
+    total = sum(areas_mm2)
+    for designation, trade, _diameter, area in tables.emt:
+        if total / area * 100 <= limit:
+            return designation, trade, total / area * 100
+    return None
+
+
+@dataclass(frozen=True)
+class RacewayFill:
+    """The conductors one raceway holds: the circuits that share it and their total area."""
+
+    circuit_ids: tuple[str, ...]
+    conductors: int
+    area_mm2: float
+    missing: tuple[str, ...]
+    """Conductors whose dimensions are unknown (left out of ``area_mm2``)."""
+
+
+def insulated_area_mm2(
+    size: str, insulation: str, outer_diameter_mm: float | None, tables: NomTables
+) -> float | None:
+    """Area of an insulated conductor: the datasheet diameter, else Table 5 for TW/THW/THHW."""
+    if outer_diameter_mm is not None:
+        return conductor_area_mm2(outer_diameter_mm)
+    if any(kind in insulation.upper() for kind in ("THHW", "THW", "TW")):
+        diameter = tables.thhw_diameter_mm.get(size)
+        return conductor_area_mm2(diameter) if diameter is not None else None
+    return None
+
+
+def egc_area_mm2(size: str, egc_type: str, tables: NomTables) -> float | None:
+    """Area of an equipment grounding conductor: Table 8 when bare, else as insulated."""
+    if egc_type.casefold() in ("desnudo", "bare", "desnuda"):
+        return tables.bare_stranded_area_mm2.get(size)
+    return insulated_area_mm2(size, egc_type, None, tables)
+
+
+def raceway_fill(spec: PvSystemSpec, owner: Circuit, tables: NomTables) -> RacewayFill:
+    """Conductors in the raceway of ``owner`` and of every circuit that shares it (``ref``).
+
+    One equipment grounding conductor serves the raceway, the largest of its circuits (NOM
+    250-122(c)); the phase conductors and neutrals of every circuit count.
+    """
+    members = [owner, *(c for c in spec.circuits if c.raceway.ref == owner.id)]
+    areas: list[float] = []
+    missing: list[str] = []
+    for circuit in members:
+        wires = circuit.conductors
+        area = insulated_area_mm2(wires.size, wires.insulation, wires.outer_diameter_mm, tables)
+        count = wires.qty + (1 if circuit.neutral is not None else 0)
+        if area is None:
+            missing.append(f"{circuit.id}: {wires.size} {wires.insulation}")
+        else:
+            areas += [area] * count
+    egcs = [(egc_area_mm2(c.egc.size, c.egc.type, tables), c) for c in members]
+    known = [area for area, _c in egcs if area is not None]
+    if known:
+        areas.append(max(known))
+    else:
+        missing += [f"{c.id}: tierra {c.egc.size} {c.egc.type}" for _a, c in egcs]
+    return RacewayFill(
+        tuple(c.id for c in members),
+        len(areas) + sum(1 for _ in missing),
+        sum(areas),
+        tuple(missing),
+    )
+
+
 def voltage_drop_dc_pct(
     size: str, length_m: float, current_a: float, voltage_v: float, tables: NomTables
 ) -> float:

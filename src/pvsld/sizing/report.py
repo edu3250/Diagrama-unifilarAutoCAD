@@ -30,16 +30,19 @@ def _selected_section(candidate: Candidate) -> list[str]:
     m, bos = candidate.metrics, candidate.bos
     lines = [
         f"SELECTED: {_describe(candidate)}",
+        f"  why: {candidate.explanation_es}",
         f"  string: Vmp hot {m.vmp_hot_string_v:.1f} V, Vmp cold {m.vmp_cold_string_v:.1f} V, "
         f"Isc design {m.isc_design_a:.2f} A, input {m.isc_input_a:.2f} A (1.25 x Isc x "
         f"{m.strings_per_mppt} per MPPT)",
         f"  string OCPD: {bos.dc_ocpd.reason_es}",
     ]
-    if bos.dc_ocpd.breaker_id:
+    if bos.dc_ocpd.device_id:
         d = bos.dc_ocpd
         lines.append(
-            f"    -> {d.breaker_id} {d.rating_a:g} A, {d.poles}P {d.ue_v:g} V, "
-            f"Icu {d.icu_ka:g} kA (minimum {d.minimum_rating_a:.1f} A)"
+            f"    -> {'gPV fuse' if d.device == 'fuse' else 'DC breaker'} {d.device_id} "
+            f"{d.rating_a:g} A, {d.poles}P {d.ue_v:g} V, "
+            f"{'interrupting' if d.device == 'fuse' else 'Icu'} {d.icu_ka:g} kA "
+            f"(minimum {d.minimum_rating_a:.1f} A)"
         )
     lines.append(f"  inverter-output breaker: {bos.ac_ocpd_a:g} A (>= 1.25 x I_ac max)")
     for c in bos.conductors:
@@ -48,6 +51,20 @@ def _selected_section(candidate: Candidate) -> list[str]:
             + (f", OCPD {c.ocpd_a:g} A" if c.ocpd_a else "")
             + f", ampacity {c.ampacity_corrected_a:.1f} A (corrected), "
             f"voltage drop {c.vd_pct:.2f} % (limit {c.vd_limit_pct:g} %), {c.length_m:g} m"
+        )
+    for r in bos.raceways:
+        if r.trade_size_mm is None or r.fill_pct is None:
+            continue
+        lines.append(
+            f'  raceway {r.circuit_id}: {r.type} {r.trade_size_mm:g} mm ({r.trade_size_in}"), '
+            f"{r.conductors} conductors ({r.insulation} and the bare EGC), fill {r.fill_pct:.1f} % "
+            f"(limit {r.fill_limit_pct:g} %)"
+        )
+    for d in bos.devices:
+        kaic = f", {d.interrupting_ka:g} kA" if d.interrupting_ka is not None else ""
+        note = f" ({d.note_es})" if d.note_es else ""
+        lines.append(
+            f"  {d.position}: {d.device_id} {d.rating_a:g} A {d.voltage_v:g} V{kaic}{note}"
         )
     for issue in candidate.issues:
         lines.append(f"  [{issue.severity.value}] {issue.rule_id}: {issue.message_es}")
