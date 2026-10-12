@@ -232,7 +232,7 @@ class _Values:
         self.issue(
             key,
             f"El {what} «{text}» no está en el catálogo. Agréguelo desde su hoja técnica "
-            "(/unifilar-catalogo) o elija uno de la lista.",
+            "(/pv-unifilar:catalogo) o elija uno de la lista.",
             missing=text,
         )
         return None
@@ -528,6 +528,24 @@ def _cell_of(rule: str, subject: str, request: Mapping[str, Any]) -> Key:
     return ("Equipos", "Inversor")
 
 
+_NONE_FITS = {
+    "Ningún fusible gPV del catálogo cumple": "El fusible elegido no cumple",
+    "Ningún interruptor de CD del catálogo cumple": "El interruptor de CD elegido no cumple",
+}
+
+
+def _fixed_protection(message: str, key: Key, cells: Mapping[Key, SheetCell]) -> str:
+    """The engine only saw the device the user fixed, so "none of the catalogue fits" would send
+    them after a device the catalogue may well have (real-prompt test of Stage 3.6.5)."""
+    cell = cells.get(key)
+    if cell is None or cell.value is None or str(cell.value).strip().upper() == AUTO:
+        return message
+    for engine, sheet in _NONE_FITS.items():
+        if message.startswith(engine):
+            return f"{sheet}{message[len(engine) :]} Elija otro de la lista o deje AUTO."
+    return message
+
+
 def rejection_issues(
     sizing: SizingResult, request: Mapping[str, Any], cells: Mapping[Key, SheetCell]
 ) -> list[SheetIssue]:
@@ -552,6 +570,7 @@ def rejection_issues(
             message = issue.message_es
             if issue.rule_id == "OCP-002" and "Ningún" in message:
                 message = message[message.index("Ningún") :]  # drop the engine's preamble
+                message = _fixed_protection(message, key, cells)
             if key not in found:
                 cell = cells.get(key)
                 found[key] = SheetIssue(

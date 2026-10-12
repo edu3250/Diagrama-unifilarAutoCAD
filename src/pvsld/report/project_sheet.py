@@ -401,7 +401,7 @@ def write_project_sheet(
             font(),
         ),
         (
-            "3. Guarde el archivo y devuélvalo al plugin:  /unifilar-pro hoja_de_proyecto.xlsx",
+            "3. Guarde el archivo en la carpeta de su proyecto y pida el diseño:  /pv-unifilar:pro <proyecto>",
             font(bold=True),
         ),
         (

@@ -99,6 +99,15 @@ def test_find_filters_by_type_and_manufacturer() -> None:
     assert len(registry.find(manufacturer="huawei")) == 7
     assert len(registry.find(component_type="dc_breaker", manufacturer="Suntree")) == 9
     assert registry.find(component_type="pv_module", manufacturer="Huawei") == []
+
+
+def test_find_takes_a_part_of_the_manufacturer_name() -> None:
+    """Users say "Jinko" for "Jinko Solar": an exact match found nothing (Stage 3.6.5)."""
+    registry = ComponentRegistry.load(RECORDS, include_unreviewed=True)
+    whole = registry.find(component_type="pv_module", manufacturer="Jinko Solar")
+    assert whole
+    assert registry.find(component_type="pv_module", manufacturer=" jinko ") == whole
+    assert registry.find(manufacturer="no such maker") == []
     ids = [c.component_id for c in registry]
     assert ids == sorted(ids)
 

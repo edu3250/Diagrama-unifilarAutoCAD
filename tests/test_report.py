@@ -108,6 +108,23 @@ def test_the_bill_of_materials_names_the_catalogue_devices(
     assert text.splitlines()[0].startswith("RESUMEN DE LA INSTALACIÓN")
 
 
+def test_a_shared_conduit_names_every_circuit_in_it() -> None:
+    """Two strings share one EMT run: "para C-S1" alone read as if C-S2 had no conduit."""
+    result = size(ET_550, "auto", module_count_min=10, module_count_max=10)
+    assert result.spec is not None
+    report = validate_pv_design(result.spec)
+    assert report.spec is not None
+    assert report.derived is not None
+    conduits = [
+        line.description
+        for line in bill_of_materials(report.spec, report.derived)
+        if line.group == "Canalización"
+    ]
+    assert len(conduits) == 2
+    assert conduits[0].endswith(" para C-S1 y C-S2")
+    assert conduits[1].endswith(" para C-INV")
+
+
 def test_the_project_sheet_is_prefilled_with_catalogue_dropdowns(
     design: tuple[ValidationReport, str], tmp_path: Path
 ) -> None:

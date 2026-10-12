@@ -168,11 +168,12 @@ def bill_of_materials(spec: PvSystemSpec, derived: Derived) -> list[BomLine]:
             continue
         r = circuit.raceway
         size = f" {_g(r.trade_size_mm)} mm" if r.trade_size_mm else ""
+        inside = [circuit.id, *(c.id for c in spec.circuits if c.raceway.ref == circuit.id)]
         add(
             BomLine(
                 "Canalización",
                 f"Tubo {r.type}",
-                f"{r.type}{size} para {circuit.id}",
+                f"{r.type}{size} para {' y '.join(inside)}",
                 circuit.length_m,
                 "m",
             )
