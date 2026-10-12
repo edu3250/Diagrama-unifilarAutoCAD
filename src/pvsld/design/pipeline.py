@@ -21,6 +21,8 @@ from __future__ import annotations
 
 import copy
 import shutil
+import tempfile
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from datetime import date
@@ -67,7 +69,10 @@ PROJECT_SHEET, BOM_TXT = "hoja_de_proyecto.xlsx", "resumen_materiales.txt"
 SPEC_YAML = "especificacion.yaml"
 DELIVERABLES = (DXF, DWG, PDF, PNG, MEMORIA_XLSX, MEMORIA_PDF, PROJECT_SHEET, BOM_TXT, SPEC_YAML)
 """Every file a run may write, in the order they are listed to the user."""
-_AUTOCAD_WORK = ".autocad"
+_AUTOCAD_WORK = "pvsld-autocad-"
+"""Prefix of the temporary folder Core Console works in."""
+_STALE_WORK_S = 900.0
+"""A work folder this old belongs to no running design (Core Console is stopped after 60 s)."""
 
 QUICK_ASSUMPTIONS = (
     "Servicio por omisión: CFE BT 2F-3H 220/127 V, 10 kA de corriente de falla, interruptor "
@@ -119,14 +124,37 @@ def _write_spec(path: Path, spec: Mapping[str, Any]) -> Path:
     return path
 
 
+def _sweep_stale_work() -> None:
+    """Remove the work folders earlier runs could not remove.
+
+    Core Console starts Autodesk background services that keep a lock file in its work folder open
+    long after the run (seen for an hour, Stage 3.6.5), so the removal at the end can fail.
+    """
+    now = time.time()
+    for old in Path(tempfile.gettempdir()).glob(f"{_AUTOCAD_WORK}*"):
+        try:
+            stale = now - old.stat().st_mtime > _STALE_WORK_S
+        except OSError:
+            continue
+        if stale:
+            shutil.rmtree(old, ignore_errors=True)
+
+
 def _finish_with_autocad(
     folder: Path, autocad: AutocadInfo, runner: Runner
 ) -> tuple[dict[str, Path], list[str]]:
-    """DWG and PDF from Core Console, moved next to the DXF; the work files are removed."""
-    work = folder / _AUTOCAD_WORK
+    """DWG and PDF from Core Console, moved next to the DXF.
+
+    Core Console works on a copy of the DXF in a temporary folder, which is removed afterwards.
+    Its script takes only printable ASCII and its profile folders are deep, so in a project folder
+    with accents or a long path it could not run; and what Autodesk's services keep open there
+    stayed behind in the user's projects (real-prompt tests of Stage 3.6.5).
+    """
+    _sweep_stale_work()
+    work = Path(tempfile.mkdtemp(prefix=_AUTOCAD_WORK))
     try:
         result = finish(
-            folder / DXF,
+            Path(shutil.copy2(folder / DXF, work / DXF)),
             work,
             options=FinishOptions(overwrite=True),
             accoreconsole=autocad.executable,
@@ -138,7 +166,8 @@ def _finish_with_autocad(
             ]
         files = {}
         for name, produced in ((DWG, result.paths.dwg), (PDF, result.paths.pdf)):
-            files[name] = produced.replace(folder / name)
+            (folder / name).unlink(missing_ok=True)
+            files[name] = Path(shutil.move(produced, folder / name))  # may cross drives
         return files, []
     except (FinisherError, OSError) as error:
         return {}, [f"AutoCAD could not be run: {error}"]
