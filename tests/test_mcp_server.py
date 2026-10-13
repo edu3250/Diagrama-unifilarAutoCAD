@@ -26,7 +26,7 @@ from pvsld.backends.base import sha256_hex
 from pvsld.core.model import RULEPACK_ID, export_json_schema
 from pvsld.core.rules import rulepack_catalogue
 from pvsld.mcp import server as server_module
-from pvsld.mcp.models import MAX_FINDINGS
+from pvsld.mcp.models import DRAFT_NOTICE_ES, MAX_FINDINGS
 from pvsld.mcp.sandbox import OutputSandbox
 from pvsld.mcp.server import (
     GENERATE_DESCRIPTION,
@@ -382,6 +382,10 @@ def test_the_generate_text_carries_what_a_text_only_host_needs(
     assert "dxf:" in text
     assert "sha256:" in text
     assert "attributes " in text
+    # The draft notice is part of the result, last, in Spanish and ready to pass on.
+    assert text.splitlines()[-1] == f"notice (tell the user, word for word): {DRAFT_NOTICE_ES}"
+    assert result.structured_content is not None
+    assert result.structured_content["notice_es"] == DRAFT_NOTICE_ES
 
 
 def test_nothing_but_the_published_files_is_left_in_the_sandbox(
