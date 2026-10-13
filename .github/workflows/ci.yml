@@ -98,6 +98,12 @@ jobs:
       - name: Validate the marketplace
         run: claude plugin validate --strict .
 
+      # The repository is also a Gemini CLI extension (Stage 3.7): gemini-extension.json at the root.
+      - name: Validate the Gemini CLI extension
+        run: |
+          npm install -g @google/gemini-cli
+          gemini extensions validate .
+
   plugin:
     # The B2 plug-in compiles against Autodesk's reference assemblies from NuGet (AutoCAD.NET
     # 26.0.0, ExcludeAssets=runtime), so no AutoCAD is needed to build it. Only the AutoCAD-free

@@ -40,14 +40,14 @@ Después de instalar Git o uv, **cierra y vuelve a abrir Claude Code**: los prog
 En Claude Code, escribe:
 
 ```text
-/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
+/plugin marketplace add edu3250/PvUnifilar
 /plugin install pv-unifilar@pvsld
 ```
 
 O desde una terminal, en un solo paso:
 
 ```bash
-claude plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD
+claude plugin install pv-unifilar --marketplace edu3250/PvUnifilar
 ```
 
 Reinicia Claude Code para que cargue el plugin.
@@ -59,7 +59,7 @@ La primera vez, uv descarga unos 60 MB de dependencias. Con una conexión normal
 - **Descargarlo antes** (recomendado). En una terminal, una sola vez:
 
   ```bash
-  uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0 pvsld-mcp --version
+  uvx --from pvsld==0.6.0 pvsld-mcp --version
   ```
 
   Cuando responda con el número de versión, abre Claude Code.
@@ -310,7 +310,7 @@ Durante el dimensionamiento también se eligen y comprueban: el fusible o interr
 | Claude te pide permiso para usar una herramienta | Usaste una petición normal en vez del comando | Acepta, o usa los comandos `/pv-unifilar:…` |
 | Aparece una carpeta `ErrorReports` junto a tu DWG | La crea AutoCAD, no el plugin | Puedes borrarla |
 
-Si algo más falla, copia el mensaje de Claude y abre un reporte en <https://github.com/edu3250/Diagrama-unifilarAutoCAD/issues>.
+Si algo más falla, copia el mensaje de Claude y abre un reporte en <https://github.com/edu3250/PvUnifilar/issues>.
 
 ---
 
@@ -359,4 +359,4 @@ Tus proyectos y tu catálogo local no se borran.
 - En Claude Code (terminal, app de escritorio o extensión del editor). No en claude.ai en el navegador, porque el programa corre en tu computadora.
 - Probado en Windows y Linux; en macOS no se ha probado. El DWG y el PDF de AutoCAD, solo en Windows con un AutoCAD completo.
 
-Este proyecto no está afiliado a CFE, a Autodesk ni a ningún fabricante. Código y documentación técnica: <https://github.com/edu3250/Diagrama-unifilarAutoCAD> (licencia MIT).
+Este proyecto no está afiliado a CFE, a Autodesk ni a ningún fabricante. Código y documentación técnica: <https://github.com/edu3250/PvUnifilar> (licencia MIT).

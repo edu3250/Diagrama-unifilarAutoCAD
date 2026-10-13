@@ -16,6 +16,7 @@ from typing import Any
 import pytest
 import yaml
 
+from pvsld.mcp.prompts import PROMPTS_ENV
 from pvsld.mcp.sandbox import OutputSandbox
 from pvsld.mcp.server import RECORD_EXAMPLES_URI, create_server
 from sizing_helpers import FIXTURE_RECORDS
@@ -26,7 +27,8 @@ MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
 PLUGIN = ROOT / "plugins" / "pv-unifilar"
 SKILLS = ("diagrama", "pro", "catalogo")
 TOOL_PREFIX = "mcp__plugin_pv-unifilar_pvsld__"
-REPOSITORY = "git+https://github.com/edu3250/Diagrama-unifilarAutoCAD"
+PACKAGE = "pvsld"  # on PyPI since v0.6.0; before that the server came from the git tag
+HOME_PROJECTS = "~/PvUnifilar"
 
 
 def _json(path: Path) -> Any:
@@ -65,42 +67,133 @@ def test_the_plugin_names_and_version_match_the_package() -> None:
     assert manifest["version"] == version
 
 
-def test_the_server_runs_from_the_release_tag_of_this_version() -> None:
+def test_the_server_runs_from_the_package_of_this_version() -> None:
     server = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
     version = _json(PLUGIN / ".claude-plugin" / "plugin.json")["version"]
     assert server["command"] == "uvx"
-    assert server["args"] == ["--from", f"{REPOSITORY}@v{version}", "pvsld-mcp"]
+    assert server["args"] == ["--from", f"{PACKAGE}=={version}", "pvsld-mcp"]
     assert server["env"]["PVSLD_OUTPUT_DIR"] == "${user_config.output_dir}"
+    assert server["env"][PROMPTS_ENV] == "off"  # Claude Code shows the skills
+
+
+def test_the_portable_manifest_says_what_the_claude_one_says() -> None:
+    """Agent Plugins 1.0 (root ``plugin.json`` and ``mcp.json``) is what Copilot CLI and Codex
+    read; it lives beside Claude Code's files and must describe the same plugin."""
+    claude = _json(PLUGIN / ".claude-plugin" / "plugin.json")
+    portable = _json(PLUGIN / "plugin.json")
+    assert portable.pop("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+    assert portable == {key: claude[key] for key in portable}
+    assert {"name", "version", "description", "license"} <= set(portable)
+
+    ours = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
+    servers = _json(PLUGIN / "mcp.json")
+    assert servers["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+    (server,) = servers["mcpServers"].values()
+    assert (server["type"], server["command"], server["args"]) == ("stdio", "uvx", ours["args"])
+    # No client but Claude Code fills in ${user_config...}; the skills are shown, so no prompts.
+    assert server["env"] == {
+        "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": HOME_PROJECTS,
+        PROMPTS_ENV: "off",
+    }
+
+
+def test_outside_claude_code_the_projects_go_to_the_users_home(tmp_path: Path) -> None:
+    """These clients start a plugin's server in the plugin's own folder (Agent Plugins 1.0:
+    "cwd defaults to the plugin root"), so the default ``./out`` put a user's projects inside the
+    installed plugin: Antigravity CLI wrote them to ``~/.gemini/config/plugins/pv-unifilar/out``
+    (real-prompt test, Stage 3.7). The server expands ``~``."""
+    for name in ("mcp.json", "mcp_config.json"):
+        (server,) = _json(PLUGIN / name)["mcpServers"].values()
+        assert server["env"]["PVSLD_OUTPUT_DIR"] == HOME_PROJECTS
+    root = OutputSandbox.from_environment({"PVSLD_OUTPUT_DIR": HOME_PROJECTS}).root
+    assert root == (Path.home() / "PvUnifilar").resolve()
+    assert PLUGIN.resolve() not in root.parents
+
+
+def test_the_antigravity_file_names_the_same_server() -> None:
+    """Antigravity CLI (Google's successor of Gemini CLI for personal accounts) installs this
+    folder by its root ``plugin.json`` but reads the servers from ``mcp_config.json``: without
+    it, ``agy plugin validate`` reports "mcpServers: skipped (not found)" (Stage 3.7)."""
+    portable = _json(PLUGIN / "mcp.json")["mcpServers"]["pvsld"]
+    (server,) = _json(PLUGIN / "mcp_config.json")["mcpServers"].values()
+    assert server == {key: portable[key] for key in ("command", "args", "env")}
+
+
+def test_the_gemini_extension_runs_the_same_server_with_its_prompts() -> None:
+    """Gemini CLI installs an extension from the root of a repository, where there are no
+    skills: the server's prompts are its commands, so they must stay on."""
+    claude = _json(PLUGIN / ".claude-plugin" / "plugin.json")
+    ours = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
+    extension = _json(ROOT / "gemini-extension.json")
+    assert (extension["name"], extension["version"]) == (claude["name"], claude["version"])
+    (server,) = extension["mcpServers"].values()
+    assert (server["command"], server["args"]) == ("uvx", ours["args"])
+    assert PROMPTS_ENV not in server["env"]
+    context = ROOT / extension["contextFileName"]
+    assert "write a script that draws" in context.read_text(encoding="utf-8")
 
 
 USER_DOCS = (PLUGIN / "README.md", ROOT / "README.md", ROOT / "docs" / "guia-de-usuario.md")
 
 
 @pytest.mark.parametrize("document", USER_DOCS, ids=lambda path: path.name)
-def test_the_user_documents_name_the_tag_of_this_version(document: Path) -> None:
-    """A release changes the version in one go: no document may keep the old tag."""
+def test_the_user_documents_name_the_package_of_this_version(document: Path) -> None:
+    """A release changes the version in one go: no document may keep the old one, or the git
+    address the server came from before it was on PyPI."""
     version = _json(PLUGIN / ".claude-plugin" / "plugin.json")["version"]
     text = document.read_text(encoding="utf-8")
-    assert f"uvx --from {REPOSITORY}@v{version} pvsld-mcp --version" in text
-    tags = set(re.findall(re.escape(REPOSITORY) + r"@(v[0-9][\w.]*)", text))
-    assert tags == {f"v{version}"}
+    assert f"uvx --from {PACKAGE}=={version} pvsld-mcp --version" in text
+    pinned = set(re.findall(re.escape(PACKAGE) + r"==([0-9][\w.]*)", text))
+    assert pinned == {version}
+    assert "git+https" not in text
 
 
 @pytest.mark.parametrize("document", USER_DOCS, ids=lambda path: path.name)
 def test_the_user_documents_install_from_the_default_branch(document: Path) -> None:
     """`develop` is the default branch (owner, 2026-10-10): a pinned branch would outlive it."""
     text = document.read_text(encoding="utf-8")
-    assert "edu3250/Diagrama-unifilarAutoCAD@" not in text.replace(REPOSITORY + "@", "")
+    assert "edu3250/PvUnifilar@" not in text
     assert "pv-unifilar@pvsld" in text
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        *USER_DOCS,
+        PLUGIN / ".mcp.json",
+        PLUGIN / ".claude-plugin" / "plugin.json",
+        PLUGIN / "mcp.json",
+        PLUGIN / "mcp_config.json",
+        PLUGIN / "plugin.json",
+        ROOT / "gemini-extension.json",
+        MARKETPLACE,
+        ROOT / "pyproject.toml",
+    ],
+    ids=lambda path: path.name,
+)
+def test_what_a_user_reads_or_runs_names_the_repository_as_it_is_now(path: Path) -> None:
+    """The repository was renamed PvUnifilar on 2026-10-12. GitHub redirects the old address only
+    while nobody reuses that name, so nothing current may depend on it."""
+    assert "Diagrama-unifilar" + "AutoCAD" not in path.read_text(encoding="utf-8")
 
 
 @pytest.mark.parametrize("name", SKILLS)
 def test_each_skill_has_a_spanish_description_and_a_hint(name: str) -> None:
     front, body = _skill(name)
-    assert 50 < len(front["description"]) < 1536
+    assert 50 < len(front["description"]) <= 1024  # the limit of the Agent Skills format
     assert front["argument-hint"]
-    assert "$ARGUMENTS" in body
-    assert "Spanish" in body  # the skill tells Claude to answer in Spanish
+    assert "Spanish" in body  # the skill tells the model to answer in Spanish
+
+
+@pytest.mark.parametrize("name", SKILLS)
+def test_each_skill_is_a_portable_agent_skill(name: str) -> None:
+    """Gemini CLI lists no skill without ``name`` (it must be the folder's), and only Claude Code
+    fills in ``$ARGUMENTS``: elsewhere the model would read the placeholder itself."""
+    front, body = _skill(name)
+    assert front["name"] == name
+    assert "$ARGUMENTS" not in body
+    assert "of this plugin" not in body  # the same text is served as an MCP prompt
 
 
 @pytest.mark.parametrize("name", SKILLS)

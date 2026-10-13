@@ -1,4 +1,4 @@
-# Contributing to Diagrama-unifilarAutoCAD
+# Contributing to PvUnifilar
 
 Thank you for your interest in contributing! This project follows the **GitFlow** workflow and **Conventional Commits** for clean, traceable development.
 

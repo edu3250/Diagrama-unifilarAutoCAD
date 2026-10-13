@@ -1,4 +1,5 @@
 ---
+name: catalogo
 description: Agrega al catálogo local de PvUnifilar un equipo que no está (módulo, inversor, fusible, interruptor, seccionador o cable) a partir de su hoja técnica en PDF, después de que el usuario confirma los valores. Úsala cuando falte un equipo en el catálogo o el usuario comparta la hoja técnica de un panel, inversor o protección.
 argument-hint: "<hoja técnica.pdf>"
 allowed-tools: mcp__plugin_pv-unifilar_pvsld__list_components mcp__plugin_pv-unifilar_pvsld__add_component_to_catalogue
@@ -8,12 +9,12 @@ allowed-tools: mcp__plugin_pv-unifilar_pvsld__list_components mcp__plugin_pv-uni
 
 The bundled catalogue has the equipment the project owner reviewed. Anything else is added to the user's own local catalogue from its datasheet, and only after the user confirms the values. Never invent or guess a value. Talk to the user in Spanish.
 
-Datasheet: $ARGUMENTS
+The datasheet is the PDF the user gave with this command or in the conversation.
 
 ## Steps
 
 1. **Is it already there?** Call `list_components` (with the manufacturer) and check that the model is really missing. If it is there, say so and stop.
-2. **Read the format and the folders.** Read the MCP resource `pvsld://catalogue/record-examples` of this plugin's `pvsld` server. It gives `datasheets_folder` (where the PDF goes), `how_to`, and one example record per `component_type`.
+2. **Read the format and the folders.** Read the MCP resource `pvsld://catalogue/record-examples` of the `pvsld` server. It gives `datasheets_folder` (where the PDF goes), `how_to`, and one example record per `component_type`.
 3. **Copy the PDF** the user gave into `datasheets_folder` (create the folder if needed), keeping its file name. Ask for the file if the user has not given one.
 4. **Read the datasheet** and write one record in the format of the example of its `component_type`: one family, one variant per model or power rating, every value exactly as printed, with the unit in the field name. Use the manufacturer's model names for `component_id`, in UPPERCASE with `-` (for example `TRINA-TSM-450NEG9R.28`). In `source` give only `title`, `pages`, `extraction_method` and `notes`.
 5. **Show the values to the user** in a table per variant (and the family values above it), and say from which page each block comes. Ask them to compare with the datasheet and confirm. Fix anything they correct.
@@ -22,8 +23,8 @@ Datasheet: $ARGUMENTS
 
 ## If the pvsld tools are not available
 
-The plugin's MCP server (`pvsld`) is not connected: its first start downloads its dependencies and can take longer than Claude Code waits, or `uv` is not installed. Do not design, calculate or draw by other means. Tell the user, in Spanish:
+The MCP server `pvsld` is not connected: its first start downloads its dependencies and can take longer than the program waits, or `uv` is not installed. Do not design, calculate or draw by other means, and do not write a script that does. Tell the user, in Spanish:
 
-1. In a terminal, `uv --version` must answer. If it does not, install uv (the plugin guide says how) and close and reopen Claude Code.
-2. Run `/mcp`, choose `pvsld` and reconnect it. The first time, wait a minute for the download to finish and reconnect again.
+1. In a terminal, `uv --version` must answer. If it does not, install uv (the PvUnifilar guide says how) and close and reopen the program.
+2. Reconnect the `pvsld` server (in Claude Code: `/mcp`, choose `pvsld`, reconnect). The first time, wait a minute for the download to finish and reconnect again.
 3. Ask again.

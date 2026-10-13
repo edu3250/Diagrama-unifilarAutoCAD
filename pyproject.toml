@@ -4,16 +4,18 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pvsld"
-version = "0.5.0"
-description = "Claude <-> MCP <-> AutoCAD generator of Mexican photovoltaic single-line diagrams."
-readme = "README.md"
+version = "0.6.0"
+description = "PvUnifilar: MCP server and CLI that design and draw Mexican photovoltaic single-line diagrams."
+# What PyPI shows. The repository README has relative image paths, which do not work there.
+readme = "docs/pypi.md"
 requires-python = ">=3.11"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "edu3250", email = "edu3250@gmail.com" }]
 keywords = ["autocad", "dxf", "mcp", "photovoltaic", "single-line-diagram", "nom-001-sede"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 3 - Alpha",
+    "Natural Language :: Spanish",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
@@ -51,9 +53,9 @@ pvsld = "pvsld.cli:main"
 pvsld-mcp = "pvsld.mcp.server:main"
 
 [project.urls]
-Homepage = "https://github.com/edu3250/Diagrama-unifilarAutoCAD"
-Issues = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/issues"
-Changelog = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/blob/develop/CHANGELOG.md"
+Homepage = "https://github.com/edu3250/PvUnifilar"
+Issues = "https://github.com/edu3250/PvUnifilar/issues"
+Changelog = "https://github.com/edu3250/PvUnifilar/blob/develop/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pvsld"]
@@ -66,6 +68,7 @@ packages = ["src/pvsld"]
 "symbols/pvsld-symbols.dxf" = "pvsld/_data/symbols/pvsld-symbols.dxf"
 "sheet_templates/a3_plantilla_v1.dxf" = "pvsld/_data/sheet_templates/a3_plantilla_v1.dxf"
 "examples/residential_7p7kwp.yaml" = "pvsld/_data/examples/residential_7p7kwp.yaml"
+"plugins/pv-unifilar/skills" = "pvsld/_data/plugins/pv-unifilar/skills"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -75,9 +78,11 @@ include = [
     "/datasheets/records",
     "/symbols/pvsld-symbols.dxf",
     "/sheet_templates/a3_plantilla_v1.dxf",
+    "/plugins/pv-unifilar/skills",
     "/CHANGELOG.md",
     "/LICENSE",
     "/README.md",
+    "/docs/pypi.md",
 ]
 
 [tool.ruff]

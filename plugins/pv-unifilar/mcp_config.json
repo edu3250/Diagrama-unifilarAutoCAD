@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "pvsld": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "pvsld==0.6.0",
+        "pvsld-mcp"
+      ],
+      "env": {
+        "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": "~/PvUnifilar",
+        "PVSLD_MCP_PROMPTS": "off"
+      }
+    }
+  }
+}

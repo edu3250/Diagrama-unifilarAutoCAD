@@ -25,8 +25,9 @@ def main() -> int:
     from pvsld.design import design_and_draw
     from pvsld.design.pipeline import DELIVERABLES
     from pvsld.finishers.core_console import AutocadInfo
+    from pvsld.mcp.prompts import SKILLS_FOLDER, WORKFLOWS, load_workflow
     from pvsld.mcp.server import _EXAMPLE_SPEC
-    from pvsld.resources import PACKAGE_DATA
+    from pvsld.resources import PACKAGE_DATA, data_path
     from pvsld.sheets.loader import template_path
     from pvsld.symbols.cfe.loader import library_path
 
@@ -36,6 +37,7 @@ def main() -> int:
         "symbols": library_path(),
         "template": template_path("a3_plantilla_v1"),
         "example": _EXAMPLE_SPEC,
+        "skills": data_path(SKILLS_FOLDER),
     }
     problems = [
         f"{name}: {path} is not inside the installed package"
@@ -51,6 +53,7 @@ def main() -> int:
         print("\n".join(problems), file=sys.stderr)
         return 1
 
+    prompts = [load_workflow(name).name for name in WORKFLOWS]  # read from the wheel
     registry = load_catalogue(DEFAULT_RECORDS)
     with tempfile.TemporaryDirectory() as folder:
         result = design_and_draw(
@@ -73,6 +76,7 @@ def main() -> int:
             {
                 "pvsld": str(package),
                 "components": len(registry),
+                "prompts": prompts,
                 "explanation": result.explanation_es,
                 "deliverables": expected,
             },

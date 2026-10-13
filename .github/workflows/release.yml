@@ -1,0 +1,69 @@
+name: Release
+
+# Publishes the package on PyPI when a release tag is pushed (Stage 3.7.1). The plugin, the Gemini
+# extension and every other MCP client run the server with `uvx --from pvsld pvsld-mcp`, so a
+# release is not usable until this workflow has finished.
+#
+# No password or token is stored: PyPI trusts this workflow of this repository ("trusted
+# publishing"). The owner registers it once on pypi.org: project `pvsld`, owner `edu3250`,
+# repository `PvUnifilar`, workflow `release.yml`, environment `pypi`.
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build the package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      # A tag that does not match the version would publish one thing under the name of another.
+      - name: Check that the tag is the package version
+        run: |
+          version="$(uv run --no-project python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")"
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "tag $GITHUB_REF_NAME does not match version $version of pyproject.toml" >&2
+            exit 1
+          fi
+
+      - name: Build the wheel and the source distribution
+        run: uv build --out-dir dist
+
+      - name: Check the metadata and the description PyPI will show
+        run: uvx twine check --strict dist/*
+
+      - name: Design with the built wheel, outside the checkout
+        working-directory: ${{ runner.temp }}
+        run: >-
+          uv run --no-project --python 3.12 --with "$(ls "$GITHUB_WORKSPACE"/dist/pvsld-*.whl)"
+          python -I "$GITHUB_WORKSPACE/scripts/smoke_installed.py"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    name: publish on PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: pypi
+    permissions:
+      id-token: write # the short-lived identity PyPI checks; nothing else is granted
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

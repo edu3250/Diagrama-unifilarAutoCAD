@@ -1,6 +1,6 @@
 # Technical Documentation
 
-This directory contains technical documentation for the Diagrama-unifilarAutoCAD project.
+This directory contains technical documentation for the PvUnifilar project.
 
 ## Structure
 

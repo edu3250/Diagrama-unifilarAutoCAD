@@ -10,6 +10,7 @@ materials (Stage 3.6.1); ``new_project_sheet`` and ``design_from_project_sheet``
 professional mode, driven by the project sheet the user fills in (Stage 3.6.2). Five resources:
 the spec schema, the rule pack, the symbol library, an example of the non-sizing sections a
 sizing request needs and example catalogue records (the format of a local record).
+Three prompts: the plugin's skills, for the clients that do not load them (Stage 3.7).
 
 Claude fills and corrects a parameter spec; the deterministic core validates it and draws it. The
 tool surface is deliberately small and has no primitive drawing tool and no code execution, so the
@@ -41,6 +42,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
+import anyio
 import yaml
 from mcp.server import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -62,6 +64,7 @@ from pvsld.mcp.design_tool import (
     run_new_sheet,
     run_pro_design,
 )
+from pvsld.mcp.handshake import serve_stdio
 from pvsld.mcp.models import (
     GenerateOutput,
     ValidationOutput,
@@ -70,6 +73,7 @@ from pvsld.mcp.models import (
     validation_text,
 )
 from pvsld.mcp.preview import preview_limit_from_environment, shrink_png
+from pvsld.mcp.prompts import WORKFLOWS, load_workflow, prompts_enabled
 from pvsld.mcp.sandbox import (
     NAME_RULE,
     OUTPUT_DIR_ENV,
@@ -978,7 +982,40 @@ def create_server(
         return _json(symbol_catalogue())
 
     log.info("output directory: %s", box.root)
+    if prompts_enabled():
+        _register_prompts(server)
     return server
+
+
+def _register_prompts(server: MCPServer) -> None:
+    """The skills of the plugin as prompts, for the clients that do not load the plugin."""
+    quick, pro, catalogue = (load_workflow(name) for name in WORKFLOWS)
+
+    @server.prompt(name=quick.name, title="PvUnifilar: diagrama", description=quick.description)
+    def diagrama(
+        peticion: Annotated[
+            str, Field(description="Qué diseñar, p. ej. 8 paneles Jinko de 475 W.")
+        ] = "",
+    ) -> str:
+        return quick.text(peticion)
+
+    @server.prompt(name=pro.name, title="PvUnifilar: modo profesional", description=pro.description)
+    def profesional(
+        proyecto: Annotated[
+            str, Field(description="nuevo, el nombre de un proyecto o una hoja .xlsx.")
+        ] = "",
+    ) -> str:
+        return pro.text(proyecto)
+
+    @server.prompt(
+        name=catalogue.name, title="PvUnifilar: catálogo", description=catalogue.description
+    )
+    def catalogo(
+        hoja_tecnica: Annotated[
+            str, Field(description="La hoja técnica en PDF del equipo que falta.")
+        ] = "",
+    ) -> str:
+        return catalogue.text(hoja_tecnica)
 
 
 def configure_logging(level: str = "INFO") -> None:
@@ -1026,5 +1063,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     sandbox = OutputSandbox.at(args.output_dir) if args.output_dir else None
     server = create_server(sandbox)
     log.info("pvsld-mcp %s serving on stdio", __version__)
-    server.run("stdio")
+    anyio.run(serve_stdio, server)
     return 0
