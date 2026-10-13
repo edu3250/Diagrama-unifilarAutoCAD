@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-10-13
+
+The draft notice is part of every result that delivers a drawing, so the user reads it whatever model relays the result; and the user guide covers Copilot CLI and Antigravity CLI.
+
+### Added
+- Every result that delivers a drawing carries the draft notice in Spanish, ready to pass on (`notice_es`, and the last line of the text): "Aviso: el plano y la memoria de cálculo son borradores. Un ingeniero responsable debe revisarlos y firmarlos antes de cualquier trámite o de la instalación." Before, the result only told the model to remind the user, and the model of one client left it out (Antigravity CLI, professional mode). `design_and_draw`, `design_from_project_sheet` and `generate_single_line_diagram` carry it; a result that delivers nothing does not. Checked with a real prompt in Antigravity CLI: the notice reaches the user word for word.
+- The user guide and the README say how to install and use PvUnifilar in Copilot CLI and Antigravity CLI (Stage 3.7.4): the install commands, how to ask for each workflow without Claude Code's commands, where the projects are kept (a folder PvUnifilar in the user's home) and what was tested with which client. Gemini CLI and Codex CLI are named as not tested.
+
 ## [0.6.0] - 2026-10-13
 
 PvUnifilar in other agent CLIs (Stage 3.7). The server is published on PyPI as `pvsld` and the plugin runs it with `uvx --from pvsld==0.6.0 pvsld-mcp`: no git clone, no build on the user's machine. One plugin folder installs in Claude Code, Copilot CLI and Antigravity CLI, and the repository is a Gemini CLI extension. Real prompts were run in Claude Code, Copilot CLI and Antigravity CLI; Gemini CLI (closed to personal accounts) and Codex CLI (paid) were not tested.

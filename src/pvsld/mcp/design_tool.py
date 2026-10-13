@@ -29,7 +29,14 @@ from pvsld.design import DELIVERABLES, DesignResult, design_and_draw
 from pvsld.design.pipeline import PNG, PROJECT_SHEET
 from pvsld.design.pro import ProjectSheetError, design_from_sheet, write_reviewed_sheet
 from pvsld.finishers.core_console import AutocadInfo, Runner, run_process
-from pvsld.mcp.models import ValidationOutput, validation_output, validation_text
+from pvsld.mcp.models import (
+    DRAFT_NOTICE_ES,
+    NOTICE_DESCRIPTION,
+    ValidationOutput,
+    notice_line,
+    validation_output,
+    validation_text,
+)
 from pvsld.mcp.preview import shrink_png
 from pvsld.mcp.sandbox import OutputSandbox, SandboxError
 from pvsld.mcp.sizing_tools import sizing_output, sizing_text
@@ -90,6 +97,7 @@ class DesignOutput(BaseModel):
     reviewed_sheet: str | None = Field(
         default=None, description="The user's sheet with the cells to fix in red."
     )
+    notice_es: str = Field(default="", description=NOTICE_DESCRIPTION)
     next_step: str
 
 
@@ -175,13 +183,13 @@ def run_design(
 QUICK_NEXT_STEP = (
     "Tell the user in Spanish: the explanation of the inverter as given, the installation "
     "summary (bom_text, in a code block), the folder and its files, and that the project sheet "
-    "(hoja_de_proyecto.xlsx) can be edited and returned for a professional design. Remind them "
-    "that a responsible engineer must review and sign the drawing."
+    "(hoja_de_proyecto.xlsx) can be edited and returned for a professional design. End with "
+    "the notice (notice_es), word for word."
 )
 PRO_NEXT_STEP = (
     "Tell the user in Spanish: the explanation of the inverter as given, the installation "
-    "summary (bom_text, in a code block), the folder and its files. Remind them that a "
-    "responsible engineer must review and sign the drawing."
+    "summary (bom_text, in a code block), the folder and its files. End with the notice "
+    "(notice_es), word for word."
 )
 
 
@@ -225,6 +233,7 @@ def _success(
             autocad_es=result.autocad.describe_es(),
             pdf_source=result.pdf_source,
             problems=list(result.problems),
+            notice_es=DRAFT_NOTICE_ES,
             next_step=next_step,
         ),
         image,
@@ -366,4 +375,6 @@ def design_text(output: DesignOutput) -> str:
     if output.bom_text:
         lines.append(output.bom_text)
     lines.append(output.next_step)
+    if output.notice_es:
+        lines.append(notice_line(output.notice_es))  # last, where it is hardest to miss
     return "\n".join(lines)

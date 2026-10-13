@@ -1,6 +1,6 @@
 # Guía de usuario de PvUnifilar
 
-PvUnifilar es un plugin de Claude Code que diseña y dibuja el **diagrama unifilar de un sistema fotovoltaico interconectado en México**: baja tensión, residencial, un inversor de cadena, con la NOM-001-SEDE-2012 y los requisitos de interconexión de CFE.
+PvUnifilar es un plugin de Claude Code, que también se instala en [otros agentes](#11-otros-agentes-copilot-cli-y-antigravity-cli), y que diseña y dibuja el **diagrama unifilar de un sistema fotovoltaico interconectado en México**: baja tensión, residencial, un inversor de cadena, con la NOM-001-SEDE-2012 y los requisitos de interconexión de CFE.
 
 Tú lo pides con tus palabras; un programa calcula y dibuja. Claude solo pregunta, llama al programa y te explica el resultado, así que la misma petición siempre da el mismo plano.
 
@@ -19,6 +19,7 @@ Tú lo pides con tus palabras; un programa calcula y dibuja. Claude solo pregunt
 8. [Problemas frecuentes](#8-problemas-frecuentes)
 9. [Actualizar y desinstalar](#9-actualizar-y-desinstalar)
 10. [Alcance y límites](#10-alcance-y-límites)
+11. [Otros agentes: Copilot CLI y Antigravity CLI](#11-otros-agentes-copilot-cli-y-antigravity-cli)
 
 ---
 
@@ -59,7 +60,7 @@ La primera vez, uv descarga unos 60 MB de dependencias. Con una conexión normal
 - **Descargarlo antes** (recomendado). En una terminal, una sola vez:
 
   ```bash
-  uvx --from pvsld==0.6.0 pvsld-mcp --version
+  uvx --from pvsld==0.6.1 pvsld-mcp --version
   ```
 
   Cuando responda con el número de versión, abre Claude Code.
@@ -356,7 +357,100 @@ Tus proyectos y tu catálogo local no se borran.
 
 **Dónde funciona**
 
-- En Claude Code (terminal, app de escritorio o extensión del editor). No en claude.ai en el navegador, porque el programa corre en tu computadora.
+- En Claude Code (terminal, app de escritorio o extensión del editor), en Copilot CLI y en Antigravity CLI. No en claude.ai en el navegador, porque el programa corre en tu computadora.
 - Probado en Windows y Linux; en macOS no se ha probado. El DWG y el PDF de AutoCAD, solo en Windows con un AutoCAD completo.
 
 Este proyecto no está afiliado a CFE, a Autodesk ni a ningún fabricante. Código y documentación técnica: <https://github.com/edu3250/PvUnifilar> (licencia MIT).
+
+---
+
+## 11. Otros agentes: Copilot CLI y Antigravity CLI
+
+El mismo plugin funciona fuera de Claude Code. Lo que calcula y dibuja es el mismo programa; cambia quién conversa contigo.
+
+| Agente | Estado | Modelo con el que se probó |
+|---|---|---|
+| Claude Code | Probado | Claude |
+| GitHub Copilot CLI | Probado (versión 1.0.96) | el suyo |
+| Google Antigravity CLI | Probado (versión 1.3.4) | el suyo |
+| Gemini CLI | Sin probar: desde junio de 2026 no admite cuentas personales de Google | |
+| Codex CLI | Sin probar | |
+
+En todos necesitas **uv** y **Git**, igual que en [la instalación](#qué-necesitas).
+
+### GitHub Copilot CLI
+
+```bash
+copilot plugin marketplace add edu3250/PvUnifilar
+```
+
+```bash
+copilot plugin install pv-unifilar@pvsld
+```
+
+### Google Antigravity CLI
+
+Antigravity instala un plugin desde una carpeta, así que primero se baja el repositorio:
+
+```bash
+git clone https://github.com/edu3250/PvUnifilar
+```
+
+```bash
+agy plugin install PvUnifilar/plugins/pv-unifilar
+```
+
+Instala la carpeta `plugins/pv-unifilar`, no el repositorio completo.
+
+### Cómo se usa
+
+Pídelo con tus palabras; el agente carga las instrucciones por su cuenta:
+
+```text
+Hazme un diagrama unifilar con 12 paneles Jinko de 475 W
+```
+
+Los comandos `/pv-unifilar:…` son de Claude Code. Aquí el modo profesional y el catálogo también se piden hablando:
+
+```text
+Dame una hoja de proyecto nueva para el proyecto casa_lopez
+```
+
+```text
+Diseña el proyecto casa_lopez con su hoja de proyecto
+```
+
+```text
+Agrega al catálogo el panel de esta hoja técnica: C:\Descargas\panel.pdf
+```
+
+El agente te pedirá permiso antes de usar cada herramienta de `pvsld`: acéptalo.
+
+### Dónde quedan los proyectos
+
+En una carpeta `PvUnifilar` dentro de tu carpeta de usuario (en Windows, `C:\Users\tu_usuario\PvUnifilar`), una subcarpeta por proyecto. En Claude Code siguen en `out/` de la carpeta donde trabajas.
+
+### El primer arranque
+
+Igual que en Claude Code, la primera vez se descargan las dependencias. Conviene hacerlo antes, una sola vez:
+
+```bash
+uvx --from pvsld==0.6.1 pvsld-mcp --version
+```
+
+### Cualquier otro cliente MCP
+
+El plugin es una capa sobre un servidor MCP estándar. En un cliente que no lee plugins, agrega el servidor a su configuración:
+
+```json
+{
+  "mcpServers": {
+    "pvsld": {
+      "command": "uvx",
+      "args": ["--from", "pvsld==0.6.1", "pvsld-mcp"]
+    }
+  }
+}
+```
+
+El servidor ofrece los tres flujos como prompts (`diagrama`, `pro`, `catalogo`); los clientes que muestran prompts los listan como comandos.

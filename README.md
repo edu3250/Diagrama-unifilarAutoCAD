@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://github.com/edu3250/PvUnifilar/actions/workflows/ci.yml"><img src="https://github.com/edu3250/PvUnifilar/actions/workflows/ci.yml/badge.svg?branch=develop" alt="CI"></a>
-  <img src="https://img.shields.io/badge/versi%C3%B3n-v0.6.0-blue" alt="Versión v0.6.0">
+  <img src="https://img.shields.io/badge/versi%C3%B3n-v0.6.1-blue" alt="Versión v0.6.1">
   <img src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue" alt="Python 3.11 | 3.12">
   <img src="https://img.shields.io/badge/MCP-servidor%20stdio-8A2BE2" alt="Servidor MCP stdio">
   <img src="https://img.shields.io/badge/Claude%20Code-plugin-D97757" alt="Plugin de Claude Code">
@@ -162,7 +162,7 @@ Lado CA:
 **3. Primer arranque.** La primera vez, uv descarga unos 60 MB de dependencias (de 15 segundos a un minuto), y eso puede tardar más que los 30 segundos que Claude Code espera a un servidor. Si `/mcp` muestra `pvsld` como fallido, reconéctalo ahí cuando termine la descarga, o descárgalo antes desde una terminal:
 
 ```bash
-uvx --from pvsld==0.6.0 pvsld-mcp --version
+uvx --from pvsld==0.6.1 pvsld-mcp --version
 ```
 
 **4. Usarlo.** Pídelo con tus palabras, o usa los comandos:
@@ -178,15 +178,37 @@ Los archivos van a `out/<proyecto>/` en la carpeta donde trabajas con Claude (se
 
 📖 **[Guía de usuario](docs/guia-de-usuario.md):** instalación paso a paso, los dos modos, el catálogo, qué revisa el cálculo y problemas frecuentes.
 
+## En otros agentes: Copilot CLI y Antigravity CLI
+
+El mismo plugin se instala fuera de Claude Code. Se probó con peticiones reales en los dos, cada uno con su propio modelo.
+
+**GitHub Copilot CLI**
+
+```bash
+copilot plugin marketplace add edu3250/PvUnifilar
+copilot plugin install pv-unifilar@pvsld
+```
+
+**Google Antigravity CLI**
+
+```bash
+git clone https://github.com/edu3250/PvUnifilar
+agy plugin install PvUnifilar/plugins/pv-unifilar
+```
+
+Después pídelo con tus palabras: *"Hazme un diagrama unifilar con 12 paneles Jinko de 475 W"*. Los proyectos quedan en una carpeta `PvUnifilar` dentro de tu carpeta de usuario. Los detalles están en la [guía de usuario](docs/guia-de-usuario.md#11-otros-agentes-copilot-cli-y-antigravity-cli).
+
+Gemini CLI ya no admite cuentas personales de Google y Codex CLI no se ha probado; en ambos, y en cualquier otro cliente MCP, se puede usar el servidor directamente.
+
 ## Usar el servidor MCP directamente
 
-El plugin es una capa delgada sobre un **servidor MCP stdio** estándar, `pvsld-mcp`. Cualquier cliente MCP puede ejecutarlo con el mismo comando. Está probado con Claude Code; otros clientes deberían funcionar, pero no se han verificado.
+El plugin es una capa delgada sobre un **servidor MCP stdio** estándar, `pvsld-mcp`, publicado en PyPI como [`pvsld`](https://pypi.org/project/pvsld/). Cualquier cliente MCP puede ejecutarlo con el mismo comando. Está probado con Claude Code, Copilot CLI y Antigravity CLI; las configuraciones de Claude Desktop y VS Code de abajo no se han verificado.
 
 <details open>
 <summary><b>Claude Code</b>, sin el plugin</summary>
 
 ```bash
-claude mcp add pvsld -- uvx --from pvsld==0.6.0 pvsld-mcp
+claude mcp add pvsld -- uvx --from pvsld==0.6.1 pvsld-mcp
 ```
 
 o en el `.mcp.json` de un proyecto:
@@ -196,7 +218,7 @@ o en el `.mcp.json` de un proyecto:
   "mcpServers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "pvsld==0.6.0", "pvsld-mcp"],
+      "args": ["--from", "pvsld==0.6.1", "pvsld-mcp"],
       "env": { "PVSLD_OUTPUT_DIR": "out" }
     }
   }
@@ -215,7 +237,7 @@ Agrega el mismo servidor a `claude_desktop_config.json` (Settings → Developer 
   "mcpServers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "pvsld==0.6.0", "pvsld-mcp"],
+      "args": ["--from", "pvsld==0.6.1", "pvsld-mcp"],
       "env": { "PVSLD_OUTPUT_DIR": "C:\\Users\\tu_usuario\\Documents\\unifilares" }
     }
   }
@@ -234,7 +256,7 @@ En `.vscode/mcp.json` la clave principal es `servers`:
   "servers": {
     "pvsld": {
       "command": "uvx",
-      "args": ["--from", "pvsld==0.6.0", "pvsld-mcp"]
+      "args": ["--from", "pvsld==0.6.1", "pvsld-mcp"]
     }
   }
 }
@@ -331,7 +353,7 @@ Las decisiones de diseño están en [`docs/decisions/`](docs/decisions/), empeza
 ## Alcance y límites
 
 - El catálogo incluido es pequeño  (cada ficha se revisa contra su hoja técnica): módulos Jinko y ET Solar, inversores Growatt MIN y Huawei SUN2000, fusibles gPV Littelfuse y Eaton, interruptores de CD Schneider y Suntree, un seccionador FV Suntree, interruptores Square D QO y cable fotovoltaico Viakon. Lo demás se agrega a tu catálogo local desde su hoja técnica.
-- El plugin funciona en Claude Code. No funciona en claude.ai en el navegador, porque el servidor corre en tu computadora.
+- El plugin funciona en Claude Code, Copilot CLI y Antigravity CLI. No funciona en claude.ai en el navegador, porque el servidor corre en tu computadora.
 - El DWG y el PDF de AutoCAD necesitan un AutoCAD con licencia en Windows.
 
 > [!IMPORTANT]
@@ -357,6 +379,7 @@ pvsld design examples/quick_request.yaml -o out/demo --no-autocad
 
 | Versión | Contenido |
 |---|---|
+| `v0.6.1` | El aviso de borrador viaja en cada respuesta del servidor; guía para Copilot CLI y Antigravity CLI |
 | `v0.6.0` | El servidor se publica en PyPI (`pvsld`); el plugin se instala también en Copilot CLI y Antigravity CLI; los flujos se sirven además como prompts MCP |
 | `v0.5.0` | Plugin de Claude Code **PvUnifilar**: diseño en un paso, memoria de cálculo, hoja de proyecto, catálogo local y guía de usuario |
 | `v0.4.0-symbols` | Biblioteca de símbolos y plantilla de hoja A3 |
