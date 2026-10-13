@@ -14,6 +14,7 @@ DATA = (
     "symbols/pvsld-symbols.dxf",
     "sheet_templates/a3_plantilla_v1.dxf",
     "examples/residential_7p7kwp.yaml",
+    "plugins/pv-unifilar/skills",  # the server's prompts are the plugin's skills (Stage 3.7)
 )
 
 

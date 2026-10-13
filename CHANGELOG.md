@@ -7,8 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- The plugin's three workflows are also MCP prompts, `diagrama`, `pro` and `catalogo` (Stage 3.7), for the clients that connect to the server without loading the plugin's skills: Gemini CLI and VS Code list a server's prompts as commands. They are the plugin's own `SKILL.md` files, carried in the wheel (`pvsld.mcp.prompts`), so a prompt cannot differ from its skill. `PVSLD_MCP_PROMPTS=off` leaves them out; the plugin sets it where the client already shows the skills.
+- The plugin folder is also an Agent Plugins 1.0 plugin (root `plugin.json` and `mcp.json` beside Claude Code's files), which Copilot CLI reads first, and the repository is a Gemini CLI extension (`gemini-extension.json` at the root, with a context file). Checked with Copilot CLI 1.0.96 and Gemini CLI 0.63.0: both install it and list the server; Copilot's own model designed an installation from a plain request. The documentation for users waits for Stage 3.7.1, because Copilot CLI gives a server 10 s to answer and `uvx` from a git tag takes longer.
+- CI validates the Gemini extension with `gemini extensions validate`.
+
 ### Changed
+- The skills follow the Agent Skills format so that other clients load them: they have `name` (Gemini CLI lists none without it), take the request from the conversation and not from Claude Code's `$ARGUMENTS`, and name Claude Code's commands only as an example. Each also forbids writing a script that draws when the server is not connected.
+
 - The repository is now `edu3250/PvUnifilar`, the plugin's name (owner, 2026-10-12; it was `edu3250/Diagrama-unifilarAutoCAD`). The plugin's server, the package metadata, the README, the plugin guide and the user guide use the new address. GitHub redirects the old one, so the published `v0.5.0` plugin and a marketplace added under the old name keep working; checked for `uvx --from git+…`, `claude plugin marketplace add` and `marketplace update`. The Python package (`pvsld`), the plugin (`pv-unifilar`) and the marketplace (`pvsld`) keep their names.
+
+### Fixed
+- `PVSLD_OUTPUT_DIR` holding a placeholder nobody filled in (`${user_config.output_dir}`, which only Claude Code replaces) made the server write into a folder with that name. It now counts as not set.
 
 ## [0.5.0] - 2026-10-12
 

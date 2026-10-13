@@ -645,6 +645,66 @@ A plain request also triggers the skill.
 
 ---
 
+### Stage 3.7: PvUnifilar in any agent CLI (plan approved by the owner 2026-10-12)
+
+**Goal:** The same design from a plain request in Copilot CLI, Gemini CLI, Codex CLI and any other
+MCP client, not only in Claude Code.
+
+**Approach:** The MCP server is the product, because it is the one thing every client loads the
+same way; the skills are a layer over it. One plugin folder serves every client that reads plugins,
+and thin manifests cover the rest. Packaging the skills once per client was the alternative, and it
+would have left three copies of the workflow to keep equal.
+
+**What each client reads (checked with the CLIs installed, 2026-10-12):**
+
+| Client | Reads | Install |
+|---|---|---|
+| Claude Code | `.claude-plugin/plugin.json`, `.mcp.json`, `skills/` | as in Stage 3.6 |
+| Copilot CLI 1.0.96 | Agent Plugins 1.0 (root `plugin.json`, `mcp.json`, `skills/`) first, else Claude Code's files; `.claude-plugin/marketplace.json` | `copilot plugin marketplace add edu3250/PvUnifilar`, then `copilot plugin install pv-unifilar@pvsld` |
+| Gemini CLI 0.63.0 | `gemini-extension.json` at the root of the repository; skills only with `name` in `SKILL.md`; MCP prompts as commands | `gemini extensions install https://github.com/edu3250/PvUnifilar` |
+| Codex CLI | Agent Plugins 1.0 and Claude Code's marketplace (documentation only: not installed, needs a paid plan) | not tested |
+| Any other | the MCP server | one `uvx` configuration block |
+
+**Sub-stages:**
+- **3.7.2 and 3.7.3 (one PR, they share the skill texts): the server carries the workflows and the
+  plugin is portable.**
+  - The three skills are also MCP prompts (`diagrama`, `pro`, `catalogo`), read from the same
+    `SKILL.md` files inside the wheel. `PVSLD_MCP_PROMPTS=off` leaves them out where the client
+    already shows the skills.
+  - Skills in the Agent Skills format: `name`, no `$ARGUMENTS`, no wording that only fits Claude
+    Code. Each tells the model not to draw by other means when the server is not connected.
+  - Agent Plugins 1.0 manifests beside Claude Code's; `gemini-extension.json` with a context file.
+  - An unfilled `${...}` placeholder in `PVSLD_OUTPUT_DIR` counts as not set.
+- **3.7.1: a server that starts in time.** Publish the package on PyPI (the owner creates the
+  account; trusted publishing from GitHub) and import the drawing libraries on first use.
+  Required, not optional: see the finding below.
+- **3.7.4: real-prompt tests in Gemini CLI and Copilot CLI with the published package, a section
+  per client in the user guide, release v0.6.0 and the MCP registry.**
+
+**Findings of the first real tests (2026-10-12):**
+- Copilot CLI with its own model (`gpt-6-luna`) and this plugin: a plain request loads the skill
+  `diagrama`, calls `list_components` and `design_and_draw`, and delivers the 9 files with the DWG,
+  in Spanish, with the reason for the inverter and the draft warning. This needed a server that
+  starts fast (the repository's own environment).
+- **Copilot CLI waits 10 s for the server's first answer.** It sends `server/discover` (protocol
+  2026-07-28), and after 9.7 s without an answer it sends the older `initialize`. The MCP SDK
+  (2.3) has by then fixed the connection to the newer protocol and refuses it, so the server is
+  marked as failed. Measured with a server that never answers, and reproduced by delaying ours by
+  6 s. `uvx` from the git tag takes 6 to 18 s with everything cached, so the published plugin
+  fails in Copilot CLI most of the time. From a package index the same start took about 9 s on a
+  busy machine and the repository's environment 2.3 to 4.5 s: hence 3.7.1.
+- When the server was not connected, Copilot's model followed the skill and told the user what to
+  do. Claude without the skill wrote a script to draw the diagram by hand: the reason for the
+  warning in every skill and in the Gemini context file.
+- Gemini CLI: the extension validates and installs from a folder, the server connects and its
+  skills are listed once they have `name`. From GitHub it only looks for the manifest at the root
+  of the repository. No prompt was run: the owner has to sign in first.
+- Claude Code, with the portable skills: no change (8 files without AutoCAD, 4 turns).
+
+**Status:** In Progress (3.7.2 and 3.7.3 in review; 3.7.1 waits for the owner's PyPI account)
+
+---
+
 **Phase 3 Status Summary:** Paused (owner, 2026-10-07). Open items:
 - PR #12 (catalogue batch: Jinko 60HL4, pending owner review, CI intentionally red due to missing staged implementation)
 - PR #13 (STR-007 + sizing engine v1, pending owner decisions on scope)

@@ -66,6 +66,7 @@ packages = ["src/pvsld"]
 "symbols/pvsld-symbols.dxf" = "pvsld/_data/symbols/pvsld-symbols.dxf"
 "sheet_templates/a3_plantilla_v1.dxf" = "pvsld/_data/sheet_templates/a3_plantilla_v1.dxf"
 "examples/residential_7p7kwp.yaml" = "pvsld/_data/examples/residential_7p7kwp.yaml"
+"plugins/pv-unifilar/skills" = "pvsld/_data/plugins/pv-unifilar/skills"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -75,6 +76,7 @@ include = [
     "/datasheets/records",
     "/symbols/pvsld-symbols.dxf",
     "/sheet_templates/a3_plantilla_v1.dxf",
+    "/plugins/pv-unifilar/skills",
     "/CHANGELOG.md",
     "/LICENSE",
     "/README.md",

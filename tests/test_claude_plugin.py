@@ -16,6 +16,7 @@ from typing import Any
 import pytest
 import yaml
 
+from pvsld.mcp.prompts import PROMPTS_ENV
 from pvsld.mcp.sandbox import OutputSandbox
 from pvsld.mcp.server import RECORD_EXAMPLES_URI, create_server
 from sizing_helpers import FIXTURE_RECORDS
@@ -71,6 +72,39 @@ def test_the_server_runs_from_the_release_tag_of_this_version() -> None:
     assert server["command"] == "uvx"
     assert server["args"] == ["--from", f"{REPOSITORY}@v{version}", "pvsld-mcp"]
     assert server["env"]["PVSLD_OUTPUT_DIR"] == "${user_config.output_dir}"
+    assert server["env"][PROMPTS_ENV] == "off"  # Claude Code shows the skills
+
+
+def test_the_portable_manifest_says_what_the_claude_one_says() -> None:
+    """Agent Plugins 1.0 (root ``plugin.json`` and ``mcp.json``) is what Copilot CLI and Codex
+    read; it lives beside Claude Code's files and must describe the same plugin."""
+    claude = _json(PLUGIN / ".claude-plugin" / "plugin.json")
+    portable = _json(PLUGIN / "plugin.json")
+    assert portable.pop("$schema") == "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+    assert portable == {key: claude[key] for key in portable}
+    assert {"name", "version", "description", "license"} <= set(portable)
+
+    ours = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
+    servers = _json(PLUGIN / "mcp.json")
+    assert servers["$schema"] == "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
+    (server,) = servers["mcpServers"].values()
+    assert (server["type"], server["command"], server["args"]) == ("stdio", "uvx", ours["args"])
+    # No client but Claude Code fills in ${user_config...}; the skills are shown, so no prompts.
+    assert server["env"] == {"PYTHONUTF8": "1", PROMPTS_ENV: "off"}
+
+
+def test_the_gemini_extension_runs_the_same_server_with_its_prompts() -> None:
+    """Gemini CLI installs an extension from the root of a repository, where there are no
+    skills: the server's prompts are its commands, so they must stay on."""
+    claude = _json(PLUGIN / ".claude-plugin" / "plugin.json")
+    ours = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
+    extension = _json(ROOT / "gemini-extension.json")
+    assert (extension["name"], extension["version"]) == (claude["name"], claude["version"])
+    (server,) = extension["mcpServers"].values()
+    assert (server["command"], server["args"]) == ("uvx", ours["args"])
+    assert PROMPTS_ENV not in server["env"]
+    context = ROOT / extension["contextFileName"]
+    assert "write a script that draws" in context.read_text(encoding="utf-8")
 
 
 USER_DOCS = (PLUGIN / "README.md", ROOT / "README.md", ROOT / "docs" / "guia-de-usuario.md")
@@ -100,6 +134,9 @@ def test_the_user_documents_install_from_the_default_branch(document: Path) -> N
         *USER_DOCS,
         PLUGIN / ".mcp.json",
         PLUGIN / ".claude-plugin" / "plugin.json",
+        PLUGIN / "mcp.json",
+        PLUGIN / "plugin.json",
+        ROOT / "gemini-extension.json",
         MARKETPLACE,
         ROOT / "pyproject.toml",
     ],
@@ -114,10 +151,19 @@ def test_what_a_user_reads_or_runs_names_the_repository_as_it_is_now(path: Path)
 @pytest.mark.parametrize("name", SKILLS)
 def test_each_skill_has_a_spanish_description_and_a_hint(name: str) -> None:
     front, body = _skill(name)
-    assert 50 < len(front["description"]) < 1536
+    assert 50 < len(front["description"]) <= 1024  # the limit of the Agent Skills format
     assert front["argument-hint"]
-    assert "$ARGUMENTS" in body
-    assert "Spanish" in body  # the skill tells Claude to answer in Spanish
+    assert "Spanish" in body  # the skill tells the model to answer in Spanish
+
+
+@pytest.mark.parametrize("name", SKILLS)
+def test_each_skill_is_a_portable_agent_skill(name: str) -> None:
+    """Gemini CLI lists no skill without ``name`` (it must be the folder's), and only Claude Code
+    fills in ``$ARGUMENTS``: elsewhere the model would read the placeholder itself."""
+    front, body = _skill(name)
+    assert front["name"] == name
+    assert "$ARGUMENTS" not in body
+    assert "of this plugin" not in body  # the same text is served as an MCP prompt
 
 
 @pytest.mark.parametrize("name", SKILLS)
