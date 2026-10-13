@@ -178,9 +178,31 @@ Los archivos van a `out/<proyecto>/` en la carpeta donde trabajas con Claude (se
 
 📖 **[Guía de usuario](docs/guia-de-usuario.md):** instalación paso a paso, los dos modos, el catálogo, qué revisa el cálculo y problemas frecuentes.
 
+## En otros agentes: Copilot CLI y Antigravity CLI
+
+El mismo plugin se instala fuera de Claude Code. Se probó con peticiones reales en los dos, cada uno con su propio modelo.
+
+**GitHub Copilot CLI**
+
+```bash
+copilot plugin marketplace add edu3250/PvUnifilar
+copilot plugin install pv-unifilar@pvsld
+```
+
+**Google Antigravity CLI**
+
+```bash
+git clone https://github.com/edu3250/PvUnifilar
+agy plugin install PvUnifilar/plugins/pv-unifilar
+```
+
+Después pídelo con tus palabras: *"Hazme un diagrama unifilar con 12 paneles Jinko de 475 W"*. Los proyectos quedan en una carpeta `PvUnifilar` dentro de tu carpeta de usuario. Los detalles están en la [guía de usuario](docs/guia-de-usuario.md#11-otros-agentes-copilot-cli-y-antigravity-cli).
+
+Gemini CLI ya no admite cuentas personales de Google y Codex CLI no se ha probado; en ambos, y en cualquier otro cliente MCP, se puede usar el servidor directamente.
+
 ## Usar el servidor MCP directamente
 
-El plugin es una capa delgada sobre un **servidor MCP stdio** estándar, `pvsld-mcp`. Cualquier cliente MCP puede ejecutarlo con el mismo comando. Está probado con Claude Code; otros clientes deberían funcionar, pero no se han verificado.
+El plugin es una capa delgada sobre un **servidor MCP stdio** estándar, `pvsld-mcp`, publicado en PyPI como [`pvsld`](https://pypi.org/project/pvsld/). Cualquier cliente MCP puede ejecutarlo con el mismo comando. Está probado con Claude Code, Copilot CLI y Antigravity CLI; las configuraciones de Claude Desktop y VS Code de abajo no se han verificado.
 
 <details open>
 <summary><b>Claude Code</b>, sin el plugin</summary>
@@ -331,7 +353,7 @@ Las decisiones de diseño están en [`docs/decisions/`](docs/decisions/), empeza
 ## Alcance y límites
 
 - El catálogo incluido es pequeño  (cada ficha se revisa contra su hoja técnica): módulos Jinko y ET Solar, inversores Growatt MIN y Huawei SUN2000, fusibles gPV Littelfuse y Eaton, interruptores de CD Schneider y Suntree, un seccionador FV Suntree, interruptores Square D QO y cable fotovoltaico Viakon. Lo demás se agrega a tu catálogo local desde su hoja técnica.
-- El plugin funciona en Claude Code. No funciona en claude.ai en el navegador, porque el servidor corre en tu computadora.
+- El plugin funciona en Claude Code, Copilot CLI y Antigravity CLI. No funciona en claude.ai en el navegador, porque el servidor corre en tu computadora.
 - El DWG y el PDF de AutoCAD necesitan un AutoCAD con licencia en Windows.
 
 > [!IMPORTANT]
