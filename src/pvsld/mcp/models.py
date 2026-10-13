@@ -19,6 +19,7 @@ from pvsld.core.rules import Finding, Severity
 from pvsld.core.validation import ValidationReport
 
 __all__ = [
+    "DRAFT_NOTICE_ES",
     "MAX_FINDINGS",
     "FindingOut",
     "GenerateOutput",
@@ -82,6 +83,22 @@ class ValidationOutput(BaseModel):
     next_step: str = Field(description="What to do next.")
 
 
+DRAFT_NOTICE_ES = (
+    "Aviso: el plano y la memoria de cálculo son borradores. Un ingeniero responsable debe "
+    "revisarlos y firmarlos antes de cualquier trámite o de la instalación."
+)
+"""What the user must read with every drawing. It is part of the result, in Spanish and ready to
+pass on: as an instruction to the model ("remind them...") one client's model left it out (real
+prompt in Antigravity CLI, professional mode, 2026-10-13)."""
+
+NOTICE_DESCRIPTION = "Spanish notice for the user: pass it on word for word, every time."
+
+
+def notice_line(notice_es: str) -> str:
+    """The line of a result's text that carries the notice."""
+    return f"notice (tell the user, word for word): {notice_es}"
+
+
 class GenerateOutput(BaseModel):
     """Result of ``generate_single_line_diagram``."""
 
@@ -113,6 +130,7 @@ class GenerateOutput(BaseModel):
         description="Size of the preview image attached to this result, or why it is missing.",
     )
     timings_ms: dict[str, float] = Field(default_factory=dict)
+    notice_es: str = Field(default="", description=NOTICE_DESCRIPTION)
     next_step: str
 
 
@@ -216,4 +234,6 @@ def generate_text(output: GenerateOutput) -> str:
     if output.preview:
         lines.append(f"preview: {output.preview}")
     lines.append(output.next_step)
+    if output.notice_es:
+        lines.append(notice_line(output.notice_es))
     return "\n".join(lines)

@@ -27,6 +27,7 @@ from pvsld.finishers.core_console import AutocadInfo, detect_autocad
 from pvsld.finishers.fake import FakeCoreConsole
 from pvsld.finishers.outputs import inspect_pdf
 from pvsld.mcp.design_tool import design_text, run_design
+from pvsld.mcp.models import DRAFT_NOTICE_ES
 from pvsld.mcp.sandbox import OutputSandbox, SandboxError
 from pvsld.mcp.server import create_server
 from pvsld.sizing import SizingInputError
@@ -274,6 +275,27 @@ def test_the_tool_publishes_one_folder_per_project(tmp_path: Path) -> None:
     text = design_text(output)
     assert "why (tell the user): Se eligió" in text
     assert "RESUMEN DE LA INSTALACIÓN" in text
+
+
+def test_a_delivered_design_carries_the_draft_notice(tmp_path: Path) -> None:
+    """The notice is part of the result, in Spanish and ready to pass on. As an instruction
+    ("remind them...") one client's model left it out (Antigravity CLI, 2026-10-13)."""
+    output, _ = _run(OutputSandbox.at(tmp_path), name="casa")
+    assert output.ok
+    assert output.notice_es == DRAFT_NOTICE_ES
+    assert "borradores" in output.notice_es
+    assert "ingeniero responsable" in output.notice_es
+    last = design_text(output).splitlines()[-1]
+    assert last == f"notice (tell the user, word for word): {DRAFT_NOTICE_ES}"
+    assert "notice_es" in output.next_step
+
+
+def test_a_design_that_was_not_delivered_carries_no_notice(tmp_path: Path) -> None:
+    """Nothing was drawn, so there is nothing to sign: the notice would be noise."""
+    output, _ = _run(OutputSandbox.at(tmp_path), values={"module": ET_550, "module_count_min": 90})
+    assert not output.ok
+    assert output.notice_es == ""
+    assert "notice" not in design_text(output)
 
 
 def test_the_default_folder_is_named_after_the_power(tmp_path: Path) -> None:

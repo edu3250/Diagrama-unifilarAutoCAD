@@ -66,6 +66,7 @@ from pvsld.mcp.design_tool import (
 )
 from pvsld.mcp.handshake import serve_stdio
 from pvsld.mcp.models import (
+    DRAFT_NOTICE_ES,
     GenerateOutput,
     ValidationOutput,
     generate_text,
@@ -408,10 +409,8 @@ def render_drawing(
             readback=result.readback.summary(),
             preview=note,
             timings_ms=result.timings_ms,
-            next_step=(
-                "Check the preview, then tell the user where the files are. "
-                "Remind them that a responsible engineer must review and sign the drawing."
-            ),
+            notice_es=DRAFT_NOTICE_ES,
+            next_step="Check the preview, then tell the user where the files are and the notice.",
         ),
         image,
     )

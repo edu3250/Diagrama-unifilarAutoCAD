@@ -27,7 +27,7 @@ from pvsld.design.pro import (
     write_reviewed_sheet,
 )
 from pvsld.finishers.core_console import AutocadInfo
-from pvsld.mcp.design_tool import REVIEW_SHEET, run_new_sheet, run_pro_design
+from pvsld.mcp.design_tool import REVIEW_SHEET, design_text, run_new_sheet, run_pro_design
 from pvsld.mcp.sandbox import OutputSandbox
 from sizing_helpers import ET_550, FIXTURE_RECORDS, registry
 
@@ -274,6 +274,8 @@ def test_the_pro_tool_reports_cells_then_designs_once_they_are_fixed(
     assert image is not None
     assert (folder / "unifilar.dxf").is_file()
     assert not (folder / REVIEW_SHEET).exists()
+    assert "borradores" in output.notice_es  # the professional mode says it too
+    assert design_text(output).splitlines()[-1].endswith(output.notice_es)
 
 
 def test_the_pro_tool_needs_a_sheet_in_the_folder(tmp_path: Path) -> None:
