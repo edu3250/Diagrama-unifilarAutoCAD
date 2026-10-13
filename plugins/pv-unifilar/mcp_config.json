@@ -9,6 +9,7 @@
       ],
       "env": {
         "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": "~/PvUnifilar",
         "PVSLD_MCP_PROMPTS": "off"
       }
     }
