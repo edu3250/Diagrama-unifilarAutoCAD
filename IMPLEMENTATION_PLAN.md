@@ -661,7 +661,8 @@ would have left three copies of the workflow to keep equal.
 |---|---|---|
 | Claude Code | `.claude-plugin/plugin.json`, `.mcp.json`, `skills/` | as in Stage 3.6 |
 | Copilot CLI 1.0.96 | Agent Plugins 1.0 (root `plugin.json`, `mcp.json`, `skills/`) first, else Claude Code's files; `.claude-plugin/marketplace.json` | `copilot plugin marketplace add edu3250/PvUnifilar`, then `copilot plugin install pv-unifilar@pvsld` |
-| Gemini CLI 0.63.0 | `gemini-extension.json` at the root of the repository; skills only with `name` in `SKILL.md`; MCP prompts as commands | `gemini extensions install https://github.com/edu3250/PvUnifilar` |
+| Gemini CLI 0.63.0 | `gemini-extension.json` at the root of the repository; skills only with `name` in `SKILL.md`; MCP prompts as commands | `gemini extensions install https://github.com/edu3250/PvUnifilar` (organizations and API keys only: see below) |
+| Antigravity CLI 1.3.4 (`agy`) | root `plugin.json`, `skills/` and `mcp_config.json`; it also converts a Claude Code plugin folder with `agy plugin import <folder>` | clone the repository, then `agy plugin install <clone>/plugins/pv-unifilar` (no command adds a marketplace) |
 | Codex CLI | Agent Plugins 1.0 and Claude Code's marketplace (documentation only: not installed, needs a paid plan) | not tested |
 | Any other | the MCP server | one `uvx` configuration block |
 
@@ -708,6 +709,16 @@ would have left three copies of the workflow to keep equal.
   skills are listed once they have `name`. From GitHub it only looks for the manifest at the root
   of the repository. No prompt was run: the owner has to sign in first.
 - Claude Code, with the portable skills: no change (8 files without AutoCAD, 4 turns).
+- **Gemini CLI no longer serves personal accounts** (2026-10-13). The owner's sign-in was refused:
+  since 2026-06-18 "Login with Google" is closed for the individual tiers, and Google sends them
+  to Antigravity CLI. Gemini CLI remains for organizations and API keys, so its extension stays,
+  untested with a prompt.
+- Antigravity CLI 1.3.4 (installed with winget, `Google.AntigravityCLI`): it validates and
+  installs the plugin folder by its root `plugin.json` with the 3 skills, but it reads the servers
+  from `mcp_config.json` ("mcpServers: skipped (not found)" with `mcp.json` alone), so the plugin
+  carries that file too. `agy plugin import` of the whole repository copies everything in it
+  (350 MB with the development environment): the plugin folder is what to install. No prompt
+  was run: the owner has to sign in.
 
 **Status:** In Progress (3.7.2 and 3.7.3 merged, PR #43; 3.7.1 in review; the release that publishes on PyPI waits for the owner)
 

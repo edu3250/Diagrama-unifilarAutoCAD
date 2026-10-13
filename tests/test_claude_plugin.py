@@ -93,6 +93,15 @@ def test_the_portable_manifest_says_what_the_claude_one_says() -> None:
     assert server["env"] == {"PYTHONUTF8": "1", PROMPTS_ENV: "off"}
 
 
+def test_the_antigravity_file_names_the_same_server() -> None:
+    """Antigravity CLI (Google's successor of Gemini CLI for personal accounts) installs this
+    folder by its root ``plugin.json`` but reads the servers from ``mcp_config.json``: without
+    it, ``agy plugin validate`` reports "mcpServers: skipped (not found)" (Stage 3.7)."""
+    portable = _json(PLUGIN / "mcp.json")["mcpServers"]["pvsld"]
+    (server,) = _json(PLUGIN / "mcp_config.json")["mcpServers"].values()
+    assert server == {key: portable[key] for key in ("command", "args", "env")}
+
+
 def test_the_gemini_extension_runs_the_same_server_with_its_prompts() -> None:
     """Gemini CLI installs an extension from the root of a repository, where there are no
     skills: the server's prompts are its commands, so they must stay on."""
@@ -135,6 +144,7 @@ def test_the_user_documents_install_from_the_default_branch(document: Path) -> N
         PLUGIN / ".mcp.json",
         PLUGIN / ".claude-plugin" / "plugin.json",
         PLUGIN / "mcp.json",
+        PLUGIN / "mcp_config.json",
         PLUGIN / "plugin.json",
         ROOT / "gemini-extension.json",
         MARKETPLACE,
