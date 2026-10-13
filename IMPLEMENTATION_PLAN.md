@@ -905,4 +905,4 @@ A plain request also triggers the skill.
 ---
 
 **Last updated:** 2026-10-07 (Phase 4 kickoff: symbol library versioning & deterministic DXF regeneration)
-**Repository:** https://github.com/edu3250/Diagrama-unifilarAutoCAD
+**Repository:** https://github.com/edu3250/PvUnifilar

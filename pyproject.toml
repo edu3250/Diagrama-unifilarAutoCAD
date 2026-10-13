@@ -51,9 +51,9 @@ pvsld = "pvsld.cli:main"
 pvsld-mcp = "pvsld.mcp.server:main"
 
 [project.urls]
-Homepage = "https://github.com/edu3250/Diagrama-unifilarAutoCAD"
-Issues = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/issues"
-Changelog = "https://github.com/edu3250/Diagrama-unifilarAutoCAD/blob/develop/CHANGELOG.md"
+Homepage = "https://github.com/edu3250/PvUnifilar"
+Issues = "https://github.com/edu3250/PvUnifilar/issues"
+Changelog = "https://github.com/edu3250/PvUnifilar/blob/develop/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pvsld"]

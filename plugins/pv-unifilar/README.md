@@ -32,20 +32,20 @@ Requisitos:
 En Claude Code:
 
 ```
-/plugin marketplace add edu3250/Diagrama-unifilarAutoCAD
+/plugin marketplace add edu3250/PvUnifilar
 /plugin install pv-unifilar@pvsld
 ```
 
 o desde una terminal, en un paso:
 
 ```
-claude plugin install pv-unifilar --marketplace edu3250/Diagrama-unifilarAutoCAD
+claude plugin install pv-unifilar --marketplace edu3250/PvUnifilar
 ```
 
 **La primera vez**, uv descarga las dependencias del servidor (unos 60 MB; de 15 a 60 segundos según la conexión). Claude Code espera 30 segundos a que un servidor arranque, así que la primera vez puede marcarlo como fallido: si `/mcp` muestra el servidor `pvsld` así, espera a que termine la descarga y reconéctalo desde `/mcp`. También puedes descargarlo antes, una sola vez, desde una terminal:
 
 ```
-uvx --from git+https://github.com/edu3250/Diagrama-unifilarAutoCAD@v0.5.0 pvsld-mcp --version
+uvx --from git+https://github.com/edu3250/PvUnifilar@v0.5.0 pvsld-mcp --version
 ```
 
 Después arranca en un par de segundos.
@@ -78,4 +78,4 @@ La **[guía de usuario](../../docs/guia-de-usuario.md)** explica cada paso: la i
 
 ## Licencia
 
-MIT. Código y documentación técnica: <https://github.com/edu3250/Diagrama-unifilarAutoCAD>.
+MIT. Código y documentación técnica: <https://github.com/edu3250/PvUnifilar>.
