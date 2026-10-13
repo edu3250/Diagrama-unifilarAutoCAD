@@ -650,17 +650,20 @@ def test_main_serves_over_stdio_from_the_chosen_directory(
     seen: dict[str, Any] = {}
 
     class FakeServer:
-        def run(self, transport: str) -> None:
-            seen["transport"] = transport
+        pass
 
     def fake_create_server(sandbox: OutputSandbox | None) -> FakeServer:
         seen["sandbox"] = sandbox
         return FakeServer()
 
+    async def fake_serve_stdio(server: FakeServer) -> None:
+        seen["served"] = server
+
     monkeypatch.setattr(server_module, "configure_logging", lambda level: seen.update(level=level))
     monkeypatch.setattr(server_module, "create_server", fake_create_server)
+    monkeypatch.setattr(server_module, "serve_stdio", fake_serve_stdio)
     assert server_module.main(["--output-dir", str(tmp_path / "x"), "--log-level", "DEBUG"]) == 0
-    assert seen["transport"] == "stdio"
+    assert isinstance(seen["served"], FakeServer)  # over stdio, through the handshake filter
     assert seen["level"] == "DEBUG"
     assert seen["sandbox"].root == (tmp_path / "x").resolve()
 
@@ -670,14 +673,14 @@ def test_main_without_an_output_directory_leaves_the_choice_to_the_environment(
 ) -> None:
     seen: dict[str, Any] = {}
 
-    class FakeServer:
-        def run(self, transport: str) -> None:
-            seen["transport"] = transport
+    async def fake_serve_stdio(server: object) -> None:
+        seen["served"] = server
 
     monkeypatch.setattr(server_module, "configure_logging", lambda level: None)
     monkeypatch.setattr(
-        server_module, "create_server", lambda sandbox: seen.update(box=sandbox) or FakeServer()
+        server_module, "create_server", lambda sandbox: seen.update(box=sandbox) or object()
     )
+    monkeypatch.setattr(server_module, "serve_stdio", fake_serve_stdio)
     assert server_module.main([]) == 0
     assert seen["box"] is None
 

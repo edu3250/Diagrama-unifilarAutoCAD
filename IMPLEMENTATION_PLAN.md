@@ -661,7 +661,8 @@ would have left three copies of the workflow to keep equal.
 |---|---|---|
 | Claude Code | `.claude-plugin/plugin.json`, `.mcp.json`, `skills/` | as in Stage 3.6 |
 | Copilot CLI 1.0.96 | Agent Plugins 1.0 (root `plugin.json`, `mcp.json`, `skills/`) first, else Claude Code's files; `.claude-plugin/marketplace.json` | `copilot plugin marketplace add edu3250/PvUnifilar`, then `copilot plugin install pv-unifilar@pvsld` |
-| Gemini CLI 0.63.0 | `gemini-extension.json` at the root of the repository; skills only with `name` in `SKILL.md`; MCP prompts as commands | `gemini extensions install https://github.com/edu3250/PvUnifilar` |
+| Gemini CLI 0.63.0 | `gemini-extension.json` at the root of the repository; skills only with `name` in `SKILL.md`; MCP prompts as commands | `gemini extensions install https://github.com/edu3250/PvUnifilar` (organizations and API keys only: see below) |
+| Antigravity CLI 1.3.4 (`agy`) | root `plugin.json`, `skills/` and `mcp_config.json`; it also converts a Claude Code plugin folder with `agy plugin import <folder>` | clone the repository, then `agy plugin install <clone>/plugins/pv-unifilar` (no command adds a marketplace) |
 | Codex CLI | Agent Plugins 1.0 and Claude Code's marketplace (documentation only: not installed, needs a paid plan) | not tested |
 | Any other | the MCP server | one `uvx` configuration block |
 
@@ -675,9 +676,17 @@ would have left three copies of the workflow to keep equal.
     Code. Each tells the model not to draw by other means when the server is not connected.
   - Agent Plugins 1.0 manifests beside Claude Code's; `gemini-extension.json` with a context file.
   - An unfilled `${...}` placeholder in `PVSLD_OUTPUT_DIR` counts as not set.
-- **3.7.1: a server that starts in time.** Publish the package on PyPI (the owner creates the
-  account; trusted publishing from GitHub) and import the drawing libraries on first use.
-  Required, not optional: see the finding below.
+- **3.7.1: a server that connects however long it takes to start, and the package on PyPI.**
+  - `pvsld.mcp.handshake`: when the first frames in the pipe are `server/discover` followed by
+    `initialize`, the client gave up on the first, so it is dropped and the SDK serves the
+    handshake the client is waiting for. Checked with Copilot CLI and a server started 13 s late:
+    connected. This replaced the plan of importing the drawing libraries on first use, which would
+    have saved about 1 s of 3 and left the first start (23 to 46 s) failing.
+  - `release.yml` publishes the package on PyPI from a release tag with trusted publishing (name
+    `pvsld`, chosen by the owner on 2026-10-12, who registers the publisher on pypi.org).
+    `docs/pypi.md` is what PyPI shows.
+  - The plugin, the extension and the documents change to `uvx --from pvsld==<version> pvsld-mcp`
+    in the release commit, when the package exists: a faster start and no need for Git.
 - **3.7.4: real-prompt tests in Gemini CLI and Copilot CLI with the published package, a section
   per client in the user guide, release v0.6.0 and the MCP registry.**
 
@@ -700,8 +709,18 @@ would have left three copies of the workflow to keep equal.
   skills are listed once they have `name`. From GitHub it only looks for the manifest at the root
   of the repository. No prompt was run: the owner has to sign in first.
 - Claude Code, with the portable skills: no change (8 files without AutoCAD, 4 turns).
+- **Gemini CLI no longer serves personal accounts** (2026-10-13). The owner's sign-in was refused:
+  since 2026-06-18 "Login with Google" is closed for the individual tiers, and Google sends them
+  to Antigravity CLI. Gemini CLI remains for organizations and API keys, so its extension stays,
+  untested with a prompt.
+- Antigravity CLI 1.3.4 (installed with winget, `Google.AntigravityCLI`): it validates and
+  installs the plugin folder by its root `plugin.json` with the 3 skills, but it reads the servers
+  from `mcp_config.json` ("mcpServers: skipped (not found)" with `mcp.json` alone), so the plugin
+  carries that file too. `agy plugin import` of the whole repository copies everything in it
+  (350 MB with the development environment): the plugin folder is what to install. No prompt
+  was run: the owner has to sign in.
 
-**Status:** In Progress (3.7.2 and 3.7.3 in review; 3.7.1 waits for the owner's PyPI account)
+**Status:** In Progress (3.7.2 and 3.7.3 merged, PR #43; 3.7.1 in review; the release that publishes on PyPI waits for the owner)
 
 ---
 
