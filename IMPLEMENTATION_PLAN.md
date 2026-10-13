@@ -717,8 +717,19 @@ would have left three copies of the workflow to keep equal.
   installs the plugin folder by its root `plugin.json` with the 3 skills, but it reads the servers
   from `mcp_config.json` ("mcpServers: skipped (not found)" with `mcp.json` alone), so the plugin
   carries that file too. `agy plugin import` of the whole repository copies everything in it
-  (350 MB with the development environment): the plugin folder is what to install. No prompt
-  was run: the owner has to sign in.
+  (350 MB with the development environment): the plugin folder is what to install.
+- **Antigravity CLI with a real prompt (2026-10-13, signed in by the owner, its default model):**
+  a plain request reads the skill `diagrama`, reads the tool descriptions, calls
+  `list_components` and `design_and_draw`, and delivers the 9 files with the DWG, in Spanish,
+  with the draft warning (about 90 s). It was run headless with `--sandbox` and
+  `--dangerously-skip-permissions`, because headless mode refuses every tool it cannot ask about.
+  It connected to the published server (v0.5.0 from the git tag) without the handshake problem.
+- **The projects landed inside the installed plugin** (`~/.gemini/config/plugins/pv-unifilar/out`):
+  these clients start a plugin's server in the plugin's folder (Agent Plugins 1.0: "cwd defaults
+  to the plugin root"), and the server's default is `./out`. The portable manifests now set
+  `PVSLD_OUTPUT_DIR` to `~/PvUnifilar`; checked again in Antigravity:
+  `<home>/PvUnifilar/sfv_2p85kWp`. Claude Code keeps `./out` of the project, where it
+  starts the server.
 
 **Status:** In Progress (3.7.2 and 3.7.3 merged, PR #43; 3.7.1 in review; the release that publishes on PyPI waits for the owner)
 

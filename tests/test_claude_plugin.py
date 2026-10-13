@@ -28,6 +28,7 @@ PLUGIN = ROOT / "plugins" / "pv-unifilar"
 SKILLS = ("diagrama", "pro", "catalogo")
 TOOL_PREFIX = "mcp__plugin_pv-unifilar_pvsld__"
 REPOSITORY = "git+https://github.com/edu3250/PvUnifilar"
+HOME_PROJECTS = "~/PvUnifilar"
 
 
 def _json(path: Path) -> Any:
@@ -90,7 +91,24 @@ def test_the_portable_manifest_says_what_the_claude_one_says() -> None:
     (server,) = servers["mcpServers"].values()
     assert (server["type"], server["command"], server["args"]) == ("stdio", "uvx", ours["args"])
     # No client but Claude Code fills in ${user_config...}; the skills are shown, so no prompts.
-    assert server["env"] == {"PYTHONUTF8": "1", PROMPTS_ENV: "off"}
+    assert server["env"] == {
+        "PYTHONUTF8": "1",
+        "PVSLD_OUTPUT_DIR": HOME_PROJECTS,
+        PROMPTS_ENV: "off",
+    }
+
+
+def test_outside_claude_code_the_projects_go_to_the_users_home(tmp_path: Path) -> None:
+    """These clients start a plugin's server in the plugin's own folder (Agent Plugins 1.0:
+    "cwd defaults to the plugin root"), so the default ``./out`` put a user's projects inside the
+    installed plugin: Antigravity CLI wrote them to ``~/.gemini/config/plugins/pv-unifilar/out``
+    (real-prompt test, Stage 3.7). The server expands ``~``."""
+    for name in ("mcp.json", "mcp_config.json"):
+        (server,) = _json(PLUGIN / name)["mcpServers"].values()
+        assert server["env"]["PVSLD_OUTPUT_DIR"] == HOME_PROJECTS
+    root = OutputSandbox.from_environment({"PVSLD_OUTPUT_DIR": HOME_PROJECTS}).root
+    assert root == (Path.home() / "PvUnifilar").resolve()
+    assert PLUGIN.resolve() not in root.parents
 
 
 def test_the_antigravity_file_names_the_same_server() -> None:
