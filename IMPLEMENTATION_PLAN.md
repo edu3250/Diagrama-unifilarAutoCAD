@@ -731,7 +731,7 @@ would have left three copies of the workflow to keep equal.
   `<home>/PvUnifilar/sfv_2p85kWp`. Claude Code keeps `./out` of the project, where it
   starts the server.
 
-**Status:** In Progress (3.7.1 to 3.7.3 merged, PRs #43 to #45; released as v0.6.0 on 2026-10-13, the first version on PyPI; 3.7.4 open: real prompts with the published package, a section per client in the user guide, the MCP registry)
+**Status:** In Progress (3.7.1 to 3.7.3 merged, PRs #43 to #45; released as v0.6.0 on 2026-10-13, the first version on PyPI; 3.7.4: real prompts with the published package done in Copilot CLI and Antigravity CLI, the section per client in the user guide in review; open: the MCP registry)
 
 ---
 

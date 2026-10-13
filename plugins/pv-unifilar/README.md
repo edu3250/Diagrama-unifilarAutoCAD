@@ -71,7 +71,7 @@ La **[guía de usuario](../../docs/guia-de-usuario.md)** explica cada paso: la i
 
 ## Alcance y limitaciones
 
-- Funciona en Claude Code; no en claude.ai en el navegador, porque el servidor corre en tu computadora.
+- Funciona en Claude Code, y también en Copilot CLI y Antigravity CLI (cómo instalarlo ahí: [guía de usuario](../../docs/guia-de-usuario.md#11-otros-agentes-copilot-cli-y-antigravity-cli)); no en claude.ai en el navegador, porque el servidor corre en tu computadora.
 - Sistemas residenciales de baja tensión, un inversor de cadena, hasta dos cadenas, servicio CFE 1F-2H o 2F-3H.
 - Un equipo que no está en el catálogo necesita su hoja técnica.
 - **Los planos son borradores:** un ingeniero responsable debe revisarlos y firmarlos antes de cualquier trámite.
