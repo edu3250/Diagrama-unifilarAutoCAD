@@ -99,9 +99,16 @@ class OutputSandbox:
 
     @classmethod
     def from_environment(cls, environ: Mapping[str, str] | None = None) -> OutputSandbox:
-        """``$PVSLD_OUTPUT_DIR`` when set and not blank, else ``./out`` of the working directory."""
+        """``$PVSLD_OUTPUT_DIR`` when set and not blank, else ``./out`` of the working directory.
+
+        A value that still holds a placeholder (``${user_config.output_dir}``) counts as not set.
+        The plugin's ``.mcp.json`` passes the user's choice that way, and a client that reads the
+        file without knowing that placeholder (Copilot CLI, Stage 3.7) hands it over as it is.
+        """
         source = os.environ if environ is None else environ
         configured = source.get(OUTPUT_DIR_ENV, "").strip()
+        if "${" in configured:
+            configured = ""
         return cls.at(configured or DEFAULT_OUTPUT_DIR)
 
     def drawing_name(self, requested: str | None, spec: Mapping[str, Any]) -> str:

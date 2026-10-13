@@ -83,6 +83,16 @@ def test_a_blank_environment_variable_falls_back_to_the_default(
     )
 
 
+def test_a_placeholder_nobody_filled_in_counts_as_not_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Copilot CLI reads the plugin's ``.mcp.json`` but not Claude Code's ``${user_config...}``:
+    the server would write into a folder with that very name (Stage 3.7)."""
+    monkeypatch.chdir(tmp_path)
+    literal = {OUTPUT_DIR_ENV: "${user_config.output_dir}"}
+    assert OutputSandbox.from_environment(literal).root == (tmp_path / "out").resolve()
+
+
 def test_an_explicit_name_is_validated(tmp_path: Path) -> None:
     sandbox = OutputSandbox.at(tmp_path)
     assert sandbox.drawing_name("plano-1", {}) == "plano-1"

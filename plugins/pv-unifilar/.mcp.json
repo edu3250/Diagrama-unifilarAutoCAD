@@ -10,7 +10,8 @@
       ],
       "env": {
         "PYTHONUTF8": "1",
-        "PVSLD_OUTPUT_DIR": "${user_config.output_dir}"
+        "PVSLD_OUTPUT_DIR": "${user_config.output_dir}",
+        "PVSLD_MCP_PROMPTS": "off"
       }
     }
   }
