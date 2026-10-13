@@ -23,7 +23,7 @@ Con [uv](https://docs.astral.sh/uv/) instalado, cualquier cliente MCP puede ejec
 }
 ```
 
-En Claude Code, Copilot CLI y Gemini CLI se instala como plugin o extensión, con sus comandos (`diagrama`, `pro`, `catalogo`): las instrucciones están en el [repositorio](https://github.com/edu3250/PvUnifilar) y en la [guía de usuario](https://github.com/edu3250/PvUnifilar/blob/develop/docs/guia-de-usuario.md).
+En Claude Code, Copilot CLI y Antigravity CLI se instala como plugin, con sus tres flujos (`diagrama`, `pro`, `catalogo`): las instrucciones están en el [repositorio](https://github.com/edu3250/PvUnifilar) y en la [guía de usuario](https://github.com/edu3250/PvUnifilar/blob/develop/docs/guia-de-usuario.md).
 
 Sin un modelo de por medio:
 

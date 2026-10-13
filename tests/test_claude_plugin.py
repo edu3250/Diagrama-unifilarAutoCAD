@@ -27,7 +27,7 @@ MARKETPLACE = ROOT / ".claude-plugin" / "marketplace.json"
 PLUGIN = ROOT / "plugins" / "pv-unifilar"
 SKILLS = ("diagrama", "pro", "catalogo")
 TOOL_PREFIX = "mcp__plugin_pv-unifilar_pvsld__"
-REPOSITORY = "git+https://github.com/edu3250/PvUnifilar"
+PACKAGE = "pvsld"  # on PyPI since v0.6.0; before that the server came from the git tag
 HOME_PROJECTS = "~/PvUnifilar"
 
 
@@ -67,11 +67,11 @@ def test_the_plugin_names_and_version_match_the_package() -> None:
     assert manifest["version"] == version
 
 
-def test_the_server_runs_from_the_release_tag_of_this_version() -> None:
+def test_the_server_runs_from_the_package_of_this_version() -> None:
     server = _json(PLUGIN / ".mcp.json")["mcpServers"]["pvsld"]
     version = _json(PLUGIN / ".claude-plugin" / "plugin.json")["version"]
     assert server["command"] == "uvx"
-    assert server["args"] == ["--from", f"{REPOSITORY}@v{version}", "pvsld-mcp"]
+    assert server["args"] == ["--from", f"{PACKAGE}=={version}", "pvsld-mcp"]
     assert server["env"]["PVSLD_OUTPUT_DIR"] == "${user_config.output_dir}"
     assert server["env"][PROMPTS_ENV] == "off"  # Claude Code shows the skills
 
@@ -138,20 +138,22 @@ USER_DOCS = (PLUGIN / "README.md", ROOT / "README.md", ROOT / "docs" / "guia-de-
 
 
 @pytest.mark.parametrize("document", USER_DOCS, ids=lambda path: path.name)
-def test_the_user_documents_name_the_tag_of_this_version(document: Path) -> None:
-    """A release changes the version in one go: no document may keep the old tag."""
+def test_the_user_documents_name_the_package_of_this_version(document: Path) -> None:
+    """A release changes the version in one go: no document may keep the old one, or the git
+    address the server came from before it was on PyPI."""
     version = _json(PLUGIN / ".claude-plugin" / "plugin.json")["version"]
     text = document.read_text(encoding="utf-8")
-    assert f"uvx --from {REPOSITORY}@v{version} pvsld-mcp --version" in text
-    tags = set(re.findall(re.escape(REPOSITORY) + r"@(v[0-9][\w.]*)", text))
-    assert tags == {f"v{version}"}
+    assert f"uvx --from {PACKAGE}=={version} pvsld-mcp --version" in text
+    pinned = set(re.findall(re.escape(PACKAGE) + r"==([0-9][\w.]*)", text))
+    assert pinned == {version}
+    assert "git+https" not in text
 
 
 @pytest.mark.parametrize("document", USER_DOCS, ids=lambda path: path.name)
 def test_the_user_documents_install_from_the_default_branch(document: Path) -> None:
     """`develop` is the default branch (owner, 2026-10-10): a pinned branch would outlive it."""
     text = document.read_text(encoding="utf-8")
-    assert "edu3250/PvUnifilar@" not in text.replace(REPOSITORY + "@", "")
+    assert "edu3250/PvUnifilar@" not in text
     assert "pv-unifilar@pvsld" in text
 
 

@@ -6,7 +6,7 @@
       "command": "uvx",
       "args": [
         "--from",
-        "git+https://github.com/edu3250/PvUnifilar@v0.5.0",
+        "pvsld==0.6.0",
         "pvsld-mcp"
       ],
       "env": {

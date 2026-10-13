@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-13
+
+PvUnifilar in other agent CLIs (Stage 3.7). The server is published on PyPI as `pvsld` and the plugin runs it with `uvx --from pvsld==0.6.0 pvsld-mcp`: no git clone, no build on the user's machine. One plugin folder installs in Claude Code, Copilot CLI and Antigravity CLI, and the repository is a Gemini CLI extension. Real prompts were run in Claude Code, Copilot CLI and Antigravity CLI; Gemini CLI (closed to personal accounts) and Codex CLI (paid) were not tested.
+
 ### Added
 - The plugin's three workflows are also MCP prompts, `diagrama`, `pro` and `catalogo` (Stage 3.7), for the clients that connect to the server without loading the plugin's skills: Gemini CLI and VS Code list a server's prompts as commands. They are the plugin's own `SKILL.md` files, carried in the wheel (`pvsld.mcp.prompts`), so a prompt cannot differ from its skill. `PVSLD_MCP_PROMPTS=off` leaves them out; the plugin sets it where the client already shows the skills.
 - The plugin folder is also an Agent Plugins 1.0 plugin (root `plugin.json` and `mcp.json` beside Claude Code's files), which Copilot CLI reads first, and the repository is a Gemini CLI extension (`gemini-extension.json` at the root, with a context file). Checked with Copilot CLI 1.0.96 and Gemini CLI 0.63.0: both install it and list the server; Copilot's own model designed an installation from a plain request. The documentation for users waits for Stage 3.7.1, because Copilot CLI gives a server 10 s to answer and `uvx` from a git tag takes longer.
@@ -223,4 +227,4 @@ Phase 1 (Documentation & Regulatory Research) complete.
 
 **Repository:** https://github.com/edu3250/PvUnifilar  
 **Maintainer:** edu3250 (edu3250@gmail.com)  
-**Last updated:** 2026-10-12
+**Last updated:** 2026-10-13
