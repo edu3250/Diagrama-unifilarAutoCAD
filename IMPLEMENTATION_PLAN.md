@@ -675,9 +675,17 @@ would have left three copies of the workflow to keep equal.
     Code. Each tells the model not to draw by other means when the server is not connected.
   - Agent Plugins 1.0 manifests beside Claude Code's; `gemini-extension.json` with a context file.
   - An unfilled `${...}` placeholder in `PVSLD_OUTPUT_DIR` counts as not set.
-- **3.7.1: a server that starts in time.** Publish the package on PyPI (the owner creates the
-  account; trusted publishing from GitHub) and import the drawing libraries on first use.
-  Required, not optional: see the finding below.
+- **3.7.1: a server that connects however long it takes to start, and the package on PyPI.**
+  - `pvsld.mcp.handshake`: when the first frames in the pipe are `server/discover` followed by
+    `initialize`, the client gave up on the first, so it is dropped and the SDK serves the
+    handshake the client is waiting for. Checked with Copilot CLI and a server started 13 s late:
+    connected. This replaced the plan of importing the drawing libraries on first use, which would
+    have saved about 1 s of 3 and left the first start (23 to 46 s) failing.
+  - `release.yml` publishes the package on PyPI from a release tag with trusted publishing (name
+    `pvsld`, chosen by the owner on 2026-10-12, who registers the publisher on pypi.org).
+    `docs/pypi.md` is what PyPI shows.
+  - The plugin, the extension and the documents change to `uvx --from pvsld==<version> pvsld-mcp`
+    in the release commit, when the package exists: a faster start and no need for Git.
 - **3.7.4: real-prompt tests in Gemini CLI and Copilot CLI with the published package, a section
   per client in the user guide, release v0.6.0 and the MCP registry.**
 
@@ -701,7 +709,7 @@ would have left three copies of the workflow to keep equal.
   of the repository. No prompt was run: the owner has to sign in first.
 - Claude Code, with the portable skills: no change (8 files without AutoCAD, 4 turns).
 
-**Status:** In Progress (3.7.2 and 3.7.3 in review; 3.7.1 waits for the owner's PyPI account)
+**Status:** In Progress (3.7.2 and 3.7.3 merged, PR #43; 3.7.1 in review; the release that publishes on PyPI waits for the owner)
 
 ---
 

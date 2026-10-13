@@ -42,6 +42,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Annotated, Any, Literal
 
+import anyio
 import yaml
 from mcp.server import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -63,6 +64,7 @@ from pvsld.mcp.design_tool import (
     run_new_sheet,
     run_pro_design,
 )
+from pvsld.mcp.handshake import serve_stdio
 from pvsld.mcp.models import (
     GenerateOutput,
     ValidationOutput,
@@ -1061,5 +1063,5 @@ def main(argv: Sequence[str] | None = None) -> int:
     sandbox = OutputSandbox.at(args.output_dir) if args.output_dir else None
     server = create_server(sandbox)
     log.info("pvsld-mcp %s serving on stdio", __version__)
-    server.run("stdio")
+    anyio.run(serve_stdio, server)
     return 0

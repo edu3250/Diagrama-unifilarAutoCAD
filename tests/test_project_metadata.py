@@ -34,6 +34,18 @@ def test_project_identity(pyproject: dict[str, Any]) -> None:
     assert project["license"] == "MIT"
 
 
+def test_the_description_for_pypi_stands_on_its_own(pyproject: dict[str, Any]) -> None:
+    """PyPI shows this file away from the repository: a relative link or image is broken there."""
+    readme = PYPROJECT.parent / pyproject["project"]["readme"]
+    text = readme.read_text(encoding="utf-8")
+    targets = re.findall(r"\]\(([^)]+)\)", text) + re.findall(r"<(https?://[^>]+)>", text)
+    assert targets
+    assert all(target.startswith("https://") for target in targets), targets
+    assert "pvsld-mcp" in text
+    sdist = pyproject["tool"]["hatch"]["build"]["targets"]["sdist"]["include"]
+    assert f"/{pyproject['project']['readme']}" in sdist
+
+
 def test_runtime_dependencies(pyproject: dict[str, Any]) -> None:
     names = {_requirement_name(dep) for dep in pyproject["project"]["dependencies"]}
     assert names == {
